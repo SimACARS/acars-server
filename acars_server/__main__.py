@@ -13,7 +13,7 @@ from fastapi.security import APIKeyHeader
 from loguru import logger
 
 # Local Libraries
-from acars_server import __VERSION__, message_types
+from acars_server import __VERSION__, auth, message_types
 
 app = FastAPI(
     title="SimACARS",
@@ -24,12 +24,43 @@ app = FastAPI(
     },
 )
 header_api_key = APIKeyHeader(name="x-key")
-
+crypto = auth.Auth()
 
 @app.get("/")
 async def ping():
     """Ping the server. Returns 'OK' and VERSION"""
     return {"server_status": "OK", "server_version": __VERSION__}
+
+@app.get("/user/new/{network}")
+async def auth_new_user(network: str):
+    """Authenticate a new user and generate an API key"""
+    if network == "vatsim":
+        v_auth = auth.VatsimAuth()
+        v_url = v_auth.authorise()
+        return {
+            "auth_url": v_url[0],
+            "callback": f"http://127.0.0.1:8000/callback/oauth/vatsim/{v_url[1]}/"
+            }
+
+@app.get("/callback/oauth/vatsim/{state}/{code}")
+async def auth_new_user_callback_vatsim(state:str, code:str):
+    """A callback point for VATSIM"""
+    # Get the access token from VATSIM
+    v_auth = auth.VatsimAuth()
+    v_token = v_auth.get_access_token(code)
+
+    # Get the user details using the access token
+    v_user = v_auth.get_user_details(v_token["access_token"])
+
+    # Generate the API key using the cid
+    v_cid = v_user["data"]["cid"]
+    api_key = crypto.api_key_generator(v_cid, "vatsim")
+
+    return {
+        "network": "vatsim",
+        "cid": v_cid,
+        "api_key": api_key
+    }
 
 @app.get("/msg/get/{item_id}")
 async def read_item(item_id: int, q: str | None = None):
