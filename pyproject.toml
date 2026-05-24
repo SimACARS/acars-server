@@ -1,0 +1,2 @@
+[tool.fastapi]
+entrypoint = "acars-server.__main__:app"
