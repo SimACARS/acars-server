@@ -7,7 +7,7 @@
             {
                 "replacements": [
                   {
-                    "files": ["acars-server/__init__.py"],
+                    "files": ["acars_server/__init__.py"],
                     "from": "__VERSION__ = \".*\"",
                     "to": "__VERSION__ = \"${nextRelease.version}\"",
                     "results": [
@@ -37,7 +37,7 @@
             {
                 "assets": [
                     "CHANGELOG.md",
-                    "acars-server/*.py"
+                    "acars_server/*.py"
                 ]
             }
         ]

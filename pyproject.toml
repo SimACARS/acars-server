@@ -1,2 +1,2 @@
 [tool.fastapi]
-entrypoint = "acars-server.__main__:app"
+entrypoint = "acars_server.__main__:app"
