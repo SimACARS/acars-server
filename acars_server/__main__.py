@@ -34,11 +34,17 @@ app = FastAPI(
 header_api_key = APIKeyHeader(name="x-key")
 crypto = auth.Auth()
 
+# ------------------------------------------------------------------
+# Server Status
+# ------------------------------------------------------------------
 @app.get("/")
 async def ping():
     """Ping the server. Returns 'OK' and VERSION"""
     return {"server_status": "OK", "server_version": __VERSION__}
 
+# ------------------------------------------------------------------
+# User Functions
+# ------------------------------------------------------------------
 @app.get("/user/new/{network}")
 async def auth_new_user(network: str):
     """Authenticate a new user and generate an API key"""
@@ -70,6 +76,12 @@ async def auth_new_user_callback_vatsim(state:str, code:str):
         "api_key": api_key
     }
 
+# ------------------------------------------------------------------
+# Test Functions
+# ------------------------------------------------------------------
+# ------------------------------------------------------------------
+# ACARS Functions
+# ------------------------------------------------------------------
 @app.get("/msg/get/{item_id}")
 async def read_item(item_id: int, q: str | None = None):
     """Progress"""
