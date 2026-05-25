@@ -57,4 +57,6 @@ class ApiKeyPublic(ApiKeyBase):
 
 class ApiKeyUpdate(ApiKeyBase):
     """A table to hold all API keys"""
-    last_used: float
+    api_key: str | None = None
+    network: str | None = None
+    last_used: float | None = None
