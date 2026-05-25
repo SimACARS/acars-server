@@ -1,5 +1,28 @@
 # Changelog
 
+# [1.2.0](https://github.com/SimACARS/acars-server/compare/v1.1.0...v1.2.0) (2026-05-25)
+
+
+### Bug Fixes
+
+* default of None not allowed in relay fields ([e4c9a1d](https://github.com/SimACARS/acars-server/commit/e4c9a1df9840636b7f427f09c70bb4ee8e6af7c3))
+* forgot to move the test code over to prod ([7b34fc2](https://github.com/SimACARS/acars-server/commit/7b34fc21eefcfb850bbaae2961e6088928859cef))
+* no exception raised if invalid network is passed ([c7095fb](https://github.com/SimACARS/acars-server/commit/c7095fb0300681a3012a26f6334fda9aab2fbc4b))
+* not returning a redirect ([20c8974](https://github.com/SimACARS/acars-server/commit/20c8974a69450faa41a41e72321c7fbfd9fff279))
+
+
+### Features
+
+* fully working relay ([acaa05d](https://github.com/SimACARS/acars-server/commit/acaa05d314136e9929d596177d773dc98bea6d2d))
+* fully working store ([be09047](https://github.com/SimACARS/acars-server/commit/be09047f5e19bf907611a48e1b1228831e49df11))
+
+
+### Performance Improvements
+
+* moved networks to static data ([392d8bb](https://github.com/SimACARS/acars-server/commit/392d8bbe14f12b54d0a39296bb91a09394689297))
+* removed extra print statement ([2cebcfe](https://github.com/SimACARS/acars-server/commit/2cebcfeafb35b396d9f077c32de8383fe19268fa))
+* removed unused imports ([#4](https://github.com/SimACARS/acars-server/issues/4)) ([913f009](https://github.com/SimACARS/acars-server/commit/913f00944a0490533100e08d5dbb6d250ee5a226))
+
 # [1.1.0](https://github.com/chssn/acars-server/compare/v1.0.0...v1.1.0) (2026-05-25)
 
 
