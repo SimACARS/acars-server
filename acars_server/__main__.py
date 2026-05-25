@@ -6,6 +6,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+from contextlib import asynccontextmanager
 
 # Third Party Libraries
 from fastapi import Depends, FastAPI
@@ -13,9 +14,16 @@ from fastapi.security import APIKeyHeader
 from loguru import logger
 
 # Local Libraries
-from acars_server import __VERSION__, auth, message_types
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create DB and Tables
+    sql.create_db_and_tables()
+    # Run the app
+    yield
+    # On shutdown cleanup
 
 app = FastAPI(
+    lifespan=lifespan,
     title="SimACARS",
     description="This is a simulated ACARS server for flight simulation only.",
     version=__VERSION__,
