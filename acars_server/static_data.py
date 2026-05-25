@@ -41,3 +41,26 @@ COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
     401: {"description": "Unauthorised API Key Provided"},
     403: {"description": "Forbidden by Third Party Provider"}
 }
+
+METADATA_TAGS = [
+    {
+        "name": "status",
+        "description": "System status",
+    },
+    {
+        "name": "user management",
+        "description": "User management",
+    },
+    {
+        "name": "callbacks",
+        "description": "These are callback endpoints for third party OAuth2 services",
+    },
+    {
+        "name": "legacy messaging",
+        "description": "Provides backwards compatability for clients configured to work with Hoppie's ACARS",
+        "externalDocs": {
+            "description": "Hoppie's ACARS Server API",
+            "url": "https://www.hoppie.nl/acars/system/tech.html",
+        },
+    },
+]

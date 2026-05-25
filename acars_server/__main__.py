@@ -8,15 +8,16 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
+from typing import Annotated
 
 # Third Party Libraries
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Path, Query
 from fastapi.security import APIKeyHeader
 from loguru import logger
 from sqlmodel import select
 
 # Local Libraries
-from acars_server import __VERSION__, auth, message_types, sql, static_data
+from acars_server import __VERSION__, auth, sql, static_data, stations
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,11 +30,16 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title="SimACARS",
-    description="This is a simulated ACARS server for flight simulation only.",
+    description=(
+        "This is a simulated ACARS network for flight simulation only.<br /><br />"
+        "If you are flying on a network, your API key is an encrypted string of SECRET:NETWORK:USER_ID. "
+        "Your network user ID is used to verify that the callsign you have logged on with.<br /><br />"
+        "Your user ID is verified using your network's OAuth2 protocol. We ONLY store your encrypted user ID and no other personal data."),
     version=__VERSION__,
     contact={
         "name": "@chssn",
     },
+    openapi_tags=static_data.METADATA_TAGS
 )
 header_api_key = APIKeyHeader(name="x-key")
 crypto = auth.Auth()
@@ -41,7 +47,7 @@ crypto = auth.Auth()
 # ------------------------------------------------------------------
 # Server Status
 # ------------------------------------------------------------------
-@app.get("/")
+@app.get("/", tags=["status"])
 async def ping():
     """Ping the server. Returns 'OK' and VERSION"""
     return {"server_status": "OK", "server_version": __VERSION__}
@@ -49,7 +55,7 @@ async def ping():
 # ------------------------------------------------------------------
 # User Functions
 # ------------------------------------------------------------------
-@app.get("/user/new/{network}")
+@app.get("/user/new/{network}", tags=["user management"])
 async def auth_new_user(network: str):
     """Authenticate a new user and generate an API key"""
     if network == "vatsim":
@@ -60,7 +66,10 @@ async def auth_new_user(network: str):
             "callback": f"http://127.0.0.1:8000/callback/oauth/vatsim/{v_url[1]}/"
             }
 
-@app.get("/callback/oauth/vatsim/{state}/{code}", response_model=sql.ApiKeyPublic)
+@app.get(
+        "/callback/oauth/vatsim/{state}/{code}",
+        response_model=sql.ApiKeyPublic,
+        tags=["callbacks"])
 async def auth_new_user_callback_vatsim(
     state:str,
     code:str,
@@ -143,7 +152,7 @@ async def read_item(item_id: int, q: str | None = None):
 
 @app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
 async def post_msg_progress(
-    msg:message_types.MsgOooi,
+    msg:str,
     session:sql.SessionDep,
     api_key:str = Depends(header_api_key)):
     """Post a message"""
@@ -160,9 +169,37 @@ async def post_msg_progress(
         # ------------------------------------------------------------------
         pass
 
-@app.post("/msg/legacy", status_code=201, responses=static_data.COMMON_ERRORS)
-async def legacy_message(
-    msg:message_types.LegacyMessage,
+@app.get("/connect.html", tags=["legacy messaging"])
+async def hoppie_formated_url(
+    api_key: Annotated[str, Query(alias="logon")],
+    msg_from: Annotated[str, Query(alias="from")],
+    msg_to: Annotated[str, Query(alias="to")],
+    msg_type: Annotated[str, Query(alias="type")],
+    packet: Annotated[str, Query(alias="packet")],
+    session:sql.SessionDep,
+    ):
+    """
+    Provides a psudo html endpoint for legacy clients.
+    Connects directly to the <b>/msg/legacy/tx</b> endpoint
+    """
+    msg = {
+        "msg_from": msg_from,
+        "msg_to": msg_to,
+        "msg_type": msg_type,
+        "packet": packet
+    }
+    sf_msg = sql.StoreAndForwardCreate.model_validate(msg)
+    await legacy_messaging(msg=sf_msg, api_key=api_key, session=session)
+
+@app.post(
+        "/msg/legacy/tx",
+        status_code=201,
+        responses=static_data.COMMON_ERRORS,
+        response_model=sql.StoreAndForwardPublic,
+        tags=["legacy messaging"]
+        )
+async def legacy_messaging(
+    msg:sql.StoreAndForwardCreate,
     session:sql.SessionDep,
     api_key:str = Depends(header_api_key)):
     """Legacy message"""
@@ -177,4 +214,25 @@ async def legacy_message(
         # ------------------------------------------------------------------
         # Function
         # ------------------------------------------------------------------
-        pass
+
+        # Read API Key
+        user_data = crypto.api_key_reader(api_key)
+        sf_msg = sql.StoreAndForward.model_validate(msg)
+
+        # Validate callsign on various networks
+        check = False
+        if user_data["network"] == "vatsim":
+            vc = stations.Vatsim()
+            check = vc.corrolate_cid_to_callsign(user_data["uid"], sf_msg["msg_from"])
+        elif user_data["network"] == "ivao":
+            pass
+        else:
+            raise HTTPException(status_code=400, detail=f"Network '{user_data['network']}' is not valid. Expected one of {', '.join(static_data.NETWORKS)}")
+
+        # If the callsign has been validated
+        if check:
+            session.add(sf_msg)
+            session.commit()
+            session.refresh(sf_msg)
+            return sf_msg
+        raise HTTPException(status_code=403, detail=f"Callsign validation failed - Network: {user_data['network']}, User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")
