@@ -12,6 +12,7 @@ from typing import Annotated
 
 # Third Party Libraries
 from fastapi import Depends, FastAPI, HTTPException, Path, Query
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from loguru import logger
 from sqlmodel import select
@@ -61,10 +62,7 @@ async def auth_new_user(network: str):
     if network == "vatsim":
         v_auth = auth.VatsimAuth()
         v_url = v_auth.authorise()
-        return {
-            "auth_url": v_url[0],
-            "callback": f"http://127.0.0.1:8000/callback/oauth/vatsim/{v_url[1]}/"
-            }
+        return RedirectResponse(v_url[0])
 
 @app.get(
         "/callback/oauth/vatsim/{state}/{code}",
