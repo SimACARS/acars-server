@@ -12,7 +12,7 @@
                     "to": "__VERSION__ = \"${nextRelease.version}\"",
                     "results": [
                       {
-                        "file": "acars-server/__init__.py",
+                        "file": "acars_server/__init__.py",
                         "hasChanged": true,
                         "numMatches": 1,
                         "numReplacements": 1
