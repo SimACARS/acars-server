@@ -27,6 +27,16 @@ LEGACY_MSG_TYPES = [
     "peek"
 ]
 
+NETWORKS = [
+    "vatsim",
+    "ivao",
+    "pilotedge",
+    "poscon",
+    "apoc",
+    "sayintentions",
+    "offline"
+]
+
 COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
     401: {"description": "Unauthorised"},
 }

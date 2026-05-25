@@ -19,19 +19,10 @@ from dotenv import load_dotenv
 from loguru import logger
 
 # Local Libraries
+from acars_server import static_data
 
 
 load_dotenv()
-
-NETWORKS = [
-    "vatsim",
-    "ivao",
-    "pilotedge",
-    "poscon",
-    "apoc",
-    "sayintentions",
-    "offline"
-]
 
 def generate_key(key_name:str="master"):
     """
@@ -77,11 +68,11 @@ class Auth:
         An API key generator
         Requires the UID and network
         """
-        if network in NETWORKS:
+        if network in static_data.NETWORKS:
             pt_api_key = f"{self.random_generator()}:{network}:{uid}"
             ct_api_key = self.encrypt(pt_api_key)
             return base64.b64encode(ct_api_key).decode()
-        raise ValueError(f"'{network}' is an invalid network. Expected one of: [{', '.join(NETWORKS)}]")
+        raise ValueError(f"'{network}' is an invalid network. Expected one of: [{', '.join(static_data.NETWORKS)}]")
 
     def api_key_reader(self, api_key:str) -> Dict[str,str]:
         """Read an API key"""
