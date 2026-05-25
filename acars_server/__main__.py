@@ -8,7 +8,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
-from typing import Annotated, Dict, List, Union
+from typing import Annotated, Any, Dict, List, Union
 
 # Third Party Libraries
 from fastapi import Depends, FastAPI, HTTPException, Query, Response
@@ -56,13 +56,21 @@ async def ping():
 # ------------------------------------------------------------------
 # User Functions
 # ------------------------------------------------------------------
-@app.get("/user/new/{network}", tags=["user management"])
+responses_user_new_network:dict[int|str,dict[str,Any]]|None  = {
+    307: {},
+    400: {},
+    501: {},
+}
+@app.get("/user/new/{network}", tags=["user management"], responses=responses_user_new_network)
 async def auth_new_user(network: str):
     """Authenticate a new user and generate an API key"""
-    if network == "vatsim":
-        v_auth = auth.VatsimAuth()
-        v_url = v_auth.authorise()
-        return RedirectResponse(v_url[0])
+    if network in static_data.NETWORKS:
+        if network == "vatsim":
+            v_auth = auth.VatsimAuth()
+            v_url = v_auth.authorise()
+            return RedirectResponse(v_url[0])
+        raise HTTPException(status_code=501, detail=f"{network} doesn't appear to exist although it really should...")
+    raise HTTPException(status_code=400, detail=f"{network} is not a recognised network. Needs to be one of {', '.join(static_data.NETWORKS)}")
 
 @app.get(
         "/callback/oauth/vatsim/{state}/{code}",
