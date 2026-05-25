@@ -8,14 +8,14 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
-from typing import Annotated
+from typing import Annotated, Dict, List, Union
 
 # Third Party Libraries
-from fastapi import Depends, FastAPI, HTTPException, Path, Query
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Depends, FastAPI, HTTPException, Query, Response
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from loguru import logger
-from sqlmodel import select
+from sqlmodel import and_, select, update
 
 # Local Libraries
 from acars_server import __VERSION__, auth, sql, static_data, stations
@@ -105,7 +105,7 @@ async def auth_new_user_callback_vatsim(
 # ------------------------------------------------------------------
 # Test Functions
 # ------------------------------------------------------------------
-@app.post("/test/newapi", response_model=sql.ApiKeyPublic)
+@app.post("/test/newapi", response_model=sql.ApiKeyPublic, tags=["testing"])
 async def test_newapi(session: sql.SessionDep):
     # Add the API key to the DB
     dtnow = dt.now(tz.utc).timestamp()
@@ -121,7 +121,7 @@ async def test_newapi(session: sql.SessionDep):
     session.refresh(db_add)
     return db_add
 
-@app.get("/test/update_lut", responses=static_data.COMMON_ERRORS)
+@app.get("/test/update_lut", responses=static_data.COMMON_ERRORS, tags=["testing"])
 async def test_update_lut(session: sql.SessionDep):
     db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == "12345")
     api_user = session.exec(db_select).first()
@@ -140,17 +140,95 @@ async def test_update_lut(session: sql.SessionDep):
         session.refresh(api_user)
         return "ok"
 
+@app.get("/test/poll/{callsign}", tags=["testing"])
+async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
+    # If the callsign has been validated
+        update_msg = {
+            "relayed": True,
+            "relayed_at": dt.now(tz.utc).timestamp()
+        }
+        db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
+        all_messages = session.exec(db_select).fetchall()
+        print(all_messages)
+        if len(all_messages) > 0:
+            rtn = {"message_count": len(all_messages), "messages": []}
+            update_id_list = []
+            for m in all_messages:
+                update_id_list.append(m["id"])
+                data_block = {
+                    "id": m["id"],
+                    "msg_from": m["msg_from"],
+                    "msg_to": m["msg_to"],
+                    "msg_type": m["msg_type"],
+                    "packet": m["packet"],
+                    "network": m["network"]
+                }
+                rtn["messages"].append(data_block)
+
+            if len(update_id_list) > 0:
+                stmt = (
+                    update(sql.StoreAndForward)
+                    .where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.id.in_(update_id_list)))
+                    .values(**update_msg)
+                    )
+
+                session.exec(stmt)
+                session.commit()
+
+            return JSONResponse(rtn)
+        return JSONResponse(content={"msg_count": 0})
+
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
-@app.get("/msg/get/{item_id}")
-async def read_item(item_id: int, q: str | None = None):
-    """Progress"""
-    return {"item_id": item_id, "q": q}
+@app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
+async def poll_for_new_messages(
+    session:sql.SessionDep,
+    api_key:str = Depends(header_api_key)):
+    """Poll for new messages"""
+    # ------------------------------------------------------------------
+    # API Auth
+    # ------------------------------------------------------------------
+    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    api_user = session.exec(db_select).first()
+    if not api_user:
+        raise HTTPException(status_code=401, detail="Unauthorised")
+    else:
+        # ------------------------------------------------------------------
+        # Function
+        # ------------------------------------------------------------------
+
+        # Read API Key
+        user_data = crypto.api_key_reader(api_key)
+
+        # Validate callsign on various networks
+        callsign = None
+        if user_data["network"] == "vatsim":
+            vc = stations.Vatsim()
+            callsign = vc.get_callsign_from_cid(user_data["uid"])
+        elif user_data["network"] == "ivao":
+            pass
+        else:
+            raise HTTPException(status_code=400, detail=f"Network '{user_data['network']}' is not valid. Expected one of {', '.join(static_data.NETWORKS)}")
+
+        # If the callsign has been validated
+        if callsign:
+            update_msg = {
+                "relayed": True,
+                "relayed_at": dt.now(tz.utc).timestamp()
+            }
+            sf_msg = sql.StoreAndForwardUpdate.model_validate(update_msg)
+            db_select = select(sql.StoreAndForward).where(sql.StoreAndForward.msg_to == callsign and sql.StoreAndForward.relayed is False)
+            all_messages = session.exec(db_select).fetchall()
+            for m in all_messages:
+                session.add(sf_msg)
+                session.commit()
+                session.refresh(sf_msg)
+            return all_messages
+        raise HTTPException(status_code=403, detail=f"Unable to retrieve callsign for user - Network: {user_data['network']}, User ID: {user_data['uid']}")
 
 @app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
 async def post_msg_progress(
-    msg:str,
     session:sql.SessionDep,
     api_key:str = Depends(header_api_key)):
     """Post a message"""
@@ -167,7 +245,7 @@ async def post_msg_progress(
         # ------------------------------------------------------------------
         pass
 
-@app.get("/connect.html", tags=["legacy messaging"])
+@app.get("/connect.html", tags=["legacy messaging"], deprecated=True)
 async def hoppie_formated_url(
     api_key: Annotated[str, Query(alias="logon")],
     msg_from: Annotated[str, Query(alias="from")],

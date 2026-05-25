@@ -84,6 +84,7 @@ class StoreAndForwardBase(SQLModel):
     msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")]
     msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)]
     packet: str
+    network: str
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -93,15 +94,30 @@ class StoreAndForward(StoreAndForwardBase, table=True):
     """A table to hold all the messages"""
     id: int | None = Field(default=None, primary_key=True)
     created: float
-    retrived: bool
+    relayed: bool
+    relayed_at: float
 
 
 class StoreAndForwardCreate(StoreAndForwardBase):
     """A table to hold all the messages"""
     created: float = dt.now(tz.utc).timestamp()
-    retrived: bool = False
+    relayed: bool = False
+    relayed_at: float
 
 
 class StoreAndForwardPublic(StoreAndForwardBase):
     """A table to hold all the messages"""
     id: int
+
+
+class StoreAndForwardUpdate(StoreAndForwardBase):
+    """Update the Store and Forward"""
+    id: int | None = None
+    msg_from: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None = None
+    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None = None
+    msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)] | None = None
+    packet: str | None = None
+    relayed: bool | None = None
+    relayed_at: float | None = None
+    created: float | None = None
+    network: str | None = None

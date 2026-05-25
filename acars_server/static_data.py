@@ -56,11 +56,19 @@ METADATA_TAGS = [
         "description": "These are callback endpoints for third party OAuth2 services",
     },
     {
+        "name": "messaging",
+        "description": "All things non-legacy messaging"
+    },
+    {
         "name": "legacy messaging",
         "description": "Provides backwards compatability for clients configured to work with Hoppie's ACARS",
         "externalDocs": {
             "description": "Hoppie's ACARS Server API",
             "url": "https://www.hoppie.nl/acars/system/tech.html",
         },
+    },
+    {
+        "name": "testing",
+        "description": "Test bits, you need a DEV API code to do anything here"
     },
 ]
