@@ -143,39 +143,39 @@ async def test_update_lut(session: sql.SessionDep):
 @app.get("/test/poll/{callsign}", tags=["testing"])
 async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
     # If the callsign has been validated
-        update_msg = {
-            "relayed": True,
-            "relayed_at": dt.now(tz.utc).timestamp()
-        }
-        db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
-        all_messages = session.exec(db_select).fetchall()
-        if len(all_messages) > 0:
-            rtn = {"message_count": len(all_messages), "messages": []}
-            update_id_list = []
-            for m in all_messages:
-                update_id_list.append(m["id"])
-                data_block = {
-                    "id": m["id"],
-                    "msg_from": m["msg_from"],
-                    "msg_to": m["msg_to"],
-                    "msg_type": m["msg_type"],
-                    "packet": m["packet"],
-                    "network": m["network"]
-                }
-                rtn["messages"].append(data_block)
+    update_msg = {
+        "relayed": True,
+        "relayed_at": dt.now(tz.utc).timestamp()
+    }
+    db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
+    all_messages = session.exec(db_select).fetchall()
+    if len(all_messages) > 0:
+        rtn = {"message_count": len(all_messages), "messages": []}
+        update_id_list = []
+        for m in all_messages:
+            update_id_list.append(m["id"])
+            data_block = {
+                "id": m["id"],
+                "msg_from": m["msg_from"],
+                "msg_to": m["msg_to"],
+                "msg_type": m["msg_type"],
+                "packet": m["packet"],
+                "network": m["network"]
+            }
+            rtn["messages"].append(data_block)
 
-            if len(update_id_list) > 0:
-                stmt = (
-                    update(sql.StoreAndForward)
-                    .where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.id.in_(update_id_list)))
-                    .values(**update_msg)
-                    )
+        if len(update_id_list) > 0:
+            stmt = (
+                update(sql.StoreAndForward)
+                .where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.id.in_(update_id_list)))
+                .values(**update_msg)
+                )
 
-                session.exec(stmt)
-                session.commit()
+            session.exec(stmt)
+            session.commit()
 
-            return JSONResponse(rtn)
-        return JSONResponse(content={"msg_count": 0})
+        return JSONResponse(rtn)
+    return JSONResponse(content={"msg_count": 0})
 
 # ------------------------------------------------------------------
 # ACARS Functions
@@ -183,7 +183,7 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
 @app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
 async def poll_for_new_messages(
     session:sql.SessionDep,
-    api_key:str = Depends(header_api_key)):
+    api_key:str = Depends(header_api_key)) -> Response:
     """Poll for new messages"""
     # ------------------------------------------------------------------
     # API Auth
@@ -216,14 +216,35 @@ async def poll_for_new_messages(
                 "relayed": True,
                 "relayed_at": dt.now(tz.utc).timestamp()
             }
-            sf_msg = sql.StoreAndForwardUpdate.model_validate(update_msg)
-            db_select = select(sql.StoreAndForward).where(sql.StoreAndForward.msg_to == callsign and sql.StoreAndForward.relayed is False)
+            db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
             all_messages = session.exec(db_select).fetchall()
-            for m in all_messages:
-                session.add(sf_msg)
-                session.commit()
-                session.refresh(sf_msg)
-            return all_messages
+            if len(all_messages) > 0:
+                rtn = {"message_count": len(all_messages), "messages": []}
+                update_id_list = []
+                for m in all_messages:
+                    update_id_list.append(m["id"])
+                    data_block = {
+                        "id": m["id"],
+                        "msg_from": m["msg_from"],
+                        "msg_to": m["msg_to"],
+                        "msg_type": m["msg_type"],
+                        "packet": m["packet"],
+                        "network": m["network"]
+                    }
+                    rtn["messages"].append(data_block)
+
+                if len(update_id_list) > 0:
+                    stmt = (
+                        update(sql.StoreAndForward)
+                        .where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.id.in_(update_id_list)))
+                        .values(**update_msg)
+                        )
+
+                    session.exec(stmt)
+                    session.commit()
+
+                return JSONResponse(rtn)
+            return JSONResponse(content={"msg_count": 0})
         raise HTTPException(status_code=403, detail=f"Unable to retrieve callsign for user - Network: {user_data['network']}, User ID: {user_data['uid']}")
 
 @app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
