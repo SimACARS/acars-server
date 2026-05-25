@@ -1,3 +1,4 @@
+from typing import Any
 
 
 # Ref: https://www.oag.com/hubfs/Inbound-Services/OAG-ACARS-OOOI-Message-Types-and-Examples.pdf
@@ -25,3 +26,7 @@ LEGACY_MSG_TYPES = [
     "poll",
     "peek"
 ]
+
+COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
+    401: {"description": "Unauthorised"},
+}

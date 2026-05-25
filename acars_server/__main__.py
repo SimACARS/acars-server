@@ -14,6 +14,9 @@ from fastapi.security import APIKeyHeader
 from loguru import logger
 
 # Local Libraries
+from acars_server import __VERSION__, auth, message_types, sql, static_data
+
+@logger.catch
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create DB and Tables
@@ -57,7 +60,10 @@ async def auth_new_user(network: str):
             }
 
 @app.get("/callback/oauth/vatsim/{state}/{code}")
-async def auth_new_user_callback_vatsim(state:str, code:str):
+async def auth_new_user_callback_vatsim(
+    state:str,
+    code:str,
+    session: sql.SessionDep):
     """A callback point for VATSIM"""
     # Get the access token from VATSIM
     v_auth = auth.VatsimAuth()
@@ -69,16 +75,34 @@ async def auth_new_user_callback_vatsim(state:str, code:str):
     # Generate the API key using the cid
     v_cid = v_user["data"]["cid"]
     api_key = crypto.api_key_generator(v_cid, "vatsim")
-
-    return {
+    api_key_data = {
         "network": "vatsim",
         "cid": v_cid,
         "api_key": api_key
     }
 
+    # Add the API key to the DB
+    db_data = {
+        "id": None,
+        "api_key": api_key,
+        "network": "vatsim"
+    }
+    session.add(db_data)
+    session.commit()
+    session.refresh(api_key)
+
+    return api_key_data
+
 # ------------------------------------------------------------------
 # Test Functions
 # ------------------------------------------------------------------
+@app.post("/test/newapi")
+async def test_newapi(api_key: sql.ApiKey, session: sql.SessionDep):
+    # Add the API key to the DB
+    session.add(api_key)
+    session.commit()
+    session.refresh(api_key)
+
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
@@ -87,15 +111,26 @@ async def read_item(item_id: int, q: str | None = None):
     """Progress"""
     return {"item_id": item_id, "q": q}
 
-@app.post("/msg/post/oooi")
-async def post_msg_progress( msg: message_types.MsgOooi, api_key: str = Depends(header_api_key)):
+@app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
+async def post_msg_progress(
+    msg:message_types.MsgOooi,
+    session:sql.SessionDep,
+    api_key:str = Depends(header_api_key)):
     """Post a message"""
-    if api_key == "1234":
-        return {"msg_from": msg.sending_station, "msg_to": msg.receiving_station, "msg": msg.msg_smi}
+    # API Auth
+    api_user = session.get(sql.ApiKey, api_key)
+    if api_user:
+        return
     header_api_key.make_not_authenticated_error()
 
-@app.post("/msg/legacy")
-async def legacy_message(msg: message_types.LegacyMessage, api_key: str = Depends(header_api_key)):
+@app.post("/msg/legacy", status_code=201, responses=static_data.COMMON_ERRORS)
+async def legacy_message(
+    msg:message_types.LegacyMessage,
+    session:sql.SessionDep,
+    api_key:str = Depends(header_api_key)):
     """Legacy message"""
-    if api_key == "1234":
-        return msg.msg_from
+    # API Auth
+    api_user = session.get(sql.ApiKey, api_key)
+    if api_user:
+        return
+    header_api_key.make_not_authenticated_error()
