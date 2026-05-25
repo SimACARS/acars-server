@@ -149,7 +149,6 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
         }
         db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
         all_messages = session.exec(db_select).fetchall()
-        print(all_messages)
         if len(all_messages) > 0:
             rtn = {"message_count": len(all_messages), "messages": []}
             update_id_list = []
