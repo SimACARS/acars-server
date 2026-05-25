@@ -4,3 +4,4 @@ loguru==0.7.3
 pydantic==2.13.4
 python-dotenv==1.2.2
 Requests==2.34.2
+sqlmodel==0.0.38
