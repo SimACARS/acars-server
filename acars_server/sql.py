@@ -94,8 +94,8 @@ class StoreAndForward(StoreAndForwardBase, table=True):
     """A table to hold all the messages"""
     id: int | None = Field(default=None, primary_key=True)
     created: float
-    relayed: bool
-    relayed_at: float
+    relayed: bool | None = Field(default=None)
+    relayed_at: float | None = Field(default=None)
 
 
 class StoreAndForwardCreate(StoreAndForwardBase):
