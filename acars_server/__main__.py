@@ -13,11 +13,11 @@ from datetime import datetime as dt, timezone as tz
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import APIKeyHeader
 from loguru import logger
+from sqlmodel import select
 
 # Local Libraries
 from acars_server import __VERSION__, auth, message_types, sql, static_data
 
-@logger.catch
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create DB and Tables
@@ -114,6 +114,25 @@ async def test_newapi(session: sql.SessionDep):
     session.refresh(db_add)
     return db_add
 
+@app.get("/test/update_lut", responses=static_data.COMMON_ERRORS)
+async def test_update_lut(session: sql.SessionDep):
+    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == "12345")
+    api_user = session.exec(db_select).first()
+    if not api_user:
+        raise HTTPException(status_code=401, detail="Unauthorised")
+    else:
+        # Update last used time
+        api_lut = {
+            "last_used": dt.now(tz.utc).timestamp()
+        }
+        api_update = sql.ApiKeyUpdate.model_validate(api_lut)
+        api_data = api_update.model_dump(exclude_unset=True)
+        api_user.sqlmodel_update(api_data)
+        session.add(api_user)
+        session.commit()
+        session.refresh(api_user)
+        return "ok"
+
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
@@ -128,11 +147,18 @@ async def post_msg_progress(
     session:sql.SessionDep,
     api_key:str = Depends(header_api_key)):
     """Post a message"""
+    # ------------------------------------------------------------------
     # API Auth
-    api_user = session.get(sql.ApiKey, api_key)
-    if api_user:
-        return
-    header_api_key.make_not_authenticated_error()
+    # ------------------------------------------------------------------
+    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    api_user = session.exec(db_select).first()
+    if not api_user:
+        raise HTTPException(status_code=401, detail="Unauthorised")
+    else:
+        # ------------------------------------------------------------------
+        # Function
+        # ------------------------------------------------------------------
+        pass
 
 @app.post("/msg/legacy", status_code=201, responses=static_data.COMMON_ERRORS)
 async def legacy_message(
@@ -140,8 +166,15 @@ async def legacy_message(
     session:sql.SessionDep,
     api_key:str = Depends(header_api_key)):
     """Legacy message"""
+    # ------------------------------------------------------------------
     # API Auth
-    api_user = session.get(sql.ApiKey, api_key)
-    if api_user:
-        return
-    header_api_key.make_not_authenticated_error()
+    # ------------------------------------------------------------------
+    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    api_user = session.exec(db_select).first()
+    if not api_user:
+        raise HTTPException(status_code=401, detail="Unauthorised")
+    else:
+        # ------------------------------------------------------------------
+        # Function
+        # ------------------------------------------------------------------
+        pass
