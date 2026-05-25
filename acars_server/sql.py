@@ -31,8 +31,30 @@ def get_session():
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-class ApiKey(SQLModel, table=True):
+class ApiKeyBase(SQLModel):
     """A table to hold all API keys"""
-    id: int | None = Field(default=None, primary_key=True)
     api_key: str = Field(index=True)
     network: str
+
+class ApiKey(ApiKeyBase, table=True):
+    """A table to hold all API keys"""
+    id: int | None = Field(default=None, primary_key=True)
+    created: float
+    last_used: float
+
+
+class ApiKeyCreate(ApiKeyBase):
+    """A table to hold all API keys"""
+    created: float
+    last_used: float
+
+
+class ApiKeyPublic(ApiKeyBase):
+    """A table to hold all API keys"""
+    api_key: str
+    network: str
+
+
+class ApiKeyUpdate(ApiKeyBase):
+    """A table to hold all API keys"""
+    last_used: float

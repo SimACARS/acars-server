@@ -7,6 +7,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 from contextlib import asynccontextmanager
+from datetime import datetime as dt, timezone as tz
 
 # Third Party Libraries
 from fastapi import Depends, FastAPI
@@ -59,7 +60,7 @@ async def auth_new_user(network: str):
             "callback": f"http://127.0.0.1:8000/callback/oauth/vatsim/{v_url[1]}/"
             }
 
-@app.get("/callback/oauth/vatsim/{state}/{code}")
+@app.get("/callback/oauth/vatsim/{state}/{code}", response_model=sql.ApiKeyPublic)
 async def auth_new_user_callback_vatsim(
     state:str,
     code:str,
@@ -75,33 +76,39 @@ async def auth_new_user_callback_vatsim(
     # Generate the API key using the cid
     v_cid = v_user["data"]["cid"]
     api_key = crypto.api_key_generator(v_cid, "vatsim")
-    api_key_data = {
-        "network": "vatsim",
-        "cid": v_cid,
-        "api_key": api_key
-    }
 
     # Add the API key to the DB
+    dtnow = dt.now(tz.utc).timestamp()
     db_data = {
-        "id": None,
         "api_key": api_key,
-        "network": "vatsim"
+        "network": "vatsim",
+        "created": dtnow,
+        "last_used": dtnow
     }
-    session.add(db_data)
+    db_add = sql.ApiKey.model_validate(db_data)
+    session.add(db_add)
     session.commit()
-    session.refresh(api_key)
-
-    return api_key_data
+    session.refresh(db_add)
+    return db_add
 
 # ------------------------------------------------------------------
 # Test Functions
 # ------------------------------------------------------------------
-@app.post("/test/newapi")
-async def test_newapi(api_key: sql.ApiKey, session: sql.SessionDep):
+@app.post("/test/newapi", response_model=sql.ApiKeyPublic)
+async def test_newapi(session: sql.SessionDep):
     # Add the API key to the DB
-    session.add(api_key)
+    dtnow = dt.now(tz.utc).timestamp()
+    db_data = {
+        "api_key": "12345",
+        "network": "vatsim",
+        "created": dtnow,
+        "last_used": dtnow
+    }
+    db_add = sql.ApiKey.model_validate(db_data)
+    session.add(db_add)
     session.commit()
-    session.refresh(api_key)
+    session.refresh(db_add)
+    return db_add
 
 # ------------------------------------------------------------------
 # ACARS Functions
