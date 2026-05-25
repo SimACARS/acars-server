@@ -123,7 +123,7 @@ class VatsimAuth:
 
         return (response.url, state)
 
-    def get_access_token(self, authorisation_code:str) -> Dict[str,str]:
+    def get_access_token(self, authorisation_code:str) -> Tuple[int, Dict[str,str]]:
         """Gets an access token"""
         payload = {
             "grant_type": "authorization_code",
@@ -138,9 +138,9 @@ class VatsimAuth:
         }
         response = requests.post(self.OAUTH2_TOKEN, headers=headers, data=payload)
 
-        return response.json()
+        return (response.status_code, response.json())
 
-    def get_user_details(self, bearer_token:str) -> Dict[str, Dict[str,str]]:
+    def get_user_details(self, bearer_token:str) -> Tuple[int, Dict[str, Dict[str,str]]]:
         """Gets the user details"""
         headers = {
             "accept": "application/json",
@@ -148,4 +148,7 @@ class VatsimAuth:
         }
         response = requests.get(self.AUTH_USER_DETAILS, headers=headers)
 
-        return response.json()
+        return (response.status_code, response.json())
+
+v = VatsimAuth()
+v.get_access_token("def5020017ff888ebcf7c4627c75aa30ae9ce977fa53f075e98a919bce4b307b8462932e2c49c7db33a82e1c20417747c2a7fe81072a6740ca5417d4b8d8a8a077c62327d426dcd0d8101e5b2695ff2559c8151d5f1ee5e52023097a91e0e0cf744b25c0a34b4ea94ab0f38d4bf6cb0b84776be0862915acf315e1f5a8da3a9b65add967304689167f4d3843f1870a1044f012a2194e20324387deec23c7cba04afd029a1252fced9508dd31a7ea3ace974cb9a744cf4bb23382644b57affa21fdbe9a1af702f6972faebc602f483711185242a034ce0f599eefdc9829109a44d0b6e6c01200e025bc07d176274a078c5741b6a19796eb79b8c19be8b9387948d02c3509220d132f67b99381e0b6ac16f7807f8af3e3fc427fafe0a3be93ed6991221b520ace06f632ffd7f81d5f37dd101e6f2da370e14e32a663070c2efc7d2b49e65512f6bac83590e82a496c576464ae7f3c4dcfffba805693235305c4ee68b02e7a7511f0f1763d4f005a")

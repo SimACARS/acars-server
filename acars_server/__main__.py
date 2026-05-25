@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
 
 # Third Party Libraries
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import APIKeyHeader
 from loguru import logger
 
@@ -69,12 +69,16 @@ async def auth_new_user_callback_vatsim(
     # Get the access token from VATSIM
     v_auth = auth.VatsimAuth()
     v_token = v_auth.get_access_token(code)
+    if v_token[0] != 200:
+        raise HTTPException(status_code=v_token[0], detail=v_token[1]["hint"])
 
     # Get the user details using the access token
-    v_user = v_auth.get_user_details(v_token["access_token"])
+    v_user = v_auth.get_user_details(v_token[1]["access_token"])
+    if v_user[0] != 200:
+        raise HTTPException(status_code=v_user[0], detail=v_user[1])
 
     # Generate the API key using the cid
-    v_cid = v_user["data"]["cid"]
+    v_cid = v_user[1]["data"]["cid"]
     api_key = crypto.api_key_generator(v_cid, "vatsim")
 
     # Add the API key to the DB
