@@ -38,5 +38,6 @@ NETWORKS = [
 ]
 
 COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
-    401: {"description": "Unauthorised"},
+    401: {"description": "Unauthorised API Key Provided"},
+    403: {"description": "Forbidden by Third Party Provider"}
 }
