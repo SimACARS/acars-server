@@ -122,9 +122,17 @@ class Vatsim:
         """Get ATIS"""
         self._data_collector()
         df = self.dataframes["atis"]
-        df = df.loc[df["callsign"].str.match(f"{icao}_ATIS")]
-        if not df.empty:
+        dfb = df.loc[df["callsign"].str.match(f"{icao}_ATIS")]
+        if not dfb.empty:
             return str(df["text_atis"].iloc[0])
+
+        # If the client has requested an Arrival or Departure ATIS but 
+        # none is found, check to see if a combined ATIS is available
+        remove_a_d =  icao.split("_")
+        if len(remove_a_d) == 2:
+            dfc = df.loc[df["callsign"].str.match(f"{remove_a_d[0]}_ATIS")]
+            if not dfc.empty:
+                return str(df["text_atis"].iloc[0])
         return "NO ATIS AVAILABLE"
 
     @staticmethod

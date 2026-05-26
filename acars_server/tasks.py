@@ -37,7 +37,7 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
 
     if (msg["msg_type"] == "inforeq" and
         str(msg["packet"]).startswith("ATIS") and
-        re.match(r"[A-Z]{4}", msg["msg_to"])):
+        re.match(r"^[A-Z]{4}(_[AD])?$", msg["msg_to"])):
 
         if msg["network"] == "vatsim":
             # Attempt to pull the ATIS
