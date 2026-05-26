@@ -27,6 +27,12 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
     # INFOREQ ATIS
     if msg["msg_type"] == "inforeq":
         send_msg = msg_type_inforeq(msg)
+    elif msg["msg_type"] == "ads-c":
+        if not msg_type_ads_c(msg):
+            return
+    elif msg["msg_type"] == "cpdlc":
+        if not msg_type_cpdlc(msg):
+            return
     
     # Validate the message content
     if send_msg["packet"] is None:
@@ -38,6 +44,18 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
     session.add(sf_msg)
     session.commit()
     session.refresh(sf_msg)
+
+def msg_type_ads_c(msg:sql.StoreAndForward) -> bool:
+    """Validates ADS-C messages"""
+    if re.match(r"^REPORT\s[A-Z0-9]{4,10}\s\d{6}\s[\d\.\-]+\s[\d\.\-]+\s\d{1,6}$", msg["packet"]):
+        return True
+    return False
+
+def msg_type_cpdlc(msg:sql.StoreAndForward) -> bool:
+    """Validates CPDLC messages"""
+    if re.match(r"^\/data2\/\d+\/\d*\/[A-Z]{0,2}\/.*$", msg["packet"]):
+        return True
+    return False
 
 def msg_type_inforeq(msg:sql.StoreAndForward) -> Dict[str, Any]:
     """Handle INFOREQ messages"""
