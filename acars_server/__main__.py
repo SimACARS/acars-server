@@ -14,7 +14,7 @@ from time import sleep
 from typing import Annotated, Any
 
 # Third Party Libraries
-from fastapi import Depends, FastAPI, HTTPException, Query, Response
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from loguru import logger
@@ -206,6 +206,20 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
         return JSONResponse(rtn)
     return JSONResponse(content={"msg_count": 0})
 
+@app.get("/test/atis/{network}/{station}", status_code=204, tags=["testing"])
+async def test_inforeq(network:str, station:str, background_tasks: BackgroundTasks, session: sql.SessionDep):
+    """INFOREQ Test"""
+    t_msg = {
+        "created": dt.now(tz.utc).timestamp(),
+        "msg_type": "inforeq",
+        "network": network,
+        "packet": "ATIS",
+        "msg_to": station,
+        "msg_from": "TEST1"
+    }
+    sf_msg = sql.StoreAndForward.model_validate(t_msg)
+    background_tasks.add_task(tasks.message_parse, sf_msg, session)
+
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
@@ -301,6 +315,7 @@ async def hoppie_formated_url(
     msg_to: Annotated[str, Query(alias="to")],
     msg_type: Annotated[str, Query(alias="type")],
     packet: Annotated[str, Query(alias="packet")],
+    background_tasks: BackgroundTasks,
     session:sql.SessionDep,
     ):
     """
@@ -314,7 +329,7 @@ async def hoppie_formated_url(
         "packet": packet
     }
     sf_msg = sql.StoreAndForwardCreate.model_validate(msg)
-    await legacy_messaging(msg=sf_msg, api_key=api_key, session=session)
+    await legacy_messaging(msg=sf_msg, api_key=api_key, background_tasks=background_tasks, session=session)
 
 @app.post(
         "/msg/legacy/tx",
@@ -326,6 +341,7 @@ async def hoppie_formated_url(
 async def legacy_messaging(
     msg:sql.StoreAndForwardCreate,
     session:sql.SessionDep,
+    background_tasks: BackgroundTasks,
     api_key:str = Depends(header_api_key)):
     """Legacy message"""
     # ------------------------------------------------------------------
@@ -356,8 +372,6 @@ async def legacy_messaging(
 
         # If the callsign has been validated
         if check:
-            session.add(sf_msg)
-            session.commit()
-            session.refresh(sf_msg)
+            background_tasks.add_task(tasks.message_parse, sf_msg, session)
             return sf_msg
         raise HTTPException(status_code=403, detail=f"Callsign validation failed - Network: {user_data['network']}, User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")
