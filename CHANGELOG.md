@@ -1,5 +1,14 @@
 # Changelog
 
+# [1.3.0](https://github.com/SimACARS/acars-server/compare/v1.2.2...v1.3.0) (2026-05-26)
+
+
+### Features
+
+* added common functions ([3af47e0](https://github.com/SimACARS/acars-server/commit/3af47e0ef269012b87636065b22fe44fd7a177c3))
+* added METAR, TAF and SHORTTAF ([7f3c6ef](https://github.com/SimACARS/acars-server/commit/7f3c6ef1dd3ee16221a2738152d1cefe496bc17b))
+* inforeq atis for vatsim ([040797f](https://github.com/SimACARS/acars-server/commit/040797f95e33e0d8ef139eaa0830d910a921bb1d))
+
 ## [1.2.2](https://github.com/SimACARS/acars-server/compare/v1.2.1...v1.2.2) (2026-05-26)
 
 
