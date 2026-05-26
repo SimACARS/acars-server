@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/SimACARS/acars-server/compare/v1.2.0...v1.2.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* missing inforeq message type ([d568a00](https://github.com/SimACARS/acars-server/commit/d568a0089264332505e10e22584a99c058ba61c4))
+
 # [1.2.0](https://github.com/SimACARS/acars-server/compare/v1.1.0...v1.2.0) (2026-05-25)
 
 

@@ -24,7 +24,8 @@ LEGACY_MSG_TYPES = [
     "position",
     "datareq",
     "poll",
-    "peek"
+    "peek",
+    "inforeq"
 ]
 
 NETWORKS = [
