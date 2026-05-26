@@ -6,8 +6,11 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
+from pathlib import Path
+from time import sleep
 from typing import Annotated, Any
 
 # Third Party Libraries
@@ -18,7 +21,10 @@ from loguru import logger
 from sqlmodel import and_, select, update
 
 # Local Libraries
-from acars_server import __VERSION__, auth, sql, static_data, stations
+from acars_server import __VERSION__, auth, sql, static_data, stations, tasks
+
+PWD = Path(os.path.dirname(__file__))
+MASTER_KEY = os.path.join(PWD.parent, "master.key")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +49,11 @@ app = FastAPI(
     openapi_tags=static_data.METADATA_TAGS
 )
 header_api_key = APIKeyHeader(name="x-key")
+
+# Check that a master key exists, if not then create one
+if not Path(MASTER_KEY).exists():
+    auth.generate_key()
+    sleep(1)
 crypto = auth.Auth()
 
 # ------------------------------------------------------------------
