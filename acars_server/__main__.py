@@ -206,14 +206,14 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
         return JSONResponse(rtn)
     return JSONResponse(content={"msg_count": 0})
 
-@app.get("/test/atis/{network}/{station}", status_code=204, tags=["testing"])
-async def test_inforeq(network:str, station:str, background_tasks: BackgroundTasks, session: sql.SessionDep):
+@app.get("/test/{ir_type}/{network}/{station}", status_code=204, tags=["testing"])
+async def test_inforeq(ir_type:str, network:str, station:str, background_tasks: BackgroundTasks, session: sql.SessionDep):
     """INFOREQ Test"""
     t_msg = {
         "created": dt.now(tz.utc).timestamp(),
         "msg_type": "inforeq",
         "network": network,
-        "packet": "ATIS",
+        "packet": ir_type.upper(),
         "msg_to": station,
         "msg_from": "TEST1"
     }
