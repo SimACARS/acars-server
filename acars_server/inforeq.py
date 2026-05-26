@@ -11,6 +11,7 @@ from time import sleep
 
 # Third Party Libraries
 import pandas as pd # type: ignore
+import requests
 from loguru import logger
 
 # Local Libraries
@@ -23,6 +24,30 @@ class Noaa:
 
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def metar(icao:str) -> str:
+        """Gets a METAR from NOAA"""
+        rsp = requests.get(f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT")
+        if rsp.status_code == 200:
+            return rsp.text
+        return f"NO METAR AVAILABLE FOR {icao.upper()}"
+
+    @staticmethod
+    def taf(icao:str) -> str:
+        """Gets a TAF from NOAA"""
+        rsp = requests.get(f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT")
+        if rsp.status_code == 200:
+            return rsp.text
+        return f"NO TAF AVAILABLE FOR {icao.upper()}"
+    
+    @staticmethod
+    def shorttaf(icao:str) -> str:
+        """Gets a SHORT TAF from NOAA"""
+        rsp = requests.get(f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT")
+        if rsp.status_code == 200:
+            return rsp.text
+        return f"NO SHORT TAF AVAILABLE FOR {icao.upper()}"
 
 
 class Vatsim:
@@ -101,3 +126,11 @@ class Vatsim:
         if not df.empty:
             return str(df["text_atis"].iloc[0])
         return "NO ATIS AVAILABLE"
+
+    @staticmethod
+    def get_metar(icao:str) -> str:
+        """Get METAR from VATSIM"""
+        rsp = requests.get(f"https://metar.vatsim.net/{icao.upper()}")
+        if rsp.status_code == 200:
+            return rsp.text
+        return f"NO METAR AVAILABLE FOR {icao.upper()}"
