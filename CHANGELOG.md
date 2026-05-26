@@ -1,5 +1,23 @@
 # Changelog
 
+# [1.4.0](https://github.com/SimACARS/acars-server/compare/v1.3.1...v1.4.0) (2026-05-26)
+
+
+### Bug Fixes
+
+* allow A and D ATIS ([2aeb382](https://github.com/SimACARS/acars-server/commit/2aeb382896cf6ade7be5d2b958317deecb85a77b))
+* missing ads-c legacy message type ([a32929a](https://github.com/SimACARS/acars-server/commit/a32929a411f7c49ff7afcd428a5320bde2170088))
+
+
+### Features
+
+* basic validation of ads-c and cpdlc message types ([d78e304](https://github.com/SimACARS/acars-server/commit/d78e30493a77d125e8cd4a3cf8c90f6603894298))
+
+
+### Performance Improvements
+
+* removed some code duplication ([0fc5162](https://github.com/SimACARS/acars-server/commit/0fc516240e3d81cb9d49c2f18edf301444c3c0c4))
+
 ## [1.3.1](https://github.com/SimACARS/acars-server/compare/v1.3.0...v1.3.1) (2026-05-26)
 
 
