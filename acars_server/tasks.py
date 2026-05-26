@@ -26,14 +26,29 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
 
     # INFOREQ ATIS
     if msg["msg_type"] == "inforeq":
-        send_msg = {
-            "created": dt.now(tz.utc).timestamp(),
-            "msg_type": "telex",
-            "network": msg["network"],
-            "packet": None,
-            "msg_to": msg["msg_from"],
-            "msg_from": "SYSTEM"
-        }
+        send_msg = msg_type_inforeq(msg)
+    
+    # Validate the message content
+    if send_msg["packet"] is None:
+        sf_msg = sql.StoreAndForward.model_validate(msg)
+    else:
+        sf_msg = sql.StoreAndForward.model_validate(send_msg)
+
+    # Commit the message to the store
+    session.add(sf_msg)
+    session.commit()
+    session.refresh(sf_msg)
+
+def msg_type_inforeq(msg:sql.StoreAndForward) -> Dict[str, Any]:
+    """Handle INFOREQ messages"""
+    send_msg = {
+        "created": dt.now(tz.utc).timestamp(),
+        "msg_type": "telex",
+        "network": msg["network"],
+        "packet": None,
+        "msg_to": msg["msg_from"],
+        "msg_from": "SYSTEM"
+    }
 
     if (msg["msg_type"] == "inforeq" and
         str(msg["packet"]).startswith("ATIS") and
@@ -71,13 +86,6 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
 
         send_msg["packet"] = inforeq.Noaa.shorttaf(msg["msg_to"])
 
-    # Validate the message content
-    if send_msg["packet"] is None:
-        sf_msg = sql.StoreAndForward.model_validate(msg)
-    else:
-        sf_msg = sql.StoreAndForward.model_validate(send_msg)
+    return send_msg
 
-    # Commit the message to the store
-    session.add(sf_msg)
-    session.commit()
-    session.refresh(sf_msg)
+    
