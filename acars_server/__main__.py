@@ -329,16 +329,16 @@ async def hoppie_formated_url(
         "packet": packet
     }
     sf_msg = sql.StoreAndForwardCreate.model_validate(msg)
-    await legacy_messaging(msg=sf_msg, api_key=api_key, background_tasks=background_tasks, session=session)
+    await transmit_a_message(msg=sf_msg, api_key=api_key, background_tasks=background_tasks, session=session)
 
 @app.post(
-        "/msg/legacy/tx",
+        "/msg/tx",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
         response_model=sql.StoreAndForwardPublic,
-        tags=["legacy messaging"]
+        tags=["messaging"]
         )
-async def legacy_messaging(
+async def transmit_a_message(
     msg:sql.StoreAndForwardCreate,
     session:sql.SessionDep,
     background_tasks: BackgroundTasks,
