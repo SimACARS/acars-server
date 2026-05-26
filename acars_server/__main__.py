@@ -28,11 +28,21 @@ MASTER_KEY = os.path.join(PWD.parent, "master.key")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # ------------------------------------------------------------------
+    # Pre App Start
+    # ------------------------------------------------------------------
+
     # Create DB and Tables
     sql.create_db_and_tables()
-    # Run the app
+
+    # ------------------------------------------------------------------
+    # App Start
+    # ------------------------------------------------------------------
     yield
-    # On shutdown cleanup
+
+    # ------------------------------------------------------------------
+    # Post App Finish
+    # ------------------------------------------------------------------
 
 app = FastAPI(
     lifespan=lifespan,
