@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/SimACARS/acars-server/compare/v1.3.0...v1.3.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* this isn't legacy, this is new ([2745534](https://github.com/SimACARS/acars-server/commit/27455347ed73376f872de70e6e0da40c39931931))
+
 # [1.3.0](https://github.com/SimACARS/acars-server/compare/v1.2.2...v1.3.0) (2026-05-26)
 
 
