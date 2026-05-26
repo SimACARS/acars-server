@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2](https://github.com/SimACARS/acars-server/compare/v1.2.1...v1.2.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* failing on no master key being found ([9462a91](https://github.com/SimACARS/acars-server/commit/9462a91c3e8ca4953dca7d2b1ac112c8e11ddd9a))
+* test code left in error ([e6c48b9](https://github.com/SimACARS/acars-server/commit/e6c48b9e8a783a8c156e41bb041f3a9c8a8766f1))
+
 ## [1.2.1](https://github.com/SimACARS/acars-server/compare/v1.2.0...v1.2.1) (2026-05-26)
 
 
