@@ -25,7 +25,8 @@ LEGACY_MSG_TYPES = [
     "datareq",
     "poll",
     "peek",
-    "inforeq"
+    "inforeq",
+    "ads-c"
 ]
 
 NETWORKS = [
