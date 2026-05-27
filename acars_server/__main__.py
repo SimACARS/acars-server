@@ -27,6 +27,7 @@ MASTER_KEY = os.path.join(PWD.parent, "master.key")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """async Context Manager"""
     # ------------------------------------------------------------------
     # Pre App Start
     # ------------------------------------------------------------------
@@ -48,9 +49,11 @@ app = FastAPI(
     title="SimACARS",
     description=(
         "This is a simulated ACARS network for flight simulation only.<br /><br />"
-        "If you are flying on a network, your API key is an encrypted string of SECRET:NETWORK:USER_ID. "
-        "Your network user ID is used to verify that the callsign you have logged on with.<br /><br />"
-        "Your user ID is verified using your network's OAuth2 protocol. We ONLY store your encrypted user ID and no other personal data."),
+        "If you are flying on a network, your API key is an encrypted string of "
+        "SECRET:NETWORK:USER_ID. Your network user ID is used to verify that the "
+        "callsign you have logged on with.<br /><br />Your user ID is verified "
+        "using your network's OAuth2 protocol. We ONLY store your encrypted user "
+        "ID and no other personal data."),
     version=__VERSION__,
     contact={
         "name": "@chssn",
@@ -89,8 +92,13 @@ async def auth_new_user(network: str):
             v_auth = auth.VatsimAuth()
             v_url = v_auth.authorise()
             return RedirectResponse(v_url[0])
-        raise HTTPException(status_code=501, detail=f"{network} doesn't appear to exist although it really should...")
-    raise HTTPException(status_code=400, detail=f"{network} is not a recognised network. Needs to be one of {', '.join(static_data.NETWORKS)}")
+        raise HTTPException(
+            status_code=501,
+            detail=f"{network} doesn't appear to exist although it really should...")
+    raise HTTPException(
+        status_code=400,
+        detail=(f"{network} is not a recognised network. Needs to be one of "
+                f"{', '.join(static_data.NETWORKS)}"))
 
 @app.get(
         "/callback/oauth/vatsim/{state}/{code}",
@@ -99,7 +107,8 @@ async def auth_new_user(network: str):
 async def auth_new_user_callback_vatsim(
     state:str,
     code:str,
-    session: sql.SessionDep):
+    session: sql.SessionDep
+    ):
     """A callback point for VATSIM"""
     # Get the access token from VATSIM
     v_auth = auth.VatsimAuth()
@@ -135,12 +144,14 @@ async def auth_new_user_callback_vatsim(
 # ------------------------------------------------------------------
 @app.get("/test/poll/{callsign}", tags=["testing"])
 async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
+    """Test POLL"""
     # If the callsign has been validated
     update_msg = {
         "relayed": True,
         "relayed_at": dt.now(tz.utc).timestamp()
     }
-    db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
+    db_select = select(sql.StoreAndForward).where(and_(
+        sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
     all_messages = session.exec(db_select).fetchall()
     if len(all_messages) > 0:
         rtn = {"message_count": len(all_messages), "messages": []}
@@ -160,7 +171,9 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
         if len(update_id_list) > 0:
             stmt = (
                 update(sql.StoreAndForward)
-                .where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.id.in_(update_id_list)))
+                .where(and_(
+                    sql.StoreAndForward.msg_to == callsign,
+                    sql.StoreAndForward.id.in_(update_id_list)))
                 .values(**update_msg)
                 )
 
@@ -171,7 +184,13 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
     return JSONResponse(content={"msg_count": 0})
 
 @app.get("/test/{ir_type}/{network}/{station}", status_code=204, tags=["testing"])
-async def test_inforeq(ir_type:str, network:str, station:str, background_tasks: BackgroundTasks, session: sql.SessionDep):
+async def test_inforeq(
+    ir_type:str,
+    network:str,
+    station:str,
+    background_tasks: BackgroundTasks,
+    session: sql.SessionDep
+    ):
     """INFOREQ Test"""
     t_msg = {
         "created": dt.now(tz.utc).timestamp(),
@@ -190,7 +209,8 @@ async def test_inforeq(ir_type:str, network:str, station:str, background_tasks: 
 @app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
 async def poll_for_new_messages(
     session:sql.SessionDep,
-    api_key:str = Depends(header_api_key)) -> Response:
+    api_key:str = Depends(header_api_key)
+    ) -> Response:
     """Poll for new messages"""
     # ------------------------------------------------------------------
     # API Auth
@@ -215,7 +235,10 @@ async def poll_for_new_messages(
         elif user_data["network"] == "ivao":
             pass
         else:
-            raise HTTPException(status_code=400, detail=f"Network '{user_data['network']}' is not valid. Expected one of {', '.join(static_data.NETWORKS)}")
+            raise HTTPException(
+                status_code=400,
+                detail=(f"Network '{user_data['network']}' is not valid. "
+                        f"Expected one of {', '.join(static_data.NETWORKS)}"))
 
         # If the callsign has been validated
         if callsign:
@@ -223,7 +246,9 @@ async def poll_for_new_messages(
                 "relayed": True,
                 "relayed_at": dt.now(tz.utc).timestamp()
             }
-            db_select = select(sql.StoreAndForward).where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
+            db_select = select(sql.StoreAndForward).where(and_(
+                sql.StoreAndForward.msg_to == callsign,
+                sql.StoreAndForward.relayed.is_(None)))
             all_messages = session.exec(db_select).fetchall()
             if len(all_messages) > 0:
                 rtn = {"message_count": len(all_messages), "messages": []}
@@ -243,7 +268,9 @@ async def poll_for_new_messages(
                 if len(update_id_list) > 0:
                     stmt = (
                         update(sql.StoreAndForward)
-                        .where(and_(sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.id.in_(update_id_list)))
+                        .where(and_(
+                            sql.StoreAndForward.msg_to == callsign,
+                            sql.StoreAndForward.id.in_(update_id_list)))
                         .values(**update_msg)
                         )
 
@@ -252,12 +279,16 @@ async def poll_for_new_messages(
 
                 return JSONResponse(rtn)
             return JSONResponse(content={"msg_count": 0})
-        raise HTTPException(status_code=403, detail=f"Unable to retrieve callsign for user - Network: {user_data['network']}, User ID: {user_data['uid']}")
+        raise HTTPException(
+            status_code=403,
+            detail=("Unable to retrieve callsign for user - Network: "
+                    f"{user_data['network']}, User ID: {user_data['uid']}"))
 
 @app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
 async def post_msg_progress(
     session:sql.SessionDep,
-    api_key:str = Depends(header_api_key)):
+    api_key:str = Depends(header_api_key)
+    ):
     """Post a message"""
     # ------------------------------------------------------------------
     # API Auth
@@ -332,10 +363,16 @@ async def transmit_a_message(
         elif user_data["network"] == "ivao":
             pass
         else:
-            raise HTTPException(status_code=400, detail=f"Network '{user_data['network']}' is not valid. Expected one of {', '.join(static_data.NETWORKS)}")
+            raise HTTPException(
+                status_code=400,
+                detail=(f"Network '{user_data['network']}' is not valid. "
+                        f"Expected one of {', '.join(static_data.NETWORKS)}"))
 
         # If the callsign has been validated
         if check:
             background_tasks.add_task(tasks.message_parse, sf_msg, session)
             return sf_msg
-        raise HTTPException(status_code=403, detail=f"Callsign validation failed - Network: {user_data['network']}, User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")
+        raise HTTPException(
+            status_code=403,
+            detail=(f"Callsign validation failed - Network: {user_data['network']}, "
+                    f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}"))
