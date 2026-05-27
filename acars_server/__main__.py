@@ -215,8 +215,8 @@ async def poll_for_new_messages(
     # ------------------------------------------------------------------
     # API Auth
     # ------------------------------------------------------------------
-    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
-    api_user = session.exec(db_select).first()
+    db_auth = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    api_user = session.exec(db_auth).first()
     if not api_user:
         raise HTTPException(status_code=401, detail="Unauthorised")
     # ------------------------------------------------------------------
@@ -249,9 +249,10 @@ async def poll_for_new_messages(
             sql.StoreAndForward.msg_to == callsign,
             sql.StoreAndForward.relayed is None))
         all_messages = session.exec(db_select).fetchall()
+
         if len(all_messages) > 0:
             rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
-            update_id_list = []
+            update_id_list:List[str] = []
             for m in all_messages:
                 update_id_list.append(m["id"])
                 data_block = {
