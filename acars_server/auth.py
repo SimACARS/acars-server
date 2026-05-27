@@ -73,7 +73,9 @@ class Auth:
             pt_api_key = f"{self.random_generator()}:{network}:{uid}"
             ct_api_key = self.encrypt(pt_api_key)
             return base64.b64encode(ct_api_key).decode()
-        raise ValueError(f"'{network}' is an invalid network. Expected one of: [{', '.join(static_data.NETWORKS)}]")
+        raise ValueError(
+            (f"'{network}' is an invalid network. Expected one of: "
+            f"[{', '.join(static_data.NETWORKS)}]"))
 
     def api_key_reader(self, api_key:str) -> Dict[str,str]:
         """Read an API key"""
