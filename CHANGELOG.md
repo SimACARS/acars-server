@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.4.1](https://github.com/SimACARS/acars-server/compare/v1.4.0...v1.4.1) (2026-05-27)
+
+
+### Bug Fixes
+
+* ApiKey incorrectly assigned to StoreAndForward ([79ce3cb](https://github.com/SimACARS/acars-server/commit/79ce3cba694eb9bd678d0dfe618acdfb7c2d44d6))
+
+
+### Performance Improvements
+
+* added more timeouts ([e068552](https://github.com/SimACARS/acars-server/commit/e068552d20b062c0b7d4ea1fe8642af2239ae613))
+* added requests timeout ([201d692](https://github.com/SimACARS/acars-server/commit/201d692ea1f5d84f821dfdb437fea9fe0760fc6b))
+* removed redundant test functions ([cc712e8](https://github.com/SimACARS/acars-server/commit/cc712e87931506ffd7357cc634a151b780929446))
+* removed unused module ([841c229](https://github.com/SimACARS/acars-server/commit/841c229d7bda8988c6105161b5051924d7902219))
+* removed unused typing imports ([8a74b6c](https://github.com/SimACARS/acars-server/commit/8a74b6c63484461587f72cfbdacaee1531976a10))
+
 # [1.4.0](https://github.com/SimACARS/acars-server/compare/v1.3.1...v1.4.0) (2026-05-26)
 
 
