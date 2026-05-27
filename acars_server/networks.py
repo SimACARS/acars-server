@@ -13,6 +13,7 @@ from typing import Union
 import requests
 
 # Local Libraries
+from acars_server import common
 
 
 class Vatsim:
@@ -44,7 +45,11 @@ class Vatsim:
         response = requests.get(
             self.SLURPER_URL, params={"cid": cid},
             timeout=30)
-        r_data = response.text.split(",")
-        if len(r_data) > 0:
-            return r_data[1]
+        if response.status_code == 200:
+            r_data = response.text.split(",")
+            common.logger.debug(f"{response.text}")
+            if len(r_data) > 1:
+                return r_data[1]
+        else:
+            common.logger.warning(f"{response.url} returned {response.status_code}")
         return None

@@ -17,10 +17,9 @@ from typing import Dict, Tuple
 import requests
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
-from loguru import logger
 
 # Local Libraries
-from acars_server import static_data
+from acars_server import common, static_data
 
 
 load_dotenv()
@@ -72,6 +71,7 @@ class Auth:
         if network in static_data.NETWORKS:
             pt_api_key = f"{self.random_generator()}:{network}:{uid}"
             ct_api_key = self.encrypt(pt_api_key)
+            common.logger.success("API key created")
             return base64.b64encode(ct_api_key).decode()
         raise ValueError(
             (f"'{network}' is an invalid network. Expected one of: "
@@ -113,7 +113,6 @@ class VatsimAuth:
             "prompt": "login"
         }
         response = requests.head(self.OAUTH2_AUTH, params=payload, timeout=10)
-        logger.debug(response.url)
 
         return (response.url, state)
 
