@@ -22,7 +22,7 @@ from sqlmodel import and_, select, update
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
-from acars_server import __VERSION__, auth, common, sql, static_data, stations, tasks
+from acars_server import __VERSION__, auth, common, sql, static_data, networks, tasks
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
