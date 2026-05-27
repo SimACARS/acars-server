@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Any
+from typing import Annotated, Any, Dict, List, Union
 
 # Third Party Libraries
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
@@ -154,7 +154,7 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
         sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
     all_messages = session.exec(db_select).fetchall()
     if len(all_messages) > 0:
-        rtn = {"message_count": len(all_messages), "messages": []}
+        rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
         update_id_list = []
         for m in all_messages:
             update_id_list.append(m["id"])
@@ -251,7 +251,7 @@ async def poll_for_new_messages(
                 sql.StoreAndForward.relayed.is_(None)))
             all_messages = session.exec(db_select).fetchall()
             if len(all_messages) > 0:
-                rtn = {"message_count": len(all_messages), "messages": []}
+                rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
                 update_id_list = []
                 for m in all_messages:
                     update_id_list.append(m["id"])
@@ -324,7 +324,11 @@ async def hoppie_formated_url(
         "packet": packet
     }
     sf_msg = sql.StoreAndForwardCreate.model_validate(msg)
-    await transmit_a_message(msg=sf_msg, api_key=api_key, background_tasks=background_tasks, session=session)
+    await transmit_a_message(
+        msg=sf_msg,
+        api_key=api_key,
+        background_tasks=background_tasks,
+        session=session)
 
 @app.post(
         "/msg/tx",

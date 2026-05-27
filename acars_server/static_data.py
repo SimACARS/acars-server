@@ -52,7 +52,7 @@ COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
     403: {"description": "Forbidden by Third Party Provider"}
 }
 
-METADATA_TAGS = [
+METADATA_TAGS:list[dict[str, Any]] = [
     {
         "name": "status",
         "description": "System status",
