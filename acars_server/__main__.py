@@ -114,14 +114,21 @@ async def auth_new_user(network: str):
         if network == "vatsim":
             v_auth = auth.VatsimAuth()
             v_url = v_auth.authorise()
+            common.logger.success("Client redirected to VATSIM OAuth")
             return RedirectResponse(v_url[0])
+
+        error = f"{network} doesn't appear to exist although it really should..."
+        common.logger.error(error)
         raise HTTPException(
             status_code=501,
-            detail=f"{network} doesn't appear to exist although it really should...")
+            detail=error)
+
+    error = (f"{network} is not a recognised network. Needs to be one of "
+             f"{', '.join(static_data.NETWORKS)}")
+    common.logger.error(error)
     raise HTTPException(
         status_code=400,
-        detail=(f"{network} is not a recognised network. Needs to be one of "
-                f"{', '.join(static_data.NETWORKS)}"))
+        detail=error)
 
 @app.get(
         "/callback/oauth/vatsim/{state}/{code}",
