@@ -247,7 +247,7 @@ async def poll_for_new_messages(
         }
         db_select = select(sql.StoreAndForward).where(and_(
             sql.StoreAndForward.msg_to == callsign,
-            sql.StoreAndForward.relayed is None))
+            sql.StoreAndForward.relayed.is_(None)))
         all_messages = session.exec(db_select).fetchall()
 
         if len(all_messages) > 0:
