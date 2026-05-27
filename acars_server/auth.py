@@ -1,5 +1,6 @@
 """
 ACARS Server
+Authentication
 Chris Parkinson (@chssn)
 """
 
@@ -72,7 +73,9 @@ class Auth:
             pt_api_key = f"{self.random_generator()}:{network}:{uid}"
             ct_api_key = self.encrypt(pt_api_key)
             return base64.b64encode(ct_api_key).decode()
-        raise ValueError(f"'{network}' is an invalid network. Expected one of: [{', '.join(static_data.NETWORKS)}]")
+        raise ValueError(
+            (f"'{network}' is an invalid network. Expected one of: "
+            f"[{', '.join(static_data.NETWORKS)}]"))
 
     def api_key_reader(self, api_key:str) -> Dict[str,str]:
         """Read an API key"""
@@ -109,7 +112,7 @@ class VatsimAuth:
             "state": state,
             "prompt": "login"
         }
-        response = requests.head(self.OAUTH2_AUTH, params=payload)
+        response = requests.head(self.OAUTH2_AUTH, params=payload, timeout=10)
         logger.debug(response.url)
 
         return (response.url, state)
@@ -127,7 +130,7 @@ class VatsimAuth:
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
         }
-        response = requests.post(self.OAUTH2_TOKEN, headers=headers, data=payload)
+        response = requests.post(self.OAUTH2_TOKEN, headers=headers, data=payload, timeout=10)
 
         return (response.status_code, response.json())
 
@@ -137,6 +140,6 @@ class VatsimAuth:
             "accept": "application/json",
             "Authorization": f"Bearer {bearer_token}"
         }
-        response = requests.get(self.AUTH_USER_DETAILS, headers=headers)
+        response = requests.get(self.AUTH_USER_DETAILS, headers=headers, timeout=10)
 
         return (response.status_code, response.json())

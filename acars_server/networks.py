@@ -1,5 +1,6 @@
 """
 ACARS Server
+Virtual Aviation Network Functions
 Chris Parkinson (@chssn)
 """
 
@@ -27,7 +28,9 @@ class Vatsim:
         Attempts to match the callsign with the CID
         Returns TRUE if slurper callsign matches provided callsign
         """
-        response = requests.get(self.SLURPER_URL, params={"cid": cid})
+        response = requests.get(
+            self.SLURPER_URL, params={"cid": cid},
+            timeout=30)
         r_data = response.text.split(",")
         if r_data[0] == cid and r_data[1] == callsign:
             return True
@@ -38,7 +41,9 @@ class Vatsim:
         Attempts to match the callsign with the CID
         Returns TRUE if slurper callsign matches provided callsign
         """
-        response = requests.get(self.SLURPER_URL, params={"cid": cid})
+        response = requests.get(
+            self.SLURPER_URL, params={"cid": cid},
+            timeout=30)
         r_data = response.text.split(",")
         if len(r_data) > 0:
             return r_data[1]

@@ -1,5 +1,6 @@
 """
 ACARS Server
+Background Tasks
 Chris Parkinson (@chssn)
 """
 
@@ -8,7 +9,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import ast
 import re
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 # Third Party Libraries
 from datetime import datetime as dt, timezone as tz
@@ -105,5 +106,3 @@ def msg_type_inforeq(msg:sql.StoreAndForward) -> Dict[str, Any]:
         send_msg["packet"] = inforeq.Noaa.shorttaf(msg["msg_to"])
 
     return send_msg
-
-    

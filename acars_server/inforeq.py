@@ -1,13 +1,12 @@
 """
 ACARS Server
+INFOREQ Message Responses
 Chris Parkinson (@chssn)
 """
 
 #!/usr/bin/env python3
 
 # Standard Libraries
-import threading
-from time import sleep
 
 # Third Party Libraries
 import pandas as pd # type: ignore
@@ -27,8 +26,9 @@ class Noaa:
     @staticmethod
     def metar(icao:str) -> str:
         """Gets a METAR from NOAA"""
-        rsp = requests.get(f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT")
-        common.logger.debug(rsp.url)
+        rsp = requests.get(
+            f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT",
+            timeout=30)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
@@ -36,17 +36,19 @@ class Noaa:
     @staticmethod
     def taf(icao:str) -> str:
         """Gets a TAF from NOAA"""
-        rsp = requests.get(f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT")
-        common.logger.debug(rsp.url)
+        rsp = requests.get(
+            f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT",
+            timeout=30)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO TAF AVAILABLE FOR {icao.upper()}"
-    
+
     @staticmethod
     def shorttaf(icao:str) -> str:
         """Gets a SHORT TAF from NOAA"""
-        rsp = requests.get(f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT")
-        common.logger.debug(rsp.url)
+        rsp = requests.get(
+            f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT",
+            timeout=30)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO SHORT TAF AVAILABLE FOR {icao.upper()}"
@@ -91,22 +93,6 @@ class Vatsim:
             "atis",
         ]
 
-        """while True:
-            # Download the data
-            response_json = functions.load_json_url(self.vatsim_urls["all"])
-
-            # Put the data into dataframes
-            df_update = {}
-            for section in r_sections:
-                try:
-                    df_update[section] = pd.json_normalize(response_json, record_path=[section])
-                except KeyError as err:
-                    common.logger.error(f"Unable to find {section} - {err}")
-                    continue
-
-            self.dataframes = df_update
-
-            sleep(30)"""
         response_json = functions.load_json_url(self.vatsim_urls["all"])
 
         # Put the data into dataframes
@@ -128,7 +114,7 @@ class Vatsim:
         if not dfb.empty:
             return str(df["text_atis"].iloc[0])
 
-        # If the client has requested an Arrival or Departure ATIS but 
+        # If the client has requested an Arrival or Departure ATIS but
         # none is found, check to see if a combined ATIS is available
         remove_a_d =  icao.split("_")
         if len(remove_a_d) == 2:
@@ -140,8 +126,8 @@ class Vatsim:
     @staticmethod
     def get_metar(icao:str) -> str:
         """Get METAR from VATSIM"""
-        rsp = requests.get(f"https://metar.vatsim.net/{icao.upper()}")
-        common.logger.debug(f"METAR {rsp.url}")
+        rsp = requests.get(
+            f"https://metar.vatsim.net/{icao.upper()}", timeout=30)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
