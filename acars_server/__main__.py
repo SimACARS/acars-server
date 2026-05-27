@@ -133,41 +133,6 @@ async def auth_new_user_callback_vatsim(
 # ------------------------------------------------------------------
 # Test Functions
 # ------------------------------------------------------------------
-@app.post("/test/newapi", response_model=sql.ApiKeyPublic, tags=["testing"])
-async def test_newapi(session: sql.SessionDep):
-    # Add the API key to the DB
-    dtnow = dt.now(tz.utc).timestamp()
-    db_data = {
-        "api_key": "12345",
-        "network": "vatsim",
-        "created": dtnow,
-        "last_used": dtnow
-    }
-    db_add = sql.ApiKey.model_validate(db_data)
-    session.add(db_add)
-    session.commit()
-    session.refresh(db_add)
-    return db_add
-
-@app.get("/test/update_lut", responses=static_data.COMMON_ERRORS, tags=["testing"])
-async def test_update_lut(session: sql.SessionDep):
-    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == "12345")
-    api_user = session.exec(db_select).first()
-    if not api_user:
-        raise HTTPException(status_code=401, detail="Unauthorised")
-    else:
-        # Update last used time
-        api_lut = {
-            "last_used": dt.now(tz.utc).timestamp()
-        }
-        api_update = sql.ApiKeyUpdate.model_validate(api_lut)
-        api_data = api_update.model_dump(exclude_unset=True)
-        api_user.sqlmodel_update(api_data)
-        session.add(api_user)
-        session.commit()
-        session.refresh(api_user)
-        return "ok"
-
 @app.get("/test/poll/{callsign}", tags=["testing"])
 async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
     # If the callsign has been validated
