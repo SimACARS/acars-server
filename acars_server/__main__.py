@@ -174,7 +174,7 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
         "relayed_at": dt.now(tz.utc).timestamp()
     }
     db_select = select(sql.StoreAndForward).where(and_(
-        sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None)))
+        sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None))) # type: ignore  # pylint: disable=no-member
     all_messages = session.exec(db_select).fetchall()
     if len(all_messages) > 0:
         rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
@@ -196,7 +196,7 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
                 update(sql.StoreAndForward)
                 .where(and_(
                     sql.StoreAndForward.msg_to == callsign,
-                    sql.StoreAndForward.id.in_(update_id_list)))
+                    sql.StoreAndForward.id.in_(update_id_list))) # type: ignore  # pylint: disable=no-member
                 .values(**update_msg)
                 )
 
@@ -275,7 +275,7 @@ async def poll_for_new_messages(
         }
         db_select = select(sql.StoreAndForward).where(and_(
             sql.StoreAndForward.msg_to == callsign,
-            sql.StoreAndForward.relayed.is_(None)))
+            sql.StoreAndForward.relayed.is_(None))) # type: ignore  # pylint: disable=no-member
         all_messages = session.exec(db_select).fetchall()
 
         if len(all_messages) > 0:
@@ -298,7 +298,7 @@ async def poll_for_new_messages(
                     update(sql.StoreAndForward)
                     .where(and_(
                         sql.StoreAndForward.msg_to == callsign,
-                        sql.StoreAndForward.id.in_(update_id_list)))
+                        sql.StoreAndForward.id.in_(update_id_list))) # type: ignore  # pylint: disable=no-member
                     .values(**update_msg)
                     )
                 session.exec(stmt)
