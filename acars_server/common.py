@@ -12,14 +12,19 @@ import asyncio
 from loguru import logger
 
 # Init a message queue for web consumer
-stream = asyncio.Queue()
+stream:asyncio.Queue = asyncio.Queue()
 
 # Custom Loguru sink
-LOG_FORMAT = "{time:YYYY-MM-DD HH:mm:ss!UTC}Z | {level} \t| {module}.{function}:{line} \t| {message}"
+LOG_FORMAT = (
+    "{time:YYYY-MM-DD HH:mm:ss!UTC}Z | {level} \t| "
+    "{module}.{function}:{line} \t| {message}")
 
 
 class QueueSink:
+    """Handle moving logger to queue"""
+
     def write(self, message):
+        """Write message to queue"""
         record = message.strip()
         try:
             loop = asyncio.get_running_loop()
