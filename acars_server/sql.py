@@ -26,9 +26,11 @@ connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, connect_args=connect_args)
 
 def create_db_and_tables():
+    """Create DB and Tables"""
     SQLModel.metadata.create_all(engine)
 
 def get_session():
+    """Get the Session"""
     with Session(engine) as session:
         yield session
 
@@ -39,8 +41,8 @@ SessionDep = Annotated[Session, Depends(get_session)]
 # ------------------------------------------------------------------
 class ApiKeyBase(SQLModel):
     """A table to hold all API keys"""
-    api_key: str = Field(index=True)
-    network: str
+    api_key: str | None = Field(index=True)
+    network: str | None
 
 
 class ApiKey(ApiKeyBase, table=True):
@@ -75,17 +77,18 @@ class ApiKeyUpdate(ApiKeyBase):
 def check_valid_legacy_msg_type(legacy_type: str):
     """Check if the message type is valid"""
     if legacy_type not in static_data.LEGACY_MSG_TYPES:
-        raise ValueError(f"Invalid message type: Valid types are: {', '.join(static_data.LEGACY_MSG_TYPES)}")
+        raise ValueError(
+            f"Invalid message type: Valid types are: {', '.join(static_data.LEGACY_MSG_TYPES)}")
     return legacy_type
 
 
 class StoreAndForwardBase(SQLModel):
     """A table to hold all the messages"""
-    msg_from: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")]
-    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")]
-    msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)]
-    packet: str
-    network: str
+    msg_from: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None
+    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None
+    msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)] | None
+    packet: str | None
+    network: str | None
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -114,8 +117,10 @@ class StoreAndForwardPublic(StoreAndForwardBase):
 class StoreAndForwardUpdate(StoreAndForwardBase):
     """Update the Store and Forward"""
     id: int | None = None
-    msg_from: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None = None
-    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None = None
+    msg_from: Annotated[
+        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None = None
+    msg_to: Annotated[
+        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] | None = None
     msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)] | None = None
     packet: str | None = None
     relayed: bool | None = None
