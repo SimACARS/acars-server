@@ -219,70 +219,69 @@ async def poll_for_new_messages(
     api_user = session.exec(db_select).first()
     if not api_user:
         raise HTTPException(status_code=401, detail="Unauthorised")
+    # ------------------------------------------------------------------
+    # Function
+    # ------------------------------------------------------------------
+
+    # Read API Key
+    user_data = crypto.api_key_reader(api_key)
+
+    # Validate callsign on various networks
+    callsign = None
+    if user_data["network"] == "vatsim":
+        vc = networks.Vatsim()
+        callsign = vc.get_callsign_from_cid(user_data["uid"])
+    elif user_data["network"] == "ivao":
+        pass
     else:
-        # ------------------------------------------------------------------
-        # Function
-        # ------------------------------------------------------------------
-
-        # Read API Key
-        user_data = crypto.api_key_reader(api_key)
-
-        # Validate callsign on various networks
-        callsign = None
-        if user_data["network"] == "vatsim":
-            vc = networks.Vatsim()
-            callsign = vc.get_callsign_from_cid(user_data["uid"])
-        elif user_data["network"] == "ivao":
-            pass
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail=(f"Network '{user_data['network']}' is not valid. "
-                        f"Expected one of {', '.join(static_data.NETWORKS)}"))
-
-        # If the callsign has been validated
-        if callsign:
-            update_msg = {
-                "relayed": True,
-                "relayed_at": dt.now(tz.utc).timestamp()
-            }
-            db_select = select(sql.StoreAndForward).where(and_(
-                sql.StoreAndForward.msg_to == callsign,
-                sql.StoreAndForward.relayed.is_(None)))
-            all_messages = session.exec(db_select).fetchall()
-            if len(all_messages) > 0:
-                rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
-                update_id_list = []
-                for m in all_messages:
-                    update_id_list.append(m["id"])
-                    data_block = {
-                        "id": m["id"],
-                        "msg_from": m["msg_from"],
-                        "msg_to": m["msg_to"],
-                        "msg_type": m["msg_type"],
-                        "packet": m["packet"],
-                        "network": m["network"]
-                    }
-                    rtn["messages"].append(data_block)
-
-                if len(update_id_list) > 0:
-                    stmt = (
-                        update(sql.StoreAndForward)
-                        .where(and_(
-                            sql.StoreAndForward.msg_to == callsign,
-                            sql.StoreAndForward.id.in_(update_id_list)))
-                        .values(**update_msg)
-                        )
-
-                    session.exec(stmt)
-                    session.commit()
-
-                return JSONResponse(rtn)
-            return JSONResponse(content={"msg_count": 0})
         raise HTTPException(
-            status_code=403,
-            detail=("Unable to retrieve callsign for user - Network: "
-                    f"{user_data['network']}, User ID: {user_data['uid']}"))
+            status_code=400,
+            detail=(f"Network '{user_data['network']}' is not valid. "
+                    f"Expected one of {', '.join(static_data.NETWORKS)}"))
+
+    # If the callsign has been validated
+    if callsign:
+        update_msg = {
+            "relayed": True,
+            "relayed_at": dt.now(tz.utc).timestamp()
+        }
+        db_select = select(sql.StoreAndForward).where(and_(
+            sql.StoreAndForward.msg_to == callsign,
+            sql.StoreAndForward.relayed is None))
+        all_messages = session.exec(db_select).fetchall()
+        if len(all_messages) > 0:
+            rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
+            update_id_list = []
+            for m in all_messages:
+                update_id_list.append(m["id"])
+                data_block = {
+                    "id": m["id"],
+                    "msg_from": m["msg_from"],
+                    "msg_to": m["msg_to"],
+                    "msg_type": m["msg_type"],
+                    "packet": m["packet"],
+                    "network": m["network"]
+                }
+                rtn["messages"].append(data_block)
+
+            if len(update_id_list) > 0:
+                stmt = (
+                    update(sql.StoreAndForward)
+                    .where(and_(
+                        sql.StoreAndForward.msg_to == callsign,
+                        sql.StoreAndForward.id.in_(update_id_list)))
+                    .values(**update_msg)
+                    )
+
+                session.exec(stmt)
+                session.commit()
+
+            return JSONResponse(rtn)
+        return JSONResponse(content={"msg_count": 0})
+    raise HTTPException(
+        status_code=403,
+        detail=("Unable to retrieve callsign for user - Network: "
+                f"{user_data['network']}, User ID: {user_data['uid']}"))
 
 @app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
 async def post_msg_progress(
@@ -350,33 +349,32 @@ async def transmit_a_message(
     api_user = session.exec(db_select).first()
     if not api_user:
         raise HTTPException(status_code=401, detail="Unauthorised")
+    # ------------------------------------------------------------------
+    # Function
+    # ------------------------------------------------------------------
+
+    # Read API Key
+    user_data = crypto.api_key_reader(api_key)
+    sf_msg = sql.StoreAndForward.model_validate(msg)
+
+    # Validate callsign on various networks
+    check = False
+    if user_data["network"] == "vatsim":
+        vc = networks.Vatsim()
+        check = vc.corrolate_cid_to_callsign(user_data["uid"], sf_msg["msg_from"])
+    elif user_data["network"] == "ivao":
+        pass
     else:
-        # ------------------------------------------------------------------
-        # Function
-        # ------------------------------------------------------------------
-
-        # Read API Key
-        user_data = crypto.api_key_reader(api_key)
-        sf_msg = sql.StoreAndForward.model_validate(msg)
-
-        # Validate callsign on various networks
-        check = False
-        if user_data["network"] == "vatsim":
-            vc = networks.Vatsim()
-            check = vc.corrolate_cid_to_callsign(user_data["uid"], sf_msg["msg_from"])
-        elif user_data["network"] == "ivao":
-            pass
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail=(f"Network '{user_data['network']}' is not valid. "
-                        f"Expected one of {', '.join(static_data.NETWORKS)}"))
-
-        # If the callsign has been validated
-        if check:
-            background_tasks.add_task(tasks.message_parse, sf_msg, session)
-            return sf_msg
         raise HTTPException(
-            status_code=403,
-            detail=(f"Callsign validation failed - Network: {user_data['network']}, "
-                    f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}"))
+            status_code=400,
+            detail=(f"Network '{user_data['network']}' is not valid. "
+                    f"Expected one of {', '.join(static_data.NETWORKS)}"))
+
+    # If the callsign has been validated
+    if check:
+        background_tasks.add_task(tasks.message_parse, sf_msg, session)
+        return sf_msg
+    raise HTTPException(
+        status_code=403,
+        detail=(f"Callsign validation failed - Network: {user_data['network']}, "
+                f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}"))
