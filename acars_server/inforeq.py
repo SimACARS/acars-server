@@ -11,10 +11,9 @@ Chris Parkinson (@chssn)
 # Third Party Libraries
 import pandas as pd # type: ignore
 import requests
-from loguru import logger
 
 # Local Libraries
-from acars_server import functions
+from acars_server import common, functions
 
 
 class Noaa:
@@ -63,7 +62,7 @@ class Vatsim:
         vatsim_status_url = "https://status.vatsim.net/status.json"
 
         vatsim_servers = functions.load_json_url(vatsim_status_url, timeout=30)
-        logger.debug(vatsim_servers)
+        common.logger.debug(vatsim_servers)
 
         self.member_stat_data = {}
         self.msd_rate_limit = functions.RateLimiter(1, 10)
@@ -102,7 +101,7 @@ class Vatsim:
             try:
                 df_update[section] = pd.json_normalize(response_json, record_path=[section])
             except KeyError as err:
-                logger.error(f"Unable to find {section} - {err}")
+                common.logger.error(f"Unable to find {section} - {err}")
                 continue
 
         self.dataframes = df_update

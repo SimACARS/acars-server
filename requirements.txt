@@ -1,7 +1,9 @@
 cryptography==48.0.0
 fastapi==0.136.3
 loguru==0.7.3
+pandas==3.0.3
 pydantic==2.13.4
 python-dotenv==1.2.2
 Requests==2.34.2
 sqlmodel==0.0.38
+sse_starlette==3.4.4
