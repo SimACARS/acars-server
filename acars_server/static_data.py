@@ -1,3 +1,11 @@
+"""
+ACARS Server
+Static Data Types
+Chris Parkinson (@chssn)
+"""
+
+#!/usr/bin/env python3
+
 from typing import Any
 
 

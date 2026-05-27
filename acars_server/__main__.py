@@ -21,7 +21,7 @@ from loguru import logger
 from sqlmodel import and_, select, update
 
 # Local Libraries
-from acars_server import __VERSION__, auth, sql, static_data, stations, tasks
+from acars_server import __VERSION__, auth, networks, sql, static_data, tasks
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
@@ -246,7 +246,7 @@ async def poll_for_new_messages(
         # Validate callsign on various networks
         callsign = None
         if user_data["network"] == "vatsim":
-            vc = stations.Vatsim()
+            vc = networks.Vatsim()
             callsign = vc.get_callsign_from_cid(user_data["uid"])
         elif user_data["network"] == "ivao":
             pass
@@ -363,7 +363,7 @@ async def transmit_a_message(
         # Validate callsign on various networks
         check = False
         if user_data["network"] == "vatsim":
-            vc = stations.Vatsim()
+            vc = networks.Vatsim()
             check = vc.corrolate_cid_to_callsign(user_data["uid"], sf_msg["msg_from"])
         elif user_data["network"] == "ivao":
             pass
