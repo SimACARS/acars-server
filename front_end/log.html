@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<pre id="logs"></pre>
+
+<script>
+    const logContainer = document.getElementById("logs");
+
+    const eventSource = new EventSource("/logs/stream");
+
+    eventSource.addEventListener("log", (event) => {
+
+        logContainer.textContent += event.data + "\n";
+
+        // auto-scroll
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    eventSource.onerror = () => {
+        console.log("Connection lost...");
+    };
+</script>
+
+</body>
+</html>

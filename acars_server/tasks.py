@@ -12,16 +12,16 @@ from typing import Any, Dict, Union
 
 # Third Party Libraries
 from datetime import datetime as dt, timezone as tz
-from loguru import logger
 
 # Local Libraries
-from acars_server import inforeq, sql
+from acars_server import common, inforeq, sql
 
 
 vs = inforeq.Vatsim()
 
 def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
     """Parse a message"""
+    common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
 
     # INFOREQ ATIS

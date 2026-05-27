@@ -12,10 +12,9 @@ from time import sleep
 # Third Party Libraries
 import pandas as pd # type: ignore
 import requests
-from loguru import logger
 
 # Local Libraries
-from acars_server import functions
+from acars_server import common, functions
 
 
 class Noaa:
@@ -29,6 +28,7 @@ class Noaa:
     def metar(icao:str) -> str:
         """Gets a METAR from NOAA"""
         rsp = requests.get(f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT")
+        common.logger.debug(rsp.url)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
@@ -37,6 +37,7 @@ class Noaa:
     def taf(icao:str) -> str:
         """Gets a TAF from NOAA"""
         rsp = requests.get(f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT")
+        common.logger.debug(rsp.url)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO TAF AVAILABLE FOR {icao.upper()}"
@@ -45,6 +46,7 @@ class Noaa:
     def shorttaf(icao:str) -> str:
         """Gets a SHORT TAF from NOAA"""
         rsp = requests.get(f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT")
+        common.logger.debug(rsp.url)
         if rsp.status_code == 200:
             return rsp.text
         return f"NO SHORT TAF AVAILABLE FOR {icao.upper()}"
@@ -58,7 +60,7 @@ class Vatsim:
         vatsim_status_url = "https://status.vatsim.net/status.json"
 
         vatsim_servers = functions.load_json_url(vatsim_status_url, timeout=30)
-        logger.debug(vatsim_servers)
+        common.logger.debug(vatsim_servers)
 
         self.member_stat_data = {}
         self.msd_rate_limit = functions.RateLimiter(1, 10)
@@ -99,7 +101,7 @@ class Vatsim:
                 try:
                     df_update[section] = pd.json_normalize(response_json, record_path=[section])
                 except KeyError as err:
-                    logger.error(f"Unable to find {section} - {err}")
+                    common.logger.error(f"Unable to find {section} - {err}")
                     continue
 
             self.dataframes = df_update
@@ -113,7 +115,7 @@ class Vatsim:
             try:
                 df_update[section] = pd.json_normalize(response_json, record_path=[section])
             except KeyError as err:
-                logger.error(f"Unable to find {section} - {err}")
+                common.logger.error(f"Unable to find {section} - {err}")
                 continue
 
         self.dataframes = df_update
@@ -139,6 +141,7 @@ class Vatsim:
     def get_metar(icao:str) -> str:
         """Get METAR from VATSIM"""
         rsp = requests.get(f"https://metar.vatsim.net/{icao.upper()}")
+        common.logger.debug(f"METAR {rsp.url}")
         if rsp.status_code == 200:
             return rsp.text
         return f"NO METAR AVAILABLE FOR {icao.upper()}"

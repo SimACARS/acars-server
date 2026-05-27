@@ -17,11 +17,12 @@ from typing import Annotated, Any
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
-from loguru import logger
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import and_, select, update
+from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
-from acars_server import __VERSION__, auth, sql, static_data, stations, tasks
+from acars_server import __VERSION__, auth, common, sql, static_data, stations, tasks
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
@@ -58,6 +59,9 @@ app = FastAPI(
     },
     openapi_tags=static_data.METADATA_TAGS
 )
+# Serve some static files
+app.mount("/static", StaticFiles(directory=os.path.join(PWD.parent, "front_end")), name="static")
+# Add the API Key header
 header_api_key = APIKeyHeader(name="x-key")
 
 # Check that a master key exists, if not then create one
@@ -73,6 +77,23 @@ crypto = auth.Auth()
 async def ping():
     """Ping the server. Returns 'OK' and VERSION"""
     return {"server_status": "OK", "server_version": __VERSION__}
+
+@app.get("/logs/stream")
+async def stream_logs():
+    async def event_generator():
+        while True:
+            # Get item from the queue
+            item = await common.stream.get()
+
+            yield {
+                "event": "log",
+                "data": item
+            }
+
+            # Compete the processing
+            common.stream.task_done()
+
+    return EventSourceResponse(event_generator())
 
 # ------------------------------------------------------------------
 # User Functions
@@ -218,6 +239,7 @@ async def test_inforeq(ir_type:str, network:str, station:str, background_tasks: 
         "msg_from": "TEST1"
     }
     sf_msg = sql.StoreAndForward.model_validate(t_msg)
+    common.logger.debug(sf_msg)
     background_tasks.add_task(tasks.message_parse, sf_msg, session)
 
 # ------------------------------------------------------------------
