@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, List
 
 # Third Party Libraries
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
