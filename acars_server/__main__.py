@@ -17,7 +17,6 @@ from typing import Annotated, Any
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
-from loguru import logger
 from sqlmodel import and_, select, update
 
 # Local Libraries
