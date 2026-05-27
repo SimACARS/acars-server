@@ -110,7 +110,7 @@ class VatsimAuth:
             "state": state,
             "prompt": "login"
         }
-        response = requests.head(self.OAUTH2_AUTH, params=payload)
+        response = requests.head(self.OAUTH2_AUTH, params=payload, timeout=10)
         logger.debug(response.url)
 
         return (response.url, state)
@@ -128,7 +128,7 @@ class VatsimAuth:
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
         }
-        response = requests.post(self.OAUTH2_TOKEN, headers=headers, data=payload)
+        response = requests.post(self.OAUTH2_TOKEN, headers=headers, data=payload, timeout=10)
 
         return (response.status_code, response.json())
 
@@ -138,6 +138,6 @@ class VatsimAuth:
             "accept": "application/json",
             "Authorization": f"Bearer {bearer_token}"
         }
-        response = requests.get(self.AUTH_USER_DETAILS, headers=headers)
+        response = requests.get(self.AUTH_USER_DETAILS, headers=headers, timeout=10)
 
         return (response.status_code, response.json())
