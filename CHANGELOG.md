@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.5.0](https://github.com/SimACARS/acars-server/compare/v1.4.1...v1.5.0) (2026-05-27)
+
+
+### Features
+
+* basic logging to a webpage ([bcc2563](https://github.com/SimACARS/acars-server/commit/bcc256361262f3dfcad6574bb9fbcd0635c6aea5))
+
 ## [1.4.1](https://github.com/SimACARS/acars-server/compare/v1.4.0...v1.4.1) (2026-05-27)
 
 
