@@ -6,7 +6,7 @@ Chris Parkinson (@chssn)
 
 #!/usr/bin/env python3
 
-from typing import Any
+from typing import Any, Dict
 
 
 # Ref: https://www.oag.com/hubfs/Inbound-Services/OAG-ACARS-OOOI-Message-Types-and-Examples.pdf
