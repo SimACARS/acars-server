@@ -71,4 +71,4 @@ class PdfParser:
             logger.success(f"Written to {write_path}")
 
 pdf_path = os.path.join(PWD.parent, "reference_docs", "gold_2edition.pdf")
-p = PdfParser(pdf_path, "214-256")
+p = PdfParser(pdf_path, "214-266")
