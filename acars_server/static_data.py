@@ -150,6 +150,28 @@ CPDLC_UPLINK_MESSAGE_RESPONSES = {
     }
 }
 
+CPDLC_DOWNLINK_MESSAGE_RESPONSES = {
+    "Y": {
+        "response_required": True,
+        "valid_responses": ["~ANY"],
+        "will_close_uplink": [],
+        "FANS_1_A": ["~ANY"]
+    },
+    "N": {
+        "response_required": False,
+        "valid_responses": [
+            "SERVICE UNAVAILABLE",
+            "FLIGHT PLAN NOT HELD",
+            "LOGICAL ACKNOWLEDGEMENT",
+            "ERROR"
+        ],
+        "will_close_uplink": ["ERROR"],
+        # FANS 1/A.— Aircraft do not have the capability to receive technical
+        # responses to downlink message elements with an “N” response attribute
+        # (other than LACK or ERROR for ATN B1 aircraft)
+        "FANS_1_A": ["~NOT USED"]
+    },
+}
 
 # Ref: https://www.hoppie.nl/acars/system/tech.html
 LEGACY_MSG_TYPES = [
