@@ -15,7 +15,7 @@ from typing import Any, Dict
 from datetime import datetime as dt, timezone as tz
 
 # Local Libraries
-from acars_server import common, inforeq, sql
+from acars_server import common, cpdlc, inforeq, sql
 
 
 vs = inforeq.Vatsim()
