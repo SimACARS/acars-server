@@ -222,7 +222,8 @@ METADATA_TAGS:list[dict[str, Any]] = [
     },
     {
         "name": "legacy messaging",
-        "description": "Provides backwards compatability for clients configured to work with Hoppie's ACARS",
+        "description": ("Provides backwards compatability for "
+                        "clients configured to work with Hoppie's ACARS"),
         "externalDocs": {
             "description": "Hoppie's ACARS Server API",
             "url": "https://www.hoppie.nl/acars/system/tech.html",
