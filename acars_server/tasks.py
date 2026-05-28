@@ -28,13 +28,15 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
     # INFOREQ ATIS
     if msg["msg_type"] == "inforeq":
         send_msg = msg_type_inforeq(msg)
+    # ADS-C
     elif msg["msg_type"] == "ads-c":
         if not msg_type_ads_c(msg):
             return
+    # CPDLC
     elif msg["msg_type"] == "cpdlc":
         if not msg_type_cpdlc(msg):
             return
-    
+
     # Validate the message content
     if send_msg["packet"] is None:
         sf_msg = sql.StoreAndForward.model_validate(msg)
