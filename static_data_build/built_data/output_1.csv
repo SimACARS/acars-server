@@ -1,0 +1,364 @@
+Ref  #,Message Intent/Use,Message Element,Resp.,Data  link  system(s)
+UM  0,Indicates  that  ATC  cannot  comply  with  the request.,UNABLE,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  1,"Indicates  that  ATC  has  received  the  message and will respond.  Note.—  The  flight  crew  is  informed  that  the  request  is  being  assessed  and  there  will  be  a  short-term  delay  (e.g.  as  appropriate, given the situation, but not to  exceed  10  minutes).  The  exchange  is  not  closed  and  the  request  will  be  responded  to when conditions allow.",STANDBY,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  2,Indicates  that  ATC  has  received  the  request but it has been deferred until later.  Note.—  The  flight  crew  is  informed  that  the request is being assessed and a long- term delay can be expected. The exchange  is  not  closed  and  the  request  will  be  responded to when conditions allow.,REQUEST DEFERRED,N  or  NE,FANS 1/A
+UM  3,Indicates  that  ATC  has  received  and  understood the message.,ROGER,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  4,Yes.,AFFIRM,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  5,No,NEGATIVE,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  235,Notification  of  receipt  of  unlawful  interference message.,ROGER 7500,N,N/A  (Urgent)
+UM  211,Indicates  that  the  ATC  has  received  the  request  and  has  passed  it  to  the  next  control authority.  FANS 1/A and FANS 1/A-ATN B1.— Uses  UM 169x free text for FANS 1/A aircraft.,REQUEST FORWARDED  N,,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  218,Indicates  to  the  pilot  that  the  request  has  already been received on the ground.,REQUEST  ALREADY  RECEIVED,N,N/A
+UM  237,Indicates  that  the  request  cannot  be  responded to by the current unit and that it  should be requested from the next unit.  FANS 1/A and FANS 1/A-ATN B1.— Uses  UM 169ab free text for FANS 1/A aircraft.,REQUEST  AGAIN  WITH  NEXT UNIT,N,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  6,Notification  that  a  level  change  instruction should be expected.  Note.— Avoid use of this message element  due to potential misinterpretation.,EXPECT [level],R,FANS 1/A
+UM  7,Notification  that  an  instruction  should  be  expected  for  the  aircraft  to  commence  climb at the specified time.  Note.—    The  controller  should  only  use  this  message  to  respond  to  a  flight  crew  request (e.g. WHEN CAN WE EXPECT).,EXPECT  CLIMB  AT  [time],R,FANS 1/A
+UM  8,Notification  that  an  instruction  should  be  expected  for  the  aircraft  to  commence  climb at the specified position.  Note.—    The  controller  should  only  use  this  message  to  respond  to  a  flight  crew  request (e.g. WHEN CAN WE EXPECT).,EXPECT  CLIMB  AT  [position],R,FANS 1/A
+UM  9,Notification  that  an  instruction  should  be  expected  for  the  aircraft  to  commence  descent at the specified time.  Note.—    The  controller  should  only  use  this  message  to  respond  to  a  flight  crew  request (e.g. WHEN CAN WE EXPECT).,EXPECT  DESCENT  AT  [time],R,FANS 1/A
+UM  10,Notification  that  an  instruction  should  be  expected  for  the  aircraft  to  commence  descent at the specified position.  Note.—    The  controller  should  only  use  this  message  to  respond  to  a  flight  crew  request (e.g. WHEN CAN WE EXPECT).,EXPECT  DESCENT  AT  [position],R,FANS 1/A
+UM  11,Notification  that  an  instruction  should  be  expected  for  the  aircraft  to  commence  cruise climb at the specified time.  Note.— Avoid use of this message element  due to potential misinterpretation.,EXPECT  CRUISE  CLIMB  AT [time],R,FANS 1/A
+UM  12,Notification  that  an  instruction  should  be  expected  for  the  aircraft  to  commence  cruise climb at the specified position.  Note.— Avoid use of this message element  due to potential misinterpretation.,EXPECT  CRUISE  CLIMB  AT [position],R,FANS 1/A
+UM  13,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  AT  [time]  EXPECT  CLIMB  TO  [altitude],  as  it  is  reserved  in  ICAO  Doc 4444.",N/A,R,FANS 1/A
+UM  14,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  AT  [position]  EXPECT  CLIMB  TO  [altitude],  as  it  is  reserved  in  ICAO  Doc 4444.",N/A,R,FANS 1/A
+UM  15,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  AT  [time]  EXPECT  DESCENT  TO  [altitude],  as  it  is  reserved  in  ICAO  Doc 4444.",N/A,R,FANS 1/A
+UM  16,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  AT  [position]  EXPECT  DESCENT TO [altitude], as it is reserved  in ICAO Doc 4444.",N/A,R,FANS 1/A
+UM  17,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  AT  [time]  EXPECT  CRUISE  CLIMB TO [altitude], as it is reserved in  ICAO Doc 4444.",N/A,R,FANS 1/A
+UM  18,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  AT  [position]  EXPECT  CRUISE  CLIMB TO [altitude], as it is reserved in  ICAO Doc 4444.",N/A,R,FANS 1/A
+UM  19,Instruction to maintain the specified level. MAINTAIN [level],,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  20,Instruction  that  a  climb  to  a  specified  level  is  to  commence  and  once  reached  the specified level is to be maintained.,CLIMB  TO  [level]  or  CLIMB  TO  AND  MAINTAIN [altitude],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  21,"Instruction  that  at  the  specified  time  a  climb  to  the  specified  level  is  to  commence and once reached the specified  level is to be maintained.  Note 1.—  Instruction that NOT BEFORE  the specified time, a climb to the specified  level  is  to  commence  and  once  reached  the specified level is to be maintained.  Note  2.—    Precede  this  message  element  with  UM  19  MAINTAIN  [level],  to  prevent  the  premature  execution  of  the  instruction.",AT  [time]  CLIMB  TO  [level] or AT [time] CLIMB  TO  AND  MAINTAIN  [altitude],W/U,FANS 1/A
+UM  22,"Instruction that at the specified position a  climb  to  the  specified  level  is  to  commence and once reached the specified  level is to be maintained.  Note  1.—    Instruction  that  AFTER  PASSING  the  specified  position,  a  climb  to the specified level is to commence and  once  reached  the  specified  level  is  to  be  maintained.  Note  2.—    Precede  this  message  element  with  UM  19  MAINTAIN  [level],  to  prevent  the  premature  execution  of  the  instruction.",AT  [position]  CLIMB  TO  [level]  or  AT  [position]  CLIMB  TO  AND  MAINTAIN [altitude],W/U,FANS 1/A
+UM  185,(Reserved),N/A,W/U,N/A
+UM  23,Instruction  that  a  descent  to  a  specified  level  is  to  commence  and  once  reached  the specified level is to be maintained.,DESCEND  TO  [level]  or  DESCEND  TO  AND  MAINTAIN [altitude],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  24,"Instruction  that  at  a  specified  time  a  descent  to  a  specified  level  is  to  commence and once reached the specified  level is to be maintained.  Note  1.—  Instruction  that  NOT  BEFORE  the  specified  time,  a  descent  to  the  specified  level  is  to  commence,  and  once  reached,  the  specified  level  is  to  be  maintained.  Note  2.—    Precede  this  message  element  with  UM  19  MAINTAIN  [level],  to  prevent  the  premature  execution  of  the  instruction.",AT  [time]  DESCEND  TO  [level]  or  AT  [time]  DESCEND  TO  AND  MAINTAIN [altitude],W/U,FANS 1/A
+UM  25,"Instruction that at the specified position a  descent  to  the  specified  level  is  to  commence and once reached the specified  level is to be maintained.  Note  1.—  Instruction  that  AFTER  PASSING the specified position, a descent  to the specified level is to commence and  once  reached  the  specified  level  is  to  be  maintained.  Note  2.—    Precede  this  message  element  with  UM  19  MAINTAIN  [level],  to  prevent  the  premature  execution  of  the  instruction.",AT  [position]  DESCEND  TO [level] or AT [position]  DESCEND  TO  AND  MAINTAIN [altitude],W/U,FANS 1/A
+UM  186,(Reserved),N/A,W/U,N/A
+UM  26,"Instruction that a climb is to commence at  a  rate  such  that  the  specified  level  is  reached  at  or  before  the  specified  time.   When  this  message  element  is  not  concatenated  with  another  vertical  clearance,  the  level  specified  is  the  assigned level which is to be maintained.  Note.—    Instruction  that  a  climb  is  to  commence at a rate such that the specified  level  is  reached  NOT  LATER  THAN  the  specified time.",CLIMB TO REACH [level]  BY [time],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  27,"Instruction that a climb is to commence at  a  rate  such  that  the  specified  level  is  reached at or before the specified position.   When  this  message  element  is  not  concatenated  with  another  vertical  clearance,  the  level  specified  is  the  assigned level which is to be maintained.  Note.—    Instruction  that  a  climb  is  to  commence at a rate such that the specified  level  is  reached  BEFORE  PASSING  the  specified position.",CLIMB TO REACH [level]  BY [position],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  28,"Instruction that a descent is to commence  at  a  rate  such  that  the  specified  level  is  reached  at  or  before  the  specified  time.   When  this  message  element  is  not  concatenated  with  another  vertical  clearance,  the  level  specified  is  the  assigned level which is to be maintained.  Note.—    Instruction  that  a  descent  is  to  commence at a rate such that the specified  level  is  reached  NOT  LATER  THAN  the  specified time.",DESCEND  TO  REACH  [level] BY [time],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  29,"Instruction that a descent is to commence  at  a  rate  such  that  the  specified  level  is  reached at or before the specified position.   When  this  message  element  is  not  concatenated  with  another  vertical  clearance,  the  level  specified  is  the  assigned level which is to be maintained.  Note.—    Instruction  that  a  descent  is  to  commence at a rate such that the specified  level  is  reached  BEFORE  PASSING  the  specified position.",DESCEND  TO  REACH  [level] BY [position],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  192,"Instruction  that  a  change  of  level  is  to  continue,  but  at  a  rate  such  that  the  specified level is reached at or before the  specified time.",REACH [level] BY [time],W/U,N/A
+UM  209,"Instruction  that  a  change  of  level  is  to  continue,  but  at  a  rate  such  that  the  specified level is reached at or before the  specified position.",REACH  [level]  BY  [position],W/U,N/A
+UM  30,"Instruction that a level within the defined  vertical  range  specified  is  to  be  maintained.  FANS 1/A-ATN B1.—    FANS 1/A  aircraft  only.    ATN B1  aircraft  accepts  UM  19  MAINTAIN  [level],  where  [level]  is  a  vertical range.",MAINTAIN  BLOCK  [level] TO [level],W/U,FANS 1/A  FANS 1/A- ATN B1
+UM  31,"Instruction  that  a  climb  to  a  level  within  the vertical range defined is to commence. FANS 1/A-ATN B1.—    FANS 1/A  aircraft  only.    ATN B1  aircraft  accepts  UM  20  CLIMB  TO  [level],  where  [level]  is  a  vertical range.",CLIMB  TO  AND  MAINTAIN  BLOCK  [level] TO [level],W/U,FANS 1/A  FANS 1/A- ATN B1
+UM  32,"Instruction that a descent to a level within  the vertical range defined is to commence. FANS 1/A-ATN B1.—    FANS 1/A  aircraft  only.    ATN B1  aircraft  accepts  UM  23  DESCEND TO  [level], where  [level] is a  vertical range.",DESCEND  TO  AND  MAINTAIN  BLOCK  [level] TO [level],W/U,FANS 1/A  FANS 1/A- ATN B1
+UM  34,"Instruction  that  a  cruise  climb  to  the  specified  level  is  to  commence  and  continue  and,  once  reached  the  specified  level is to be maintained.  Note.— Avoid use of this message element  due to potential misinterpretation.",CRUISE  CLIMB  TO  [level],W/U,FANS 1/A
+UM  35,Instruction to be used in conjunction with  an  associated  level  instruction  indicating  that  a  cruise  climb  can  commence  once  above the specified level.  Note.— Avoid use of this message element  due to potential misinterpretation.,WHEN  ABOVE  (level)  COMMENCE  CRUISE  CLIMB  or  CRUISE  CLIMB ABOVE [level],W/U,FANS 1/A
+UM  219,"Instruction  to  stop  the  climb  at  the  specified  level  and,  once  reached,  this  level  is  to  be  maintained.    The  specified  level  will  be  below  the  previously  assigned level.",STOP CLIMB AT [level],W/U,N/A  (Urgent)
+UM  220,"Instruction  to  stop  the  descent  at  the  specified  level  and,  once  reached,  this  level  is  to  be  maintained.    The  specified  level  will  be  above  the  previously  assigned level.",STOP  DESCENT  AT  [level],W/U,N/A  (Urgent)
+UM  36,Instruction  that  the  climb  to  the  specified  level should be made at the aircraft’s best  rate.,EXPEDITE  CLIMB  TO  [level],W/U,FANS 1/A
+UM  37,Instruction  that  the  descent  to  the  specified  level  should  be  made  at  the  aircraft’s best rate.,EXPEDITE  DESCENT  TO[level],W/U,FANS 1/A
+UM  38,"Urgent  instruction  to  immediately  climb  to  the  specified  level  and,  once  reached,  the specified level is to be maintained.",IMMEDIATELY  CLIMB  TO [level],W/U,FANS 1/A  (Distress)
+UM  39,"Urgent instruction to immediately descend  to  the  specified  level  and,  once  reached,  the specified level is to be maintained.",IMMEDIATELY  DESCEND TO [level],W/U,FANS 1/A  (Distress)
+UM  40,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  IMMEDIATELY  STOP  CLIMB  AT  [altitude],  as  it  is  reserved  in  ICAO  Doc 4444.",(Not defined),Y  or  W/U,FANS 1/A
+UM  41,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  IMMEDIATELY  STOP  DESCENT AT [altitude], as it is reserved  in ICAO Doc 4444.",(Not defined),Y  or  W/U,FANS 1/A
+UM  171,Instruction  to  climb  at  not  less  than  the  specified rate.,CLIMB  AT  [vertical  rate]  MINIMUM,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  172,Instruction  to  climb  at  not  above  the  specified rate.,CLIMB  AT  [vertical  rate]  MAXIMUM,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  173,Instruction to descend at not less than the  specified rate.,DESCEND  AT  [vertical  rate] MINIMUM,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  174,Instruction  to  descend  at  not  above  the  specified rate.,DESCEND  AT  [vertical  rate] MAXIMUM,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  33,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  CRUISE  [altitude],  as  it  is  reserved in ICAO Doc 4444.",(Not defined),Y  or  W/U,FANS 1/A
+UM  42,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  EXPECT  TO  CROSS  [position]  AT  [altitude],  as  it  is  reserved  in  ICAO  Doc 4444.",N/A,R,FANS 1/A
+UM  43,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  EXPECT  TO  CROSS  [position]  AT OR ABOVE [altitude], as it is reserved  in ICAO Doc 4444.",N/A,R,FANS 1/A
+UM  44,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  EXPECT  TO  CROSS  [position]  AT  OR  BELOW  [altitude],  as  it  is  reserved in ICAO Doc 4444.",N/A,R,FANS 1/A
+UM  45,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  EXPECT  TO  CROSS  [position]  AT  AND  MAINTAIN  [altitude],  as  it  is  reserved in ICAO Doc 4444.",N/A,R,FANS 1/A
+UM  46,Instruction that the specified position is to  be crossed at the specified level. This may  require the aircraft to modify its climb or  descent profile.,CROSS  [position]  AT  [level],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  47,Instruction that the specified position is to  be crossed at or above the specified level.,CROSS  [position]  AT  OR  ABOVE [level],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  48,Instruction that the specified position is to  be crossed at or below the specified level.,CROSS  [position]  AT  OR  BELOW [level],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  49,Instruction that the specified position is to  be  crossed  at  the  specified  level  and  that  level is to be maintained when reached.,CROSS [position] AT AND  MAINTAIN [level],W/U,FANS 1/A
+UM  50,Instruction that the specified position is to  be crossed at a level between the specified  levels.,CROSS  [position]  BETWEEN  [level]  AND  [level],W/U,FANS 1/A
+UM  51,Instruction that the specified position is to  be crossed at the specified time.,CROSS  [position]  AT  [time],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  52,Instruction that the specified position is to  be crossed at or before the specified time.,CROSS  [position]  AT  OR  BEFORE [time],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  53,Instruction that the specified position is to  be crossed at or after the specified time.,CROSS  [position]  AT  OR  AFTER [time],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  54,Instruction that the specified position is to  be crossed at a time between the specified  times.,CROSS  [position]  BETWEEN  [time]  AND  [time],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  55,Instruction that the specified position is to  be  crossed  at  the  specified  speed  and  the  specified  speed  is  to  be  maintained  until  further advised.,CROSS  [position]  AT  [speed],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  56,Instruction that the specified position is to  be crossed at a speed equal to or less than  the  specified  speed  and  the  specified  speed  or  less  is  to  be  maintained  until  further advised.,CROSS  [position]  AT  OR  LESS THAN [speed],W/U,FANS 1/A
+UM  57,Instruction that the specified position is to  be  crossed  at  a  speed  equal  to  or  greater  than the specified speed and the specified  speed  or  greater  is  to  be  maintained  until  further advised.,CROSS  [position]  AT  OR  GREATER THAN [speed],W/U,FANS 1/A
+UM  58,Instruction that the specified position is to  be  crossed  at  the  specified  time  and  the  specified level.,CROSS  [position]  AT  [time] AT [level],W/U,FANS 1/A
+UM  59,Instruction that the specified position is to  be crossed at or before the specified time  and at the specified level.,CROSS  [position]  AT  OR  BEFORE [time] AT [level],W/U,FANS 1/A
+UM  60,Instruction that the specified position is to  be  crossed  at  or  after  the  specified  time  and at the specified level.,CROSS  [position]  AT  OR  AFTER [time] AT [level],W/U,FANS 1/A
+UM  61,"Instruction that the specified position is to  be  crossed  at  the  specified  level  and  speed,  and  the  level  and  speed  are  to  be  maintained.",CROSS [position] AT AND  MAINTAIN  [level]  AT  [speed],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  62,Instruction  that  at  the  specified  time  the  specified  position  is  to  be  crossed  at  the  specified  level  and  the  level  is  to  be  maintained.,AT  [time]  CROSS  [position]  AT  AND  MAINTAIN [level],W/U,FANS 1/A
+UM  63,"Instruction  that  at  the  specified  time  the  specified  position  is  to  be  crossed  at  the  specified  level  and  speed,  and  the  level  and speed are to be maintained.",AT  [time]  CROSS  [position]  AT  AND  MAINTAIN  [level]  AT  [speed],W/U,FANS 1/A
+UM  64,Instruction  to  fly  a  parallel  track  to  the  cleared  route  at  a  displacement  of  the  specified  distance  in  the  specified  direction.,OFFSET  [specified  distance]  [direction]  OF  ROUTE,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  65,Instruction  to  fly  a  parallel  track  to  the  cleared  route  at  a  displacement  of  the  specified  distance  in  the  specified  direction and commencing at the specified  position.,AT  [position]  OFFSET  [specified  distance]  [direction] OF ROUTE,W/U,FANS 1/A
+UM  66,Instruction  to  fly  a  parallel  track  to  the  cleared  route  at  a  displacement  of  the  specified  distance  in  the  specified  direction and commencing at the specified  time.,AT  [time]  OFFSET  [specified  distance]  [direction] OF ROUTE,W/U,FANS 1/A
+UM  67,Instruction  that  the  cleared  flight  route  is  to be rejoined.,PROCEED  BACK  ON  ROUTE,W/U,FANS 1/A
+UM  68,Instruction  that  the  cleared  flight  route  is  to  be  rejoined  at  or  before  the  specified  position.,REJOIN  ROUTE  BY  [position],W/U,FANS 1/A
+UM  69,Instruction  that  the  cleared  flight  route  is  to  be  rejoined  at  or  before  the  specified  time.,REJOIN  ROUTE  BY  [time],W/U,FANS 1/A
+UM  70,Notification  that  a  clearance  may  be  issued  to  enable  the  aircraft  to  rejoin  the  cleared  route  at  or  before  the  specified  position.,EXPECT  BACK  ON  ROUTE BY [position],R,FANS 1/A
+UM  71,Notification  that  a  clearance  may  be  issued  to  enable  the  aircraft  to  rejoin  the  cleared  route  at  or  before  the  specified  time.,EXPECT  BACK  ON  ROUTE BY [time],R,FANS 1/A
+UM  72,Instruction  to  resume  own  navigation  following a period of tracking or heading  clearances.  May  be  used  in  conjunction  with  an  instruction  on  how  or  where  to  rejoin the cleared route.,RESUME  OWN  NAVIGATION,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  73,Instruction to be followed from departure  until the specified clearance limit.,[departure clearance],W/U,FANS 1/A
+UM  74,Instruction  to  proceed  directly  from  its  present position to the specified position.,PROCEED  DIRECT  TO  [position],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  75,"Instruction to proceed, when able, directly  to the specified position.",WHEN  ABLE  PROCEED  DIRECT TO [position],W/U,FANS 1/A
+UM  76,"Instruction  to  proceed,  at  the  specified  time, directly to the specified position.",AT  [time]  PROCEED  DIRECT TO [position],W/U,FANS 1/A
+UM  77,"Instruction  to  proceed,  at  the  specified  position,  directly  to  the  next  specified  position.",AT  [position]  PROCEED  DIRECT TO [position],W/U,FANS 1/A
+UM  78,"Instruction  to  proceed,  upon  reaching  the  specified  level,  directly  to  the  specified  position.",AT  [level]  PROCEED  DIRECT TO [position],W/U,FANS 1/A
+UM  79,Instruction  to  proceed  to  the  specified  position via the specified route.,CLEARED  TO  [position]  VIA [route clearance],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  80,Instruction  to  proceed  via  the  specified  route.,CLEARED  [route  clearance],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  81,Instruction to proceed in accordance with  the specified procedure.,CLEARED  [procedure  name],W/U,FANS 1/A
+UM  236,Instruction to leave controlled airspace.,LEAVE  CONTROLLED  AIRSPACE,W/U,N/A
+UM  82,Approval  to  deviate  up  to  the  specified  distance  from  the  cleared  route  in  the  specified direction.,CLEARED  TO  DEVIATE  UP  TO  [specified  distance]  [direction] OF ROUTE,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  83,Instruction  to  proceed  from  the  specified  position via the specified route.,AT  [position]  CLEARED  [route clearance],W/U,FANS 1/A
+UM  84,Instruction  to  proceed  from  the  specified  position via the specified procedure.,AT  [position]  CLEARED  [procedure name],W/U,FANS 1/A
+UM  85,Notification that a clearance to fly on the  specified route may be issued.  Note.— Avoid use of this message element  due to potential misinterpretation.,EXPECT [route clearance],R,FANS 1/A
+UM  86,Notification that a clearance to fly on the  specified route from the specified position  may be issued.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [position]  EXPECT  [route clearance],R,FANS 1/A
+UM  87,Notification that a clearance to fly directly  to the specified position may be issued.  Note.— Avoid use of this message element  due to potential misinterpretation.,EXPECT  DIRECT  TO  [position],R,FANS 1/A
+UM  88,Notification that a clearance to fly directly  from  the  first  specified  position  to  the  next specified position may be issued.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [position]  EXPECT  DIRECT TO [position],R,FANS 1/A
+UM  89,Notification that a clearance to fly directly  to  the  specified  position  commencing  at  the specified time may be issued.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [time]  EXPECT  DIRECT TO [position],R,FANS 1/A
+UM  90,Notification that a clearance to fly directly  to  the  specified  position  commencing  when  the  specified  level  is  reached  may  be issued.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [level]  EXPECT  DIRECT TO [position],R,FANS 1/A
+UM  91,Instruction to enter a holding pattern with  the  specified  characteristics  at  the  specified position and level.,HOLD  AT  [position]  MAINTAIN  [level]  INBOUND  TRACK  [degrees]  [direction]  TURNS  [leg  type]  or  HOLD  AT  [position]  MAINTAIN  [altitude]  INBOUND  TRACK  [degrees][direction]  TURN  LEG TIME [leg type],W/U,FANS 1/A
+UM  92,Instruction to enter a holding pattern with  the  published  characteristics  at  the  specified position and level.,HOLD  AT  [position]  AS  PUBLISHED  MAINTAIN  [level],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  93,Notification  that  an  onwards  clearance  may be issued at the specified time.,EXPECT  FURTHER  CLEARANCE AT [time],R,FANS 1/A
+UM  94,Instruction to turn left or right as specified  on to the specified heading.,TURN  [direction]  HEADING [degrees],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  95,Instruction to turn left or right as specified  on to the specified track.,TURN  [direction]  GROUND  TRACK  [degrees],W/U,FANS 1/A
+UM  215,Instruction  to  turn  a  specified  number  of  degrees left or right.,TURN [direction] [degrees]  DEGREES,W/U,ATN B1  FANS 1/A- ATN B1
+UM  190,Instruction to fly on the specified heading.,FLY HEADING [degrees],W/U,ATN B1  FANS 1/A- ATN B1
+UM  96,Instruction  to  continue  to  fly  on  the  current heading.,CONTINUE  PRESENT  HEADING  or  FLY  PRESENT HEADING,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  97,Instruction to fly on the specified heading  from the specified position.,AT  [position]  FLY  HEADING [degrees],W/U,FANS 1/A
+UM  221,Instruction  to  stop  turn  at  the  specified  heading  prior  to  reaching  the  previously  assigned heading.,STOP  TURN  HEADING  [degrees],W/U,N/A  (Urgent)
+UM  98,Instruction  to  turn  immediately  left  or  right  as  specified  on  to  the  specified  heading.,IMMEDIATELY  TURN  [direction]  HEADING  [degrees],W/U,FANS 1/A  (Distress)
+UM  99,Notification  that  a  clearance  may  be  issued  for  the  aircraft  to  fly  the  specified  procedure.,EXPECT [procedure name]  R,,FANS 1/A
+UM  100,Notification  that  a  speed  instruction  may  be  issued  to  be  effective  at  the  specified  time.,AT [time] EXPECT [speed],R,FANS 1/A
+UM  101,Notification  that  a  speed  instruction  may  be  issued  to  be  effective  at  the  specified  position.,AT  [position]  EXPECT  [speed],R,FANS 1/A
+UM  102,Notification  that  a  speed  instruction  may  be  issued  to  be  effective  at  the  specified  level.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [level]  EXPECT  [speed],R,FANS 1/A
+UM  103,Notification that a speed range instruction  may  be  issued  to  be  effective  at  the  specified time.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT [time] EXPECT [speed]  TO [speed],R,FANS 1/A
+UM  104,Notification that a speed range instruction  may  be  issued  to  be  effective  at  the  specified position.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [position]  EXPECT  [speed] TO [speed],R,FANS 1/A
+UM  105,Notification that a speed range instruction  may  be  issued  to  be  effective  at  the  specified level.  Note.— Avoid use of this message element  due to potential misinterpretation.,AT  [level]  EXPECT  [speed] TO [speed],R,FANS 1/A
+UM  106,Instruction  that  the  specified  speed  is  to  be maintained.,MAINTAIN [speed],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  188,Instruction that after passing the specified  position  the  specified  speed  is  to  be  maintained.,AFTER  PASSING  [position]  MAINTAIN  [speed],W/U,N/A
+UM  107,Instruction that the present speed is to  be  maintained.,MAINTAIN  PRESENT  SPEED,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  108,Instruction  that  the  specified  speed  or  a  greater speed is to be maintained.,MAINTAIN  [speed]  OR  GREATER,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  109,Instruction  that  the  specified  speed  or  a  lesser speed is to be maintained.,MAINTAIN  [speed]  OR  LESS,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  110,Instruction  that  a  speed  within  the  specified range is to be maintained.,MAINTAIN  [speed]  TO  [speed],W/U,FANS 1/A
+UM  111,Instruction that the present speed is to  be  increased  to  the  specified  speed  and  maintained until further advised.,INCREASE  SPEED  TO  [speed],W/U,FANS 1/A
+UM  112,"Instruction that the present speed is to  be  increased to the specified speed or greater,  and  maintained  at  or  above  the  specified  speed until further advised.",INCREASE  SPEED  TO  [speed] OR GREATER,W/U,FANS 1/A
+UM  113,Instruction that the present speed is to  be  reduced  to  the  specified  speed  and  maintained until further advised.,REDUCE  SPEED  TO  [speed],W/U,FANS 1/A
+UM  114,Instruction that the present speed is to  be  reduced to the specified speed or less and  maintained at or below the specified speed  until further advised.,REDUCE  SPEED  TO  [speed] OR LESS,W/U,FANS 1/A
+UM  115,Instruction  that  the  specified  speed  is  not  to be exceeded.,DO NOT EXCEED [speed]  W/U,,FANS 1/A
+UM  116,Instruction that the aircraft’s normal speed  be resumed.  The previously issued speed  restriction(s) are cancelled.,RESUME  NORMAL  SPEED,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  189,Instruction that the present speed is to  be  changed to the specified speed.,ADJUST  SPEED  TO  [speed],W/U,N/A
+UM  222,Notification that the aircraft may keep its  preferred speed without restriction.  FANS 1/A and FANS 1/A-ATN B1.— Uses  UM 169z free text for FANS 1/A aircraft.,NO  SPEED  RESTRICTION,R,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  223,Instruction  to  reduce  present  speed  to  the  minimum safe approach speed.,REDUCE  TO  MINIMUM  APPROACH SPEED,W/U,N/A
+UM  117,Instruction  that  the  ATS  unit  with  the  specified  ATS  unit  name  is  to  be  contacted on the specified frequency.,CONTACT  [unit  name]  [frequency],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  118,Instruction  that  at  the  specified  position  the ATS unit with the specified ATS unit  name  is  to  be  contacted  on  the  specified  frequency.,AT  [position]  CONTACT  [unit name] [frequency],W/U,FANS 1/A
+UM  119,Instruction  that  at  the  specified  time  the  ATS  unit  with  the  specified  ATS  unit  name  is  to  be  contacted  on  the  specified  frequency.,AT [time] CONTACT [unit  name] [frequency],W/U,FANS 1/A
+UM  238,Notification  that  the  secondary  frequency  is as specified.  FANS 1/A.—  Uses  UM  169o  free  text  for  FANS 1/A aircraft.,SECONDARY  FREQUENCY [frequency],R,FANS 1/A  [free text]
+UM  120,Instruction  that  the  ATS  unit  with  the  specified  ATS  unit  name  is  to  be  monitored on the specified frequency.  Note.— The flight crew is not required to  check in.,MONITOR  [unit  name]  [frequency],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  121,Instruction  that  at  the  specified  position  the ATS unit with the specified ATS unit  name  is  to  be  monitored  on  the  specified  frequency.  Note.— The flight crew is not required to  check in.,AT  [position]  MONITOR  [unit name] [frequency],W/U,FANS 1/A
+UM  122,Instruction  that  at  the  specified  time  the  ATS  unit  with  the  specified  ATS  unit  name  is  to  be  monitored  on  the  specified  frequency.  Note.— The flight crew is not required to  check in.,AT [time] MONITOR [unit  name] [frequency],W/U,FANS 1/A
+UM  123,Instruction  that  the  specified  code  (SSR  code) is to be selected.,SQUAWK [code],W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  124,Instruction  that  the  SSR  transponder  responses are to be disabled.,STOP SQUAWK,W/U,FANS 1/A
+UM  239,Instruction  that  the  ADS-B  transmissions  are to be terminated.,STOP  ADS-B  TRANSMISSION,W/U,N/A
+UM  125,Instruction  that  the  SSR  transponder  responses  should  include  level  information.,SQUAWK  MODE  CHARLIE  or  SQUAWK  ALTITUDE,W/U,FANS 1/A
+UM  240,Instruction  that  the  ADS-B  transmissions  should include level information.,TRANSMIT  ADS-B  ALTITUDE,W/U,N/A
+UM  126,Instruction  that  the  SSR  transponder  responses  should  no  longer  include  level  information.,STOP  SQUAWK  MODE  CHARLIE  or  STOP  ALTITUDE SQUAWK,W/U,FANS 1/A
+UM  241,Instruction  that  the  ADS-B  transmissions  should  no  longer  include  level  information.,STOP  ADS-B  ALTITUDE  TRANSMISSION,W/U,N/A
+UM  179,Instruction that the ‘ident’ function on the  SSR transponder is to be actuated.,SQUAWK IDENT,W/U,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  242,Instruction that the “ident” function of the  ADS-B emitter is to be activated.  FANS 1/A.— Uses UM 169ai free text for  FANS 1/A  aircraft.  The  free  text  message  is  considered  acceptable  as  the  intended  use  does  not  change  the  volume  of  protected airspace (i.e. not a clearance).,TRANSMIT  ADS-B  IDENT,W/U  or  R  (free  text),FANS 1/A  [free text]
+UM  243,"Instruction  to  report  when  the  aircraft  is  clear  of  adverse  meteorological  conditions,  and  a  clearance  to  regain  cleared flight route can be accepted.",REPORT  CLEAR  OF  WEATHER,W/U,N/A
+UM  127,Instruction  to  report  when  the  aircraft  is  back on the cleared route.,REPORT  BACK  ON  ROUTE,W/U   or   R,FANS 1/A
+UM  128,"Instruction to report when the aircraft has  vacated  the  specified  level  that  has  either  been  maintained  or  passed  through  on  climb or descent.  Note.—  Either  a  level  that  has  been  maintained,  or  a  level  passed  through  on  climb or descent.",REPORT  LEAVING  [level],W/U  or  R,FANS 1/A
+UM  129,Instruction to report when the aircraft is in  level flight at the specified level.  Note.—  This  message  element  is  only  to  be used with single altitude clearances.,REPORT  MAINTAINING  [level]  or  REPORT LEVEL [altitude],W/U  or  R,FANS 1/A
+UM  175,"(Reserved)  Note.—  Avoid  use  of  this  message  element, REPORT REACHING [level], as  it is reserved in ICAO Doc 4444.",N/A,W/U  or  R,FANS 1/A
+UM  200,Instruction  used  in  conjunction  with  a  level  clearance  to  report  maintaining  the  level assigned.,REPORT MAINTAINING  W/U,,N/A
+UM  180,Instruction  to  report  when  the  aircraft  is  within the specified vertical range.,REPORT  REACHING  BLOCK [level] TO [level],W/U  or  R,FANS 1/A
+UM  130,Instruction to report when the aircraft has  passed the specified position.,REPORT  PASSING  [position],W/U  or  R,FANS 1/A
+UM  181,Instruction  to  report  the  present  distance  to or from the specified position.,REPORT  DISTANCE  [to/from] [position],Y  or  NE,FANS 1/A
+UM  184,Instruction  to  report  at  the  specified  time  the  distance  to  or  from  the  specified  position.,AT  TIME  [time]  REPORT  DISTANCE  [to/from]  [position],Y,N/A
+UM  228,Instruction to report the estimated time of  arrival at the specified position.  FANS 1/A.—  Uses  UM  169d  free  text  for  FANS 1/A aircraft.,REPORT ETA [position],D Y  M 104,FANS 1/A  [free text]
+UM  131,Instruction  to  report  the  amount  of  fuel  remaining  and  the  number  of  persons  on  board.,REPORT  REMAINING  FUEL  AND  PERSONS  ON  BOARD  or  REPORT  REMAINING  FUEL  AND  SOULS ON BOARD,Y  or  NE,FANS 1/A  (Urgent)
+UM  132,Instruction to report the present position.,REPORT  POSITION  or  CONFIRM POSITION,Y  or  NE,FANS 1/A
+UM  133,Instruction to report the present level.,REPORT  PRESENT  LEVEL  or  CONFIRM  ALTITUDE,D Y  or  NE  M 32,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  134,Instruction to report the requested speed.  Note.—  Instruction  to  report  the  present  speed.  FANS 1/A.—  Uses  UM  169b  free  text  for  FANS 1/A  aircraft  when  the  controller  is  requesting  the  flight  crew  to  report  the  present ground speed.,REPORT  [speed  type]  [speed  type]  [speed  type]  SPEED  or  CONFIRM  SPEED,D Y  or  NE  or  R  M 113,FANS 1/A  [free text]
+UM  135,Instruction  to  confirm  the  currently  assigned level.,CONFIRM  ASSIGNED  LEVEL  or  CONFIRM  ASSIGNED ALTITUDE,D Y  or  NE  M 38  DM 77  (TBC),FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  136,Instruction  to  confirm  the  currently  assigned speed.,CONFIRM  ASSIGNED  SPEED,Y  or  NE,FANS 1/A
+UM  137,Instruction  to  confirm  the  currently  assigned route.,CONFIRM  ASSIGNED  ROUTE,Y  or  NE,FANS 1/A
+UM  138,Instruction  to  confirm  the  previously  reported  time  over  the  last  reported  waypoint.,CONFIRM  TIME  OVER  REPORTED WAYPOINT,Y  or  NE,FANS 1/A
+UM  139,Instruction  to  confirm  the  identity  of  the  previously reported waypoint.,CONFIRM  REPORTED  WAYPOINT,Y  or  NE,FANS 1/A
+UM  140,Instruction  to  confirm  the  identity  of  the  next waypoint.,CONFIRM  NEXT  WAYPOINT,Y  or  NE,FANS 1/A
+UM  141,Instruction  to  confirm  the  previously  reported  estimated  time  at  the  next  waypoint.,CONFIRM  NEXT  WAYPOINT ETA,Y  or  NE,FANS 1/A
+UM  142,Instruction  to  confirm  the  identity  of  the  next but one waypoint.,CONFIRM  ENSUING  WAYPOINT,Y  or  NE,FANS 1/A
+UM  143,The request was not understood. It should  be clarified and resubmitted.,CONFIRM REQUEST,Y  or  NE,FANS 1/A
+UM  144,Instruction  to  report  the  selected  (SSR)  code.,CONFIRM SQUAWK,Y  or  NE,FANS 1/A
+UM  145,Instruction to report the present heading.,REPORT  HEADING  or  CONFIRM HEADING,Y  or  NE,FANS 1/A
+UM  146,Instruction  to  report  the  present  ground  track.,REPORT  GROUND  TRACK  or  CONFIRM  GROUND TRACK,Y  or  NE,FANS 1/A
+UM  182,Instruction  to  report  the  identification  code of the last ATIS received.,CONFIRM ATIS CODE,Y  or  NE,FANS 1/A
+UM  147,Instruction to make a position report.  Note.—  To  be  used  if  the  controller  does  not receive a scheduled position report.,REQUEST  POSITION  REPORT,Y  or  NE,FANS 1/A
+UM  216,Instruction to file a flight plan.,REQUEST FLIGHT PLAN,Y,N/A
+UM  217,Instruction  to  report  that  the  aircraft  has  landed.,REPORT ARRIVAL,Y,N/A
+UM  229,Instruction  to  report  the  preferred  alternate aerodrome for landing.,REPORT  ALTERNATE  AERODROME,Y,N/A
+UM  231,Instruction to indicate the pilot’s preferred  level.  FANS 1/A  and  FANS 1/A-ATN B1.—  uses  UM 169c free text for FANS 1/A aircraft.,STATE  PREFERRED  LEVEL,D Y  M 106,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  232,Instruction to indicate the pilot’s preferred  time and/or position to commence descent  to the aerodrome of intended arrival.  FANS 1/A and FANS 1/A-ATN B1.— Uses  UM 169aa free text for FANS 1/A aircraft.,STATE  TOP  OF  DESCENT,D Y  M 109,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  148,Request for the earliest time or position at  which the specified level can be accepted.,WHEN  CAN  YOU  ACCEPT [level],D Y  or  NE  M 81  DM 82,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  149,Instruction  to  report  whether  or  not  the  specified  level  can  be  accepted  at  the  specified position.,CAN  YOU  ACCEPT  [level] AT [position],A/N,FANS 1/A
+UM  150,Instruction  to  report  whether  or  not  the  specified  level  can  be  accepted  at  the  specified time.,CAN  YOU  ACCEPT  [level] AT [time],A/N,FANS 1/A
+UM  151,Instruction  to  report  the  earliest  time  or  position  when  the  specified  speed  can  be  accepted.,WHEN  CAN  YOU  ACCEPT [speed],D Y  or  NE  M 83  DM 84,FANS 1/A
+UM  152,Instruction  to  report  the  earliest  time  or  position  when  the  specified  offset  track  can be accepted.,WHEN  CAN  YOU  ACCEPT  [specified  distance]  [direction]  OFFSET,D Y  or  NE  M 85  DM 86,FANS 1/A
+UM  153,ATS  advisory  that  the  altimeter  setting  should be the specified setting.,ALTIMETER [altimeter],R,FANS 1/A
+UM  213,ATS  advisory  that  the  specified  altimeter  setting relates to the specified facility.   FANS 1/A and FANS 1/A-ATN B1.— Uses  UM 169y free text for FANS 1/A aircraft.,[facility  designation]  ALTIMETER [altimeter],R,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  154,ATS  advisory  that  the  radar  service  is  terminated.,RADAR  SERVICE  TERMINATED  or  RADAR  SERVICES  TERMINATED,R,FANS 1/A
+UM  244,ATS  advisory  that  the  radar  and/or  ADS-B service is terminated.  FANS 1/A.—  uses  UM  169aj  free  text  for  FANS 1/A aircraft.,IDENTIFICATION  TERMINATED,R,FANS 1/A  [free text]
+UM  191,ATS  advisory  that  the  aircraft  is  entering  airspace  in  which  no  air  traffic  services  are  provided  and  all  existing  air  traffic  services are terminated.,ALL ATS TERMINATED,R,N/A
+UM  155,ATS advisory that radar contact has been  established at the specified position.,RADAR  CONTACT  [position],R,FANS 1/A
+UM  156,ATS advisory that radar contact has been  lost.,RADAR CONTACT LOST,R,FANS 1/A
+UM  210,ATS  advisory  that  the  aircraft  has  been  identified  on  radar  and/or  ADS-B  at  the  specified position.,IDENTIFIED [position],R,N/A
+UM  193,Notification  that  radar  and/or  ADS-B  identification has been lost.,IDENTIFICATION LOST,R,N/A
+UM  157,Instruction that a continuous transmission  is  detected  on  the  specified  frequency.  Check the microphone button.,CHECK  STUCK  MICROPHONE  [frequency],N  or  R,FANS 1/A  ATN B1   FANS 1/A- ATN B1  (Urgent)
+UM  158,ATS  advisory  that  the  ATIS  information  identified  by  the  specified  code  is  the  current ATIS information.,ATIS [atis code],R,FANS 1/A
+UM  212,ATS  advisory  that  the  specified  ATIS  information  at  the  specified  airport  is  current.,[facility  designation]  ATIS  [atis code] CURRENT,R,N/A
+UM  214,ATS  advisory  that  indicates  the  RVR  value for the specified runway.,RVR  RUNWAY  [runway]  [rvr],R,N/A
+UM  224,ATS advisory that no delay is expected.,NO DELAY EXPECTED,R,N/A
+UM  225,ATS advisory that the expected delay has  not been determined.,DELAY  NOT  DETERMINED,R,N/A
+UM  226,ATS advisory that the aircraft may expect  to  be  cleared  to  commence  its  approach  procedure at the specified time.,EXPECTED  APPROACH  TIME [time],R,N/A
+UM  159,A  system  generated  message  notifying  that  the  ground  system  has  detected  an  error.,ERROR [error information],N   or  NE,FANS 1/A  ATN B1   FANS 1/A- ATN B1  (Urgent)
+UM  160,"Notification  to  the  avionics  that  the  specified  data  authority  is  the  next  data  authority. If no data authority is specified,  this indicates that any previously specified  next data authority is no longer valid.",NEXT  DATA  AUTHORITY  [facility  designation],N   or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  161,Notification  to  the  avionics  that  the  data  link  connection  with  the  current  data  authority is being terminated.,END SERVICE,N  or  NE,FANS 1/A
+UM  162,Notification  that  the  ground  system  does  not support this message.  FANS 1/A and FANS 1/A ATN B1.— Uses  UM 169u free text for FANS 1/A aircraft.,MESSAGE  NOT  SUPPORTED  BY  THIS  ATS  UNIT  or  SERVICE  UNAVAILABLE,N  or  NE,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+UM  234,Notification  that  the  ground  system  does  not have a flight plan for that aircraft.,FLIGHT  PLAN  NOT  HELD,N,N/A
+UM  163,Notification  to  the  pilot  of  an  ATSU  identifier.,[facility  designation]  or  [icao  facility  designation]  [tP4+Table],N   or  NE,FANS 1/A
+UM  227,Confirmation  to  the  aircraft  system  that  the  ground  system  has  received  the  message  to  which  the  logical  acknowledgement  refers  and  found  it  acceptable  for  display  to  the  responsible  person.  FANS 1/A-ATN B1.—  ATN B1  only.    Not  available for FANS 1/A.,LOGICAL  ACKNOWLEDGEMENT,N,ATN B1  FANS 1/A- ATN B1
+UM  233,Notification to the pilot that messages sent  requiring a logical acknowledgement  will  not be accepted by this ground system.,USE  OF  LOGICAL  ACKNOWLEDGEMENT  PROHIBITED,N,N/A
+UM  164,The  associated  instruction  may  be  complied with at any future time.  Note.—  See  also  UM  177  AT  PILOTS  DISCRETION.,WHEN READY,N  or  NE,FANS 1/A
+UM  230,The  associated  instruction  is  to  be  complied with immediately.,IMMEDIATELY,N,N/A  (Distress)
+UM  165,"Used to link two messages, indicating the  proper  order  of  execution  of  clearances/  instructions.",THEN,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+UM  166,The associated instruction is issued due to  traffic considerations.,DUE  TO  [traffic  type]  TRAFFIC  or  DUE  TO  TRAFFIC,N  or  NE,FANS 1/A
+UM  167,The associated instruction is issued due to  airspace restrictions.,DUE  TO  AIRSPACE  RESTRICTION,N  or  NE,FANS 1/A
+UM  168,"The  indicated  communication  should  be  ignored.  Note.—  The  previously  sent  uplink  CPDLC  message  should  be  ignored.  DISREGARD  should  not  refer  to  a  clearance  or  instruction.  If  DISREGARD  is used, another element should be added  to  clarify  which  message  is  to  be  disregarded.",DISREGARD,R,FANS 1/A
+UM  176,Instruction that the pilot is responsible for  maintaining  separation  from  other  traffic  and  is  also  responsible  for  maintaining  visual meteorological conditions.,MAINTAIN  OWN  SEPARATION AND VMC,W/U,FANS 1/A
+UM  177,"N   N Used  in  conjunction  with  a  clearance/instruction  to  indicate  that  the  pilot may execute when prepared to do so. Note 1.—  When used in conjunction with  altitude assignments, means that ATC has  offered  the  pilot  the  option  of  starting  climb  or  descent  whenever  he/she  wishes  and  conducting  the  climb  or  descent  at  any  rate  he/she  wishes.  He/she  may  temporarily  level  off  at  any  intermediate  altitude.  However,  once  he/she  has  vacated an altitude, he/she may not return  to that altitude.  ote  2.—    There  are  considerable  differences regarding the interpretation of  “pilot’s  discretion”  and  “when  ready”  and their meanings/intended uses.    ote  3.—  See  also  UM  164  WHEN  READY.",AT PILOTS DISCRETION,N,FANS 1/A
+UM  178,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  TRACK  DETAIL  MESSAGE,  as  it is reserved in ICAO Doc 4444.",(not defined),Y  or  W/U,FANS 1/A
+UM  169,"Normal  urgency  attribute,  low  alert  attribute   FANS 1/A  –  ATN B1.—  FANS 1/A  only.   Ground  system  uses  UM  183  [free  text]  for ATN B1 aircraft.",[free text],R,FANS 1/A  FANS 1/A- ATN B1
+UM  170,"Distress  urgency  attribute,  high  alert  attribute",[free text],R,FANS 1/A
+UM  183,"Normal  urgency  attribute,  medium  alert  attribute  FANS 1/A-ATN B1.—  ATN B1  only.   Ground  system  uses  UM  169  [free  text]  for FANS 1/A aircraft.",[free text],N,ATN B1  FANS 1/A- ATN
+UM  187,"low urgency, normal alert",[free text],N,N/A
+UM  194,"normal urgency, low alert",[free text],Y,N/A
+UM  195,"low urgency, low alert",[free text],R,N/A
+UM  196,"normal urgency, medium alert",[free text],W/U,ATN B1  FANS 1/A- ATN B1
+UM  197,"urgent urgency, medium alert",[free text],W/U,N/A  (Urgent)
+UM  198,"distress urgency, high alert",[free text],W/U,N/A  (Distress)
+UM  199,"normal urgency, low alert",[free text],N,N/A
+UM  201,"Not used, low urgency, low alert",[free text],N,N/A
+UM  202,"Not used, low urgency, low alert",[free text],N,N/A
+UM  203,"normal urgency, medium alert",[free text],R,N/A
+UM  204,"normal urgency, medium alert",[free text],Y,N/A
+UM  205,"normal urgency, medium alert",[free text],A/N,N/A
+UM  206,"low urgency, normal alert",[free text],Y,N/A
+UM  207,"low urgency, low alert",[free text],Y,N/A
+UM  208,"low urgency, low alert",[free text],N,N/A
+DM  0,The instruction is understood and will be  complied with.,WILCO,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  1,The instruction cannot be complied with.,UNABLE,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  2,Wait for a reply.  Note.—  The  controller  is  informed  that  the  request  is  being  assessed  and  there  will  be  a  short-term  delay  (within  10  minutes). The exchange is not closed and  the  request  will  be  responded  to  when  conditions allow.,STANDBY,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  3,Message received and understood.  Note.—  ROGER  is  the  only  correct  response  to  an  uplink  free  text  message.  Under no circumstances will ROGER be  used instead of AFFIRM.,ROGER,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  4,Yes.  Note.—  AFFIRM  is  an  appropriate  response  to  an  uplinked  negotiation  request  message  (e.g.  UM  150  CAN  YOU ACCEPT [level] at [time]).,AFFIRM,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  5,No.  Note.—  NEGATIVE  is  an  appropriate  response  to  an  uplinked  negotiation  request  message  (e.g.  UM  150  CAN  YOU ACCEPT [level] at [time]).,NEGATIVE,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  6,Request to fly at the specified level.,REQUEST [level],Y  UM 0  UM 1  UM 19  UM 20  UM 23  UM 26  UM 27  UM 28  UM 29  UM 46  UM 47  UM 48  UM 159 +  UM 183  UM 162  UM 211,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  7,"Request  to  fly  at  a  level  within  the  specified vertical range.  FANS 1/A-ATN B1.—  FANS 1/A  aircraft  only.    ATN B1  aircraft  uses  DM  6  REQUEST  [level],  where  [level]  is  a  vertical range.",REQUEST  BLOCK  [level]  TO [level],Y,FANS 1/A  FANS 1/A  –ATN B1
+DM  8,Request  to  cruise  climb  to  the  specified  level.  Note.—  Avoid  use  of  this  message  element  due  to  potential  misinterpretation.,REQUEST  CRUISE  CLIMB TO [level],Y,FANS 1/A
+DM  9,Request to climb to the specified level.,REQUEST  CLIMB  TO  [level],Y  UM 0  UM 1  UM 19  UM 20  UM 23  UM 26  UM 27  UM 28  UM 29  UM 46  UM 47  UM 48  UM 159 +  UM 183  UM 162  UM 211,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  10,Request to descend to the specified level.,REQUEST  DESCENT  TO  [level],Y  UM 0  UM 1  UM 19  UM 20  UM 23  UM 26  UM 27  UM 28  UM 29  UM 46  UM 47  UM 48  UM 159 +  UM 183  UM 162  UM 211,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  11,Request  that  at  the  specified  position  a  climb to the specified level be approved.,AT  [position]  REQUEST  CLIMB TO [level],Y,FANS 1/A
+DM  12,Request  that  at  the  specified  position  a  descent  to  the  specified  level  be  approved.,AT  [position]  REQUEST  DESCENT TO [level],Y,FANS 1/A
+DM  13,Request that at the specified time a climb  to the specified level be approved.,AT  [time]  REQUEST  CLIMB TO [level],Y,FANS 1/A
+DM  14,Request  that  at  the  specified  time  a  descent  to  the  specified  level  be  approved.,AT  [time]  REQUEST  DESCENT TO [level],Y,FANS 1/A
+DM  69,Request that a descent be approved on a  see-and-avoid basis.  Note.—  Avoid  use  of  this  message  element  due  to  potential  misinterpretation.,REQUEST  VMC  DESCENT,Y,FANS 1/A
+DM  15,"Request that a parallel track, offset from  the  cleared  track  by  the  specified  distance  in  the  specified  direction,  be  approved.",REQUEST  OFFSET  [specified  distance]  [direction] OF ROUTE,Y,FANS 1/A
+DM  16,"Request that a parallel track, offset from  the  cleared  track  by  the  specified  distance  in  the  specified  direction,  be  approved from the specified position.",AT  [position]  REQUEST  OFFSET  [specified  distance]  [direction]  OF  ROUTE,Y,FANS 1/A
+DM  17,"Request that a parallel track, offset from  the  cleared  track  by  the  specified  distance  in  the  specified  direction,  be  approved from the specified time.",AT  [time]  REQUEST  OFFSET  [specified  distance]  [direction]  OF  ROUTE,Y,FANS 1/A
+DM  18,Request to fly at the specified speed.,REQUEST [speed],Y  UM 0  UM 1  UM 162  UM 211  UM 55  UM 61  UM 106  UM 107  UM 108  UM 109  UM 116  UM 222  UM 159 +  UM 183,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  19,Request to fly within the specified speed  range.,REQUEST  [speed]  TO  [speed],Y,FANS 1/A
+DM  20,Request for voice contact.,REQUEST  VOICE  CONTACT,Y,FANS 1/A
+DM  21,Request  for  voice  contact  on  the  specified frequency.,REQUEST  VOICE  CONTACT [frequency],Y,FANS 1/A
+DM  22,Request  to  track  from  the  present  position direct to the specified position.,REQUEST  DIRECT  TO  [position],Y  UM 0  UM 162  UM 211  UM 74  UM 96  UM 190  UM 159 +  UM 183,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  23,Request  for  the  specified  procedure  clearance.,REQUEST  [procedure  name],Y,FANS 1/A
+DM  24,Request for a route clearance.,REQUEST  CLEARANCE  [route  clearance]  or  REQUEST  [route clearance],Y,FANS 1/A
+DM  25,Request for a clearance.  Note.— Either pre-departure or route.,REQUEST  [clearance  type]  CLEARANCE  or  REQUEST CLEARANCE,Y,FANS 1/A
+DM  26,Request  for  a  weather  deviation  to  the  specified position via the specified route.,REQUEST  WEATHER  DEVIATION TO [position]  VIA [route clearance],Y,FANS 1/A
+DM  27,Request for a weather deviation up to the  specified  distance  off  track  in  the  specified direction.,REQUEST  WEATHER  DEVIATION  UP  TO  [specified  distance]  [direction] OF ROUTE,Y  UM 0  UM 162  UM 211  UM 64  UM 74  UM 82  UM 96  UM 190  UM 159 +  UM 183,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  70,Request  a  clearance  to  adopt  the  specified heading.,REQUEST  HEADING  [degrees],Y,FANS 1/A
+DM  71,Request  a  clearance  to  adopt  the  specified ground track.,REQUEST  GROUND  TRACK [degrees],Y,FANS 1/A
+DM  28,Notification  of  leaving  the  specified  level.,LEAVING [level],N,FANS 1/A
+DM  29,Notification  of  climbing  to  the  specified  level.,CLIMBING TO [level],N,FANS 1/A
+DM  30,Notification  of  descending  to  the  specified level.,DESCENDING TO [level],N,FANS 1/A
+DM  31,Notification  of  passing  the  specified  position.,PASSING [position],N,FANS 1/A
+DM  78,"Notification  that  at  the  specified  time,  the aircraft’s position was as specified.",AT  [time]  [distance]  [to/from] [position],N,FANS 1/A
+DM  32,Notification of the present level.,PRESENT LEVEL [level]  or  PRESENT  ALTITUDE  [altitude],N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  33,Notification of the present position.,PRESENT  POSITION  [position],N,FANS 1/A
+DM  34,Notification of the present speed.,PRESENT SPEED [speed],N,FANS 1/A
+DM  113,"Notification of the requested speed.  FANS 1/A.—  Uses  DM  67l  free  text  for  partial  intent.    The  flight  crew  notifies  the  controller  of  present  ground  speed,  in  response  to  UM  169b,  REPORT  GROUND SPEED.",[speed  type]  [speed  type]  [speed  type]  SPEED  [speed],N,FANS 1/A
+DM  35,Notification  of  the  present  heading  in  degrees.,PRESENT  HEADING  [degrees],N,FANS 1/A
+DM  36,Notification  of  the  present  ground  track  in degrees.,PRESENT  GROUND  TRACK [degrees],N,FANS 1/A
+DM  37,Notification  that  the  aircraft  is  maintaining the specified level.,MAINTAINING [level] or  LEVEL [altitude],N,FANS 1/A
+DM  72,"(Reserved)  Note.—  Avoid  use  of  this  message  element,  REACHING  [level],  as  it  is  reserved in ICAO Doc 4444.",N/A,N,FANS 1/A
+DM  76,Notification that the aircraft has reached  a  level  within  the  specified  vertical  range.,REACHING  BLOCK  [level] TO [level],N,FANS 1/A
+DM  38,Read-back of the assigned level.,ASSIGNED  LEVEL  [level]  or  ASSIGNED  ALTITUDE [altitude],N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  77,"Read-back of the assigned vertical range. FANS 1/A-ATN B1.—  FANS 1/A  aircraft  only.    ATN B1  aircraft  uses  DM  38  ASSIGNED  LEVEL  [level],  where  [level] is a vertical range.",ASSIGNED  BLOCK  [level] TO [level],N,FANS 1/A  FANS 1/A- ATN B1
+DM  39,Read-back of the assigned speed.,ASSIGNED  SPEED  [speed],N,FANS 1/A
+DM  40,Read-back of the assigned route.,ASSIGNED ROUTE [route  clearance],N,FANS 1/A
+DM  41,The  aircraft  has  regained  the  cleared  route.,BACK ON ROUTE,N,FANS 1/A
+DM  114,Notification  that  the  aircraft  is  clear  of  weather and is able to accept a clearance  to regain cleared flight route.,CLEAR OF WEATHER,N,N/A
+DM  42,The  next  waypoint  is  the  specified  position.,NEXT  WAYPOINT  [position],N,FANS 1/A
+DM  43,The  ETA  at  the  next  waypoint  is  as  specified.,NEXT  WAYPOINT  ETA  [time],N,FANS 1/A
+DM  44,The  next  plus  one  waypoint  is  the  specified position.,ENSUING  WAYPOINT  [position],N,FANS 1/A
+DM  45,Clarification  of  previously  reported  waypoint passage.,REPORTED  WAYPOINT  [position],N,FANS 1/A
+DM  46,Clarification  of  time  over  previously  reported waypoint.,REPORTED  WAYPOINT  [time],N,FANS 1/A
+DM  47,The  specified  (SSR)  code  has  been  selected.,SQUAWKING [code],N,FANS 1/A
+DM  48,Position report.  Note.—  Reports  the  current  position  of  the aircraft when the flight crew presses  the  button  to  send  this  message.    ATC  expects  position  reports  based  on  this  downlink message.,POSITION  REPORT  [position report],N,FANS 1/A
+DM  79,The  code  of  the  latest  ATIS  received  is  as specified.,ATIS [atis code],N,FANS 1/A
+DM  89,The  specified  ATS  unit  is  being  monitored on the specified frequency.  FANS 1/A-ATN B1.—  FANS 1/A aircraft  uses DM 67aa free text.  May require to  be preformatted.,MONITORING  [unit  name] [frequency],N,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+DM  102,Used to report that an aircraft has landed.,LANDING REPORT,N,N/A
+DM  104,Notification  of  estimated  time  of  arrival  at the specified position.  FANS 1/A.—  Uses  free  text  DM  67n.   Response to free text UM 169d REPORT  ETA [position],ETA  [position]  [time]  or  [position] [time],N,FANS 1/A  [free text]
+DM  105,Notification of the alternative aerodrome  for landing.,ALTERNATE  AERODROME [airport],N,N/A
+DM  106,Notification of the preferred level.  FANS 1/A.—  Uses  DM  67m.    Response  to  free  text  UM  169c  STATE  PREFERRED LEVEL.  FANS 1/A  –  ATN B1.—    FANS 1/A  aircraft  response  to  UM  231  STATE  PREFERRED LEVEL.,PREFERRED  LEVEL  [level] or FL[altitude],N,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+DM  109,Notification  of  the  preferred  time  to  commence descent for approach.  FANS 1/A.— Uses DM 67v.  Response to  free  text  UM  169aa  STATE  TOP  OF  DESCENT.  FANS 1/A  –  ATN B1.—  FANS 1/A  aircraft  response  to  UM  232  STATE  TOP OF DESCENT.,TOP  OF  DESCENT  [time] or TOD [time],N,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+DM  110,Notification  of  the  preferred  position  to  commence descent for approach.,TOP  OF  DESCENT  [position],N,N/A
+DM  111,Notification  of  the  preferred  time  and  position  to  commence  descent  for  approach.,TOP  OF  DESCENT  [time]  [position],N,N/A
+DM  49,Request  for  the  earliest  time  at  which  a  clearance  to  the  specified  speed  can  be  expected.,WHEN CAN WE EXPECT  [speed],Y,FANS 1/A
+DM  50,"Request  for  the  earliest  time  at  which  a  clearance to a speed within the specified  range can be expected.  Note.— This message should not be used  as it is not supported by the appropriate  uplink  message  response:  UM  103,  UM  104 or UM 105.",WHEN CAN WE EXPECT  [speed] TO [speed],Y,FANS 1/A
+DM  51,Request  for  the  earliest  time  at  which  a  clearance to regain the planned route can  be expected.,WHEN CAN WE EXPECT  BACK ON ROUTE,Y,FANS 1/A
+DM  52,Request  for  the  earliest  time  at  which  a  clearance to descend can be expected.,WHEN  CAN  WE  EXPECT  LOWER  LEVEL  or  WHEN  CAN  WE  EXPECT  LOWER  ALTITUDE,Y,FANS 1/A
+DM  53,Request  for  the  earliest  time  at  which  a  clearance to climb can be expected.,WHEN  CAN  WE  EXPECT  HIGHER  LEVEL  or  WHEN  CAN  WE  EXPECT  HIGHER  ALTITUDE,Y,FANS 1/A
+DM  54,"Request  for  the  earliest  time  at  which  a  clearance to cruise climb to the specified  level can be expected.  Note.— This message should not be used  as it is not supported by the appropriate  uplink  message  response:  UM  11,  UM  12, UM 17, or UM 18.",WHEN CAN WE EXPECT  CRUISE  CLIMB  TO  [level],Y,FANS 1/A
+DM  87,Request  for  the  earliest  time  at  which  a  clearance  to  climb  to  the  specified  level  can be expected.  FANS 1/A.— Uses preformatted free text  DM 67h.,WHEN CAN WE EXPECT  CLIMB TO [level],Y,FANS 1/A  [free text]
+DM  88,Request  for  the  earliest  time  at  which  a  clearance  to  descend  to  the  specified  level can be expected.  FANS 1/A.— Uses preformatted free text  DM 67i.,WHEN CAN WE EXPECT  DESCENT TO [level],Y,FANS 1/A  [free text]
+DM  55,Urgency prefix.  FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,PAN PAN PAN,Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Urgent)
+DM  56,Distress prefix.  FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,MAYDAY  MAYDAY  MAYDAY,Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Distress)
+DM  112,Indicates  specifically  that  the  aircraft  is  being subjected to unlawful interference.,SQUAWKING 7500,N,N/A  (Urgent)
+DM  57,Notification  of  fuel  remaining  and  number of persons on board.   FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,[remaining  fuel]  OF  FUEL  REMAINING  AND  [persons  on  board]  PERSONS  ON  BOARD  or  [remaining  fuel]  OF  FUEL  REMAINING  AND  [remaining  souls]  SOULS  ON BOARD,Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Urgent)
+DM  58,Notification  that  the  pilot  wishes  to  cancel the emergency condition.   FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,CANCEL EMERGENCY,Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Urgent)
+DM  59,Notification that the aircraft is diverting  to the specified position via the specified  route due to an urgent need.   FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,DIVERTING TO [position]  VIA [route clearance],Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Urgent)
+DM  60,Notification that the aircraft is deviating  the  specified  distance  in  the  specified  direction  off  the  cleared  route  and  maintaining  a  parallel  track  due  to  an  urgent need.   FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,OFFSETTING  [specified  distance]  [direction]  OF  ROUTE,Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Urgent)
+DM  61,Notification  that  the  aircraft  is  descending  to  the  specified  level  due  to  an urgent need.   FANS 1/A  –  ATN B1.—  Ground  system  will  display  message  to  controller  for  FANS 1/A aircraft.,DESCENDING TO [level],Y  or  N,FANS 1/A   FANS 1/A- ATN B1  (Urgent)
+DM  80,Notification  that  the  aircraft  is  deviating  up  to  the  deviating  distance  from  the  cleared  route  in  the  specified  direction  due to an urgent need.  FANS 1/A.—  Notification  that  the  aircraft  is  operating  on  an  offset.    The  urgency  attribute  for  this  message  element is not defined.,DEVIATING  UP  TO  [specified  distance]  [direction] OF ROUTE or  DEVIATING  [distanceoffset]  [direction]  OF ROUTE,Y  or  N,FANS 1/A  (Urgent)
+DM  62,A  system-generated  message  that  the  avionics has detected an error.,ERROR [error information],N,FANS 1/A  ATN B1   FANS 1/A- ATN B1  (Urgent)
+DM  63,A  system-generated  denial  to  any  CPDLC application message sent from a  ground facility that is not the current data  authority.,NOT  CURRENT  DATA  AUTHORITY,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  99,A system-generated message to inform a  ground facility that it is now the current  data authority.,CURRENT  DATA  AUTHORITY,N,ATN B1   FANS 1/A- ATN B1  (Urgent)
+DM  64,Notification  to  the  ground  system  that  the  specified  ATSU  is  the  current  data  authority.  FANS 1/A  –  ATN B1.—  FANS 1/A  aircraft uses this message.,[facility designation],N,FANS 1/A  FANS 1/A- ATN B1
+DM  107,A  system-generated  message  sent  to  a  ground system that tries to connect to an  aircraft when a current data authority has  not  designated  the  ground  system  as  the  NDA.  FANS 1/A  –  ATN B1.—  ATN B1  aircraft  uses this message.,NOT  AUTHORIZED  NEXT  DATA  AUTHORITY,N,ATN B1
+DM  73,A  system-generated  message  indicating  the software version number.  FANS 1/A  –  ATN B1.—  FANS 1/A  aircraft uses this message.,[version number],N,FANS 1/A  FANS 1/A- ATN B1
+DM  100,"Confirmation  to  the  ground  system  that  the  aircraft  system  has  received  the  message  to  which  the  logical  acknowledgement  refers  and  found  it  acceptable  for  display  to  the  responsible  person.  FANS 1/A  –  ATN B1.—  ATN B1  ground  systems  uses  alternate  means,  such  as  MAS  message  assurance  received  from  FANS 1/A  aircraft,  to  mimic  LOGICAL  ACKNOWLEDGEMENT.",LOGICAL  ACKNOWLEDGEMENT,N,ATN B1
+DM  65,Used  to  explain  reasons  for  pilot’s  message.,DUE TO WEATHER,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  66,Used  to  explain  reasons  for  pilot’s  message.,DUE  TO  AIRCRAFT  PERFORMANCE,N,FANS 1/A  ATN B1  FANS 1/A- ATN B1
+DM  74,States  a  desire  by  the  pilot  to  provide  his/her  own  separation  and  remain  in  VMC.,REQUEST  TO  MAINTAIN  OWN  SEPARATION  AND  VMC  or  MAINTAIN  OWN  SEPARATION AND VMC,Y  or  N,FANS 1/A
+DM  75,Used  in  conjunction  with  another  message to indicate that the pilot wishes  to  execute  request  when  the  pilot  is  prepared to do so.,AT PILOTS DISCRETION,N,FANS 1/A
+DM  101,Allows  the  pilot  to  indicate  a  desire  for  termination  of  CPDLC  application  with  the current data authority.,REQUEST  END  OF  SERVICE,Y,N/A
+DM  103,Allows  the  pilot  to  indicate  that  he/she  has cancelled IFR flight plan.,CANCELLING IFR,Y,N/A
+DM  108,Notification that de-icing action has been  completed.,DE-ICING COMPLETE,N,N/A
+DM  67,"Normal urgency, low alert  FANS 1/A  –  ATN B1.—  FANS 1/A  aircraft only.  ATN B1 aircraft uses DM  98.",[free text],N,FANS 1/A  FANS 1/A- ATN B1
+DM  68,"Distress urgency, high alert  Note.—  Selecting  any  of  the  emergency  message  elements  will  result  in  this  message  element  being  enabled  for  the  flight  crew  to  include  in  the  emergency  message at their discretion.",[free text],Y,FANS 1/A
+DM  90,"normal urgency, medium alert",[free text],N,N/A
+DM  91,"normal urgency, low alert",[free text],Y,N/A
+DM  92,"low urgency, low alert",[free text],Y,N/A
+DM  93,"urgent urgency, high alert",[free text],N,N/A  (Urgent)
+DM  94,"distress urgency, high alert",[free text],N,N/A  (Distress)
+DM  95,"urgent urgency, medium alert",[free text],N,N/A  (Urgent)
+DM  96,"urgent urgency, low alert",[free text],N,N/A  (Urgent)
+DM  97,"low urgency, low alert",[free text],N,N/A
+DM  98,"normal urgency, normal alert  FANS 1/A  –  ATN B1.—  ATN B1  aircraft  only.  FANS 1/A aircraft uses DM 67.",[free text],N,ATN B1  FANS 1/A- ATN B1
+DM  81,We  can  accept  the  specified  level  at  the  specified time.  FANS 1/A.— Uses preformatted free text  DM 67b.,WE  CAN  ACCEPT  [level]  AT [time],N,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+DM  115,We  can  accept  the  specified  level  at  the  specified position.,WE  CAN  ACCEPT  [level]  AT [position],N,N/A
+DM  82,We cannot accept the specified level.  FANS 1/A.— Uses preformatted free text  DM 67e.,WE  CANNOT  ACCEPT  [level],N,FANS 1/A  [free text]  ATN B1  FANS 1/A- ATN B1
+DM  83,We can accept the specified speed at the  specified time.  FANS 1/A.— Uses preformatted free text  DM 67c.,WE CAN ACCEPT [speed]  AT [time],N,FANS 1/A  [free text]
+DM  116,We can accept the specified speed at the  specified position.,WE CAN ACCEPT [speed]  AT [position],N,N/A
+DM  84,We cannot accept the specified speed.  FANS 1/A.— Uses preformatted free text  DM 67f.,WE  CANNOT  ACCEPT  [speed],N,FANS 1/A  [free text]
+DM  85,We can accept a parallel track offset the  specified  distance  in  the  specified  direction at the specified time.  FANS 1/A.— Uses preformatted free text  DM 67d.,WE  CAN  ACCEPT  [specified  distance]  [direction] AT [time],N,FANS 1/A  [free text]
+DM  117,We can accept a parallel track offset the  specified  distance  in  the  specified  direction at the specified position.,WE  CAN  ACCEPT  [specified  distance]  [direction] AT [position],N,N/A
+DM  86,We  cannot  accept  a  parallel  track  offset  the  specified  distance  in  the  specified  direction.  FANS 1/A.— Uses preformatted free text  DM 67g.,WE  CANNOT  ACCEPT  [specified  distance]  [direction],N,FANS 1/A  [free text]

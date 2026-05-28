@@ -1,0 +1,6 @@
+Ref #,Message Intent/Use,Message Element,Resp.,
+UM  169q,Acknowledgement  of  receipt  of  a  CPDLC  downlink MAYDAY message.  Note.— No equivalent to ICAO Doc 4444.,ROGER MAYDAY,R,
+UM  169r,Acknowledgement  of  receipt  of  a  CPDLC  downlinked PAN message.  Note.— No equivalent to ICAO Doc 4444.,ROGER PAN,R,
+UM  169ak,Notification that an ADS-C emergency report  has been received from the aircraft.  Note.— No equivalent to ICAO Doc 4444.,CONFIRM  ADS-C  EMERGENCY,R,
+UM  169s,Notification  that  the  CPDLC  downlink  request was:  1) part of the approved message set; and  2) received by the controller.  The  aircraft  will  receive  any  further  communication  about  the  request  via  voice  contact with the specified unit.  [unit_description]  is  the  name  of  the  radio  facility  with  which  the  response  will  be  communicated.  Note.— No equivalent to ICAO Doc 4444.,REQUEST  RECEIVED  RESPONSE  WILL  BE  VIA  [unit_description],R,
+UM  169x,Indication that the request has been received  and has been forwarded on to the next ATSU. Note.— Same intent as ICAO Doc 4444 UM  211.,REQUEST FORWARDED,R,
