@@ -7,10 +7,13 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
 from datetime import datetime as dt, timezone as tz
+from pathlib import Path
 from typing import Annotated
 
 # Third Party Libraries
+import pandas as pd
 from fastapi import Depends, Query
 from pydantic import AfterValidator
 from sqlmodel import Field, Session, SQLModel, create_engine
@@ -19,6 +22,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine
 from acars_server import static_data
 
 
+PWD = Path(os.path.dirname(__file__))
 SQLITE_FILE_NAME = "database.db"
 SQLITE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
 
@@ -28,6 +32,14 @@ engine = create_engine(SQLITE_URL, connect_args=connect_args)
 def create_db_and_tables():
     """Create DB and Tables"""
     SQLModel.metadata.create_all(engine)
+
+    # Output 1
+    df = pd.read_csv(os.path.join(PWD.parent, "static_data_build", "built_data", "output_1.csv"))
+    df.to_sql(name="cpdlc_uplink_message_elements", con=engine, if_exists="append", index=False)
+
+    # Output 2
+    df = pd.read_csv(os.path.join(PWD.parent, "static_data_build", "built_data", "output_2.csv"))
+    df.to_sql(name="cpdlc_free_text_message_elements", con=engine, if_exists="append", index=False)
 
 def get_session():
     """Get the Session"""
