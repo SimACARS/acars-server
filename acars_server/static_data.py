@@ -22,6 +22,27 @@ OOOI_SMI_TYPES = {
     "POS": "POSITION REPORT WITHOUT WEATHER INFORMATION"
 }
 
+# https://www.caa.co.uk/media/2cdpufa4/gold_2edition.pdf (Appendix A)
+# Ground System > Aircraft System > CPDLC Message Set
+GROUND_AND_AIRCRAFT_SYSTEMS:Dict[str, Dict[str, str|None]] = {
+    "FANS_1_A": {
+        "FANS_1_A": "FANS_1_A",
+        "FANS_1_A-A_ATN_B1": "FANS_1_A",
+        "ATN_B1": None
+    },
+    "ATN_B1": {
+        "FANS_1_A": None,
+        "FANS_1_A-A_ATN_B1": "ATN_B1",
+        "ATN_B1": "ATN_B1"
+    },
+    "FANS_1_A-A_ATN_B1": {
+        "FANS_1_A": "FANS_1_A-A_ATN_B1",
+        "FANS_1_A-A_ATN_B1": "FANS_1_A-A_ATN_B1",
+        "ATN_B1": "ATN_B1"
+    },
+}
+
+
 # Ref: https://www.hoppie.nl/acars/system/tech.html
 LEGACY_MSG_TYPES = [
     "progress",
