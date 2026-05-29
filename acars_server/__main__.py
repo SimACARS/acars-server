@@ -11,15 +11,21 @@ from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Any, Dict, List
+from typing import Annotated, Any, Dict
 
 # Third Party Libraries
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
-from redis_om import Migrator
-from sqlmodel import and_, select, update
+from opentelemetry import trace
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from redis_om import Migrator # type: ignore
+from sqlmodel import select
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
@@ -27,6 +33,16 @@ from acars_server import __VERSION__, auth, common, databases, static_data, netw
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
+
+# Initialize OpenTelemetry
+resource = Resource(attributes={"service.name": "fastapi-service"})
+tracer_provider = TracerProvider(resource=resource)
+trace.set_tracer_provider(tracer_provider)
+
+# Set up OTLP exporter for traces
+otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
+span_processor = BatchSpanProcessor(otlp_exporter)
+tracer_provider.add_span_processor(span_processor)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,6 +80,7 @@ app = FastAPI(
     },
     openapi_tags=static_data.METADATA_TAGS
 )
+FastAPIInstrumentor.instrument_app(app)
 # Serve some static files
 app.mount("/static", StaticFiles(directory=os.path.join(PWD.parent, "front_end")), name="static")
 # Add the API Key header
