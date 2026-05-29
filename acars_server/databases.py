@@ -96,7 +96,8 @@ def check_valid_legacy_msg_type(legacy_type: str):
 class StoreAndForward(HashModel, index=True): # type: ignore
     """A table to hold all the messages"""
     msg_from: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")]
-    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
+    msg_to: Annotated[
+        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
     msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)]
     packet: str
     network: str
