@@ -11,15 +11,15 @@ from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Any, Dict, List
+from typing import Annotated, Any, Dict
 
 # Third Party Libraries
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
-from redis_om import Migrator
-from sqlmodel import and_, select, update
+from redis_om import Migrator # type: ignore
+from sqlmodel import select
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
