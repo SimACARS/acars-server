@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/SimACARS/acars-server/compare/v1.6.1...v1.6.2) (2026-05-29)
+
+
+### Performance Improvements
+
+* removed unused imports ([6d33774](https://github.com/SimACARS/acars-server/commit/6d33774ed3c2b73ebd1c450d10f2abb6e8fa8254))
+
 ## [1.6.1](https://github.com/SimACARS/acars-server/compare/v1.6.0...v1.6.1) (2026-05-29)
 
 
