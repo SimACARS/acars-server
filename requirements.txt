@@ -5,6 +5,7 @@ loguru==0.7.3
 pandas==3.0.3
 pydantic==2.13.4
 python-dotenv==1.2.2
+redis_om==1.1.0
 Requests==2.34.2
 sqlmodel==0.0.38
 sse_starlette==3.4.4
