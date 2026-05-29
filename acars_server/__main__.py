@@ -18,11 +18,12 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Res
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
+from redis_om import Migrator
 from sqlmodel import and_, select, update
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
-from acars_server import __VERSION__, auth, common, sql, static_data, networks, tasks
+from acars_server import __VERSION__, auth, common, databases, static_data, networks, tasks
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
@@ -35,7 +36,8 @@ async def lifespan(app: FastAPI):
     # ------------------------------------------------------------------
 
     # Create DB and Tables
-    sql.create_db_and_tables()
+    databases.create_db_and_tables()
+    Migrator().run()
 
     # ------------------------------------------------------------------
     # App Start
@@ -107,6 +109,7 @@ responses_user_new_network:dict[int|str,dict[str,Any]]|None  = {
     400: {},
     501: {},
 }
+
 @app.get("/user/new/{network}", tags=["user management"], responses=responses_user_new_network)
 async def auth_new_user(network: str):
     """Authenticate a new user and generate an API key"""
@@ -132,12 +135,12 @@ async def auth_new_user(network: str):
 
 @app.get(
         "/callback/oauth/vatsim/{state}/{code}",
-        response_model=sql.ApiKeyPublic,
+        response_model=databases.ApiKeyPublic,
         tags=["callbacks"])
 async def auth_new_user_callback_vatsim(
     state:str,
     code:str,
-    session: sql.SessionDep
+    session: databases.SessionDep
     ):
     """A callback point for VATSIM"""
     # Get the access token from VATSIM
@@ -163,7 +166,7 @@ async def auth_new_user_callback_vatsim(
         "created": dtnow,
         "last_used": dtnow
     }
-    db_add = sql.ApiKey.model_validate(db_data)
+    db_add = databases.ApiKey.model_validate(db_data)
     session.add(db_add)
     session.commit()
     session.refresh(db_add)
@@ -173,23 +176,24 @@ async def auth_new_user_callback_vatsim(
 # Test Functions
 # ------------------------------------------------------------------
 @app.get("/test/poll/{callsign}", tags=["testing"])
-async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
+async def test_poll(callsign:str) -> Response:
     """Test POLL"""
     # If the callsign has been validated
     update_msg = {
         "relayed": True,
         "relayed_at": dt.now(tz.utc).timestamp()
     }
-    db_select = select(sql.StoreAndForward).where(and_(
-        sql.StoreAndForward.msg_to == callsign, sql.StoreAndForward.relayed.is_(None))) # type: ignore  # pylint: disable=no-member
-    all_messages = session.exec(db_select).fetchall()
+    all_messages = databases.StoreAndForward.find(
+                (databases.StoreAndForward.msg_to == callsign)
+                & (databases.StoreAndForward.relayed == "0")
+            ).all()
     if len(all_messages) > 0:
         rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
         update_id_list = []
         for m in all_messages:
-            update_id_list.append(m["id"])
+            update_id_list.append(m["pk"])
             data_block = {
-                "id": m["id"],
+                "pk": m["pk"],
                 "msg_from": m["msg_from"],
                 "msg_to": m["msg_to"],
                 "msg_type": m["msg_type"],
@@ -199,19 +203,18 @@ async def test_poll(callsign:str, session: sql.SessionDep) -> Response:
             rtn["messages"].append(data_block)
 
         if len(update_id_list) > 0:
-            stmt = (
-                update(sql.StoreAndForward)
-                .where(and_(
-                    sql.StoreAndForward.msg_to == callsign,
-                    sql.StoreAndForward.id.in_(update_id_list))) # type: ignore  # pylint: disable=no-member
-                .values(**update_msg)
-                )
+            records = databases.StoreAndForward.find(
+                (databases.StoreAndForward.msg_to == callsign)
+                & (databases.StoreAndForward.pk << update_id_list)
+            ).all()
 
-            session.exec(stmt)
-            session.commit()
-        common.logger.success(f"Messages retrieved {rtn}")
+            for record in records:
+                for k, v in update_msg.items():
+                    setattr(record, k, v)
+                record.save()
+                common.logger.success(f"Message retrieved for {callsign} - {record}")
         return JSONResponse(rtn)
-    common.logger.success("No messages to retrive")
+    common.logger.success(f"No messages to retrive for {callsign}")
     return JSONResponse(content={"msg_count": 0})
 
 @app.get("/test/{ir_type}/{network}/{station}", status_code=204, tags=["testing"])
@@ -220,7 +223,6 @@ async def test_inforeq(
     network:str,
     station:str,
     background_tasks: BackgroundTasks,
-    session: sql.SessionDep
     ):
     """INFOREQ Test"""
     t_msg = {
@@ -231,23 +233,24 @@ async def test_inforeq(
         "msg_to": station,
         "msg_from": "TEST1"
     }
-    sf_msg = sql.StoreAndForward.model_validate(t_msg)
+    sf_msg = databases.StoreAndForward.model_validate(t_msg)
     common.logger.success(sf_msg)
-    background_tasks.add_task(tasks.message_parse, sf_msg, session)
+    background_tasks.add_task(tasks.message_parse, sf_msg)
+    return JSONResponse(content={"status": "ok"})
 
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
 @app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
 async def poll_for_new_messages(
-    session:sql.SessionDep,
+    session:databases.SessionDep,
     api_key:str = Depends(header_api_key)
     ) -> Response:
     """Poll for new messages"""
     # ------------------------------------------------------------------
     # API Auth
     # ------------------------------------------------------------------
-    db_auth = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
     api_user = session.exec(db_auth).first()
     if not api_user:
         common.logger.error("401: API key not recognised")
@@ -280,18 +283,17 @@ async def poll_for_new_messages(
             "relayed": True,
             "relayed_at": dt.now(tz.utc).timestamp()
         }
-        db_select = select(sql.StoreAndForward).where(and_(
-            sql.StoreAndForward.msg_to == callsign,
-            sql.StoreAndForward.relayed.is_(None))) # type: ignore  # pylint: disable=no-member
-        all_messages = session.exec(db_select).fetchall()
-
+        all_messages = databases.StoreAndForward.find(
+                    (databases.StoreAndForward.msg_to == callsign)
+                    & (databases.StoreAndForward.relayed == "0")
+                ).all()
         if len(all_messages) > 0:
             rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
-            update_id_list:List[str] = []
+            update_id_list = []
             for m in all_messages:
-                update_id_list.append(m["id"])
+                update_id_list.append(m["pk"])
                 data_block = {
-                    "id": m["id"],
+                    "pk": m["pk"],
                     "msg_from": m["msg_from"],
                     "msg_to": m["msg_to"],
                     "msg_type": m["msg_type"],
@@ -301,17 +303,18 @@ async def poll_for_new_messages(
                 rtn["messages"].append(data_block)
 
             if len(update_id_list) > 0:
-                stmt = (
-                    update(sql.StoreAndForward)
-                    .where(and_(
-                        sql.StoreAndForward.msg_to == callsign,
-                        sql.StoreAndForward.id.in_(update_id_list))) # type: ignore  # pylint: disable=no-member
-                    .values(**update_msg)
-                    )
-                session.exec(stmt)
-                session.commit()
+                records = databases.StoreAndForward.find(
+                    (databases.StoreAndForward.msg_to == callsign)
+                    & (databases.StoreAndForward.pk << update_id_list)
+                ).all()
 
+                for record in records:
+                    for k, v in update_msg.items():
+                        setattr(record, k, v)
+                    record.save()
+                    common.logger.success(f"Message retrieved for {callsign} - {record}")
             return JSONResponse(rtn)
+        common.logger.success(f"No messages to retrive for {callsign}")
         return JSONResponse(content={"msg_count": 0})
     error = ("Unable to retrieve callsign for user - Network: "
                 f"{user_data['network']}, User ID: {user_data['uid']}")
@@ -322,14 +325,14 @@ async def poll_for_new_messages(
 
 @app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
 async def post_msg_progress(
-    session:sql.SessionDep,
+    session:databases.SessionDep,
     api_key:str = Depends(header_api_key)
     ):
     """Post a message"""
     # ------------------------------------------------------------------
     # API Auth
     # ------------------------------------------------------------------
-    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    db_select = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
     api_user = session.exec(db_select).first()
     if not api_user:
         raise HTTPException(status_code=401, detail="Unauthorised")
@@ -346,7 +349,7 @@ async def hoppie_formated_url(
     msg_type: Annotated[str, Query(alias="type")],
     packet: Annotated[str, Query(alias="packet")],
     background_tasks: BackgroundTasks,
-    session:sql.SessionDep,
+    session:databases.SessionDep,
     ):
     """
     Provides a psudo html endpoint for legacy clients.
@@ -358,7 +361,7 @@ async def hoppie_formated_url(
         "msg_type": msg_type,
         "packet": packet
     }
-    sf_msg = sql.StoreAndForwardCreate.model_validate(msg)
+    sf_msg = databases.StoreAndForward.model_validate(msg)
     await transmit_a_message(
         msg=sf_msg,
         api_key=api_key,
@@ -369,19 +372,19 @@ async def hoppie_formated_url(
         "/msg/tx",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
-        response_model=sql.StoreAndForwardPublic,
+        response_model=databases.StoreAndForward,
         tags=["messaging"]
         )
 async def transmit_a_message(
-    msg:sql.StoreAndForwardCreate,
-    session:sql.SessionDep,
+    msg:databases.StoreAndForward,
+    session:databases.SessionDep,
     background_tasks: BackgroundTasks,
     api_key:str = Depends(header_api_key)):
     """Legacy message"""
     # ------------------------------------------------------------------
     # API Auth
     # ------------------------------------------------------------------
-    db_select = select(sql.ApiKey).where(sql.ApiKey.api_key == api_key)
+    db_select = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
     api_user = session.exec(db_select).first()
     if not api_user:
         raise HTTPException(status_code=401, detail="Unauthorised")
@@ -391,7 +394,7 @@ async def transmit_a_message(
 
     # Read API Key
     user_data = crypto.api_key_reader(api_key)
-    sf_msg = sql.StoreAndForward.model_validate(msg)
+    sf_msg = databases.StoreAndForward.model_validate(msg)
 
     # Validate callsign on various networks
     check = False
@@ -411,7 +414,7 @@ async def transmit_a_message(
 
     # If the callsign has been validated
     if check:
-        background_tasks.add_task(tasks.message_parse, sf_msg, session)
+        background_tasks.add_task(tasks.message_parse, sf_msg)
         return sf_msg
 
     error = (f"Callsign validation failed - Network: {user_data['network']}, "
