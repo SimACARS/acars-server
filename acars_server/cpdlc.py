@@ -13,7 +13,7 @@ from typing import Any, Dict, Union
 # Third Party Libraries
 
 # Local Libraries
-from acars_server import common, sql, static_data
+from acars_server import common, databases, static_data
 
 # Message format
 # /data2/{MSG_ID}/{RESPONSE_ID}/{RESPONSE_TYPE}/{MESSAGE}
@@ -22,7 +22,7 @@ from acars_server import common, sql, static_data
 class Cpdlc:
     """A CPDLC Class"""
 
-    def __init__(self, message:sql.StoreAndForward) -> None:
+    def __init__(self, message:databases.StoreAndForward) -> None:
         self.message = message
         self.exploded:Dict[str, Union[str,bool]] = {}
 
