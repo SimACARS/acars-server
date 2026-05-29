@@ -1,7 +1,18 @@
 {
     "branches": ["main"],
     "plugins": [
-        "@semantic-release/commit-analyzer",
+        [
+            "@semantic-release/commit-analyzer",
+            {
+                "preset": "angular",
+                "releaseRules": [
+                    { "breaking": true, "release": "major" }
+                ],
+                "parserOpts": {
+                    "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+                }
+            }
+        ],
         [
             "semantic-release-replace-plugin",
             {
@@ -24,6 +35,9 @@
             }
         ],
         "@semantic-release/release-notes-generator",
+        {
+            "preset": "angular"
+        },
         "@semantic-release/github",
         [
             "@semantic-release/changelog",
