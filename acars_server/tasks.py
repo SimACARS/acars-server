@@ -15,12 +15,12 @@ from typing import Any, Dict
 from datetime import datetime as dt, timezone as tz
 
 # Local Libraries
-from acars_server import common, cpdlc, inforeq, sql
+from acars_server import common, databases, inforeq
 
 
 vs = inforeq.Vatsim()
 
-def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
+def message_parse(msg:databases.StoreAndForward):
     """Parse a message"""
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
@@ -39,28 +39,26 @@ def message_parse(msg:sql.StoreAndForward, session:sql.SessionDep):
 
     # Validate the message content
     if send_msg["packet"] is None:
-        sf_msg = sql.StoreAndForward.model_validate(msg)
+        sf_msg = databases.StoreAndForward.model_validate(msg)
     else:
-        sf_msg = sql.StoreAndForward.model_validate(send_msg)
+        sf_msg = databases.StoreAndForward.model_validate(send_msg)
 
     # Commit the message to the store
-    session.add(sf_msg)
-    session.commit()
-    session.refresh(sf_msg)
+    sf_msg.save()
 
-def msg_type_ads_c(msg:sql.StoreAndForward) -> bool:
+def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
     """Validates ADS-C messages"""
     if re.match(r"^REPORT\s[A-Z0-9]{4,10}\s\d{6}\s[\d\.\-]+\s[\d\.\-]+\s\d{1,6}$", msg["packet"]):
         return True
     return False
 
-def msg_type_cpdlc(msg:sql.StoreAndForward) -> bool:
+def msg_type_cpdlc(msg:databases.StoreAndForward) -> bool:
     """Validates CPDLC messages"""
     if re.match(r"^\/data2\/\d+\/\d*\/[A-Z]{0,2}\/.*$", msg["packet"]):
         return True
     return False
 
-def msg_type_inforeq(msg:sql.StoreAndForward) -> Dict[str, Any]:
+def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Handle INFOREQ messages"""
     send_msg = {
         "created": dt.now(tz.utc).timestamp(),
