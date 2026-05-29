@@ -20,7 +20,7 @@ from acars_server import common, databases, inforeq
 
 vs = inforeq.Vatsim()
 
-def message_parse(msg:databases.StoreAndForward, session:databases.SessionDep):
+def message_parse(msg:databases.StoreAndForward):
     """Parse a message"""
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
@@ -34,7 +34,7 @@ def message_parse(msg:databases.StoreAndForward, session:databases.SessionDep):
     elif msg["msg_type"] == "cpdlc":
         if not msg_type_cpdlc(msg):
             return
-    
+
     # Validate the message content
     if send_msg["packet"] is None:
         sf_msg = databases.StoreAndForward.model_validate(msg)
@@ -42,9 +42,7 @@ def message_parse(msg:databases.StoreAndForward, session:databases.SessionDep):
         sf_msg = databases.StoreAndForward.model_validate(send_msg)
 
     # Commit the message to the store
-    session.add(sf_msg)
-    session.commit()
-    session.refresh(sf_msg)
+    sf_msg.save()
 
 def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
     """Validates ADS-C messages"""

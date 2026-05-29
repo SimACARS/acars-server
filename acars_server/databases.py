@@ -7,6 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+from email.policy import default
 import os
 from typing import Annotated, Optional
 
@@ -14,7 +15,7 @@ from typing import Annotated, Optional
 from dotenv import load_dotenv
 from fastapi import Depends, Query
 from pydantic import AfterValidator
-from redis_om import get_redis_connection, HashModel
+from redis_om import get_redis_connection, HashModel, Field as RedisField
 from sqlmodel import Field, Session, SQLModel, create_engine
 
 # Local Libraries
@@ -95,13 +96,13 @@ def check_valid_legacy_msg_type(legacy_type: str):
 class StoreAndForward(HashModel, index=True): # type: ignore
     """A table to hold all the messages"""
     msg_from: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")]
-    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")]
+    msg_to: Annotated[str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
     msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)]
     packet: str
     network: str
     created: float
-    relayed: bool = False
-    relayed_at: Optional[float]
+    relayed: Optional[bool] = RedisField(index=True, default=False)
+    relayed_at: Optional[float] = 0.0
 
     def __getitem__(self, key):
         return getattr(self, key)
