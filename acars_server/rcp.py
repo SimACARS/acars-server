@@ -8,6 +8,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+from typing import Dict
 
 # Third Party Libraries
 
@@ -77,16 +78,16 @@ class Rcp400(RcpBase):
     integrity = 10
 
 
-RCP_SLA = {
-    "progress": "RCP240",
-    "cpdlc": "RCP240",
-    "telex": "RCP240",
-    "ping": "RCP400",
-    "posreq": "RCP240",
-    "position": "RCP240",
-    "datareq": "RCP240",
-    "poll": "RCP240",
-    "peek": "RCP240",
-    "inforeq": "RCP400",
-    "ads-c": "RCP180"
+RCP_SLA: Dict[str, RcpBase] = {
+    "progress": Rcp400(),
+    "cpdlc": Rcp240(),
+    "telex": Rcp240(),
+    "ping": Rcp400(),
+    "posreq": Rcp240(),
+    "position": Rcp240(),
+    "datareq": Rcp240(),
+    "poll": Rcp240(),
+    "peek": Rcp240(),
+    "inforeq": Rcp400(),
+    "ads-c": Rcp180()
 }
