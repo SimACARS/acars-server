@@ -13,6 +13,7 @@ Your user ID is verified using your network's OAuth2 protocol. We ONLY store you
  - Python >= 3.14.4
  - Python pip >= 26.1.1
  - Git >= 2.54.0 (windows)
+ - Redis >= 8.0.0
 ### Getting Started (Visual Studio Code)
     git clone https://github.com/SimACARS/acars-server.git
    Create and activate a virtual environment
