@@ -6,9 +6,12 @@
             {
                 "preset": "angular",
                 "releaseRules": [
-                    { "breaking": true, "release": "major" }
+                    { "breaking": true, "release": "major" },
+                    { "type": "feat", "release": "minor" },
+                    { "type": "fix", "release": "patch" }
                 ],
                 "parserOpts": {
+                    "headerPattern": "^([a-zA-Z]+)(?:\\(([^\\)]+)\\))?(!)?:\\s(.*)$",
                     "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
                 }
             }
@@ -34,10 +37,12 @@
                 ]
             }
         ],
-        "@semantic-release/release-notes-generator",
-        {
-            "preset": "angular"
-        },
+        [
+            "@semantic-release/release-notes-generator",
+            {
+                "preset": "angular"
+            }
+        ],
         "@semantic-release/github",
         [
             "@semantic-release/changelog",
