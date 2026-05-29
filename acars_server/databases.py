@@ -7,7 +7,6 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from email.policy import default
 import os
 from typing import Annotated, Optional
 
