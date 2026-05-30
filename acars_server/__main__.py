@@ -260,6 +260,26 @@ async def test_inforeq(
     background_tasks.add_task(tasks.message_parse, sf_msg)
     return JSONResponse(content={"status": "ok"})
 
+@app.post("/test/tx", status_code=204, tags=["testing"])
+async def test_tx(
+    msg:databases.StoreAndForward,
+    background_tasks: BackgroundTasks,
+    ):
+    """INFOREQ Test"""
+    sf_msg = databases.StoreAndForward.model_validate(msg)
+    t_msg = {
+        "created": dt.now(tz.utc).timestamp(),
+        "msg_type": sf_msg["msg_type"],
+        "network": sf_msg["network"],
+        "packet": sf_msg["packet"],
+        "msg_to": sf_msg["msg_to"],
+        "msg_from": sf_msg["msg_from"]
+    }
+    sf2_msg = databases.StoreAndForward.model_validate(t_msg)
+    common.logger.success(sf2_msg)
+    background_tasks.add_task(tasks.message_parse, sf2_msg)
+    return JSONResponse(content={"status": "ok"})
+
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
