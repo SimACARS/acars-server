@@ -25,6 +25,9 @@ Create and activate a virtual environment
 Setup OpenObserve using this guide https://openobserve.ai/blog/monitoring-fastapi-application-using-opentelemetry-and-openobserve/
 
     pip install -r requirements.txt
+    pip install opentelemetry-distro
+    opentelemetry-bootstrap -a install
+    pip install opentelemetry-exporter-otlp
     fastapi dev
 
 Browse to http://127.0.0.1:8000 for the API or http://127.0.0.1:8000/docs for OpenAPI docs
