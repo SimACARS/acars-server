@@ -1,0 +1,32 @@
+receivers:
+  redis:
+    endpoint: <REDIS_HOST>:6379
+    collection_interval: 10s
+    password: <REDIS_PASSWORD>
+  otlp:
+    protocols:
+      grpc:
+        endpoint: <OTLPS_ENDPOINT>:4317
+      http:
+        endpoint: <OTLPS_ENDPOINT>:4318
+
+processors:
+  batch:
+
+exporters:
+  otlphttp/openobserve:
+    endpoint: http://localhost:5080/api/default/
+    headers:
+      Authorization: Basic <OPENOBSERVE_API_KEY>
+      stream-name: default
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/openobserve]
+    metrics:
+      receivers: [redis]
+      processors: [batch]
+      exporters: [otlphttp/openobserve]

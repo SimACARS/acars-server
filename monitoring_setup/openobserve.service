@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenObserve
+After=network.target
+
+[Service]
+Type=simple
+User=openobserve
+Group=openobserve
+WorkingDirectory=/opt/openobserve
+ExecStart=/opt/openobserve/openobserve
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
