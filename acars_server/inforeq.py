@@ -26,31 +26,40 @@ class Noaa:
     @staticmethod
     def metar(icao:str) -> str:
         """Gets a METAR from NOAA"""
-        rsp = requests.get(
-            f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT",
-            timeout=30)
-        if rsp.status_code == 200:
-            return rsp.text
+        try:
+            rsp = requests.get(
+                f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT",
+                timeout=30)
+            if rsp.status_code == 200:
+                return rsp.text
+        except requests.ReadTimeout:
+            common.logger.error(f"Timeout while fetching METAR for {icao.upper()}")
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
     def taf(icao:str) -> str:
         """Gets a TAF from NOAA"""
-        rsp = requests.get(
+        try:
+            rsp = requests.get(
             f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT",
             timeout=30)
-        if rsp.status_code == 200:
-            return rsp.text
+            if rsp.status_code == 200:
+                return rsp.text
+        except requests.ReadTimeout:
+            common.logger.error(f"Timeout while fetching TAF for {icao.upper()}")
         return f"NO TAF AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
     def shorttaf(icao:str) -> str:
         """Gets a SHORT TAF from NOAA"""
-        rsp = requests.get(
-            f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT",
-            timeout=30)
-        if rsp.status_code == 200:
-            return rsp.text
+        try:
+            rsp = requests.get(
+                f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT",
+                timeout=30)
+            if rsp.status_code == 200:
+                return rsp.text
+        except requests.ReadTimeout:
+            common.logger.error(f"Timeout while fetching SHORT TAF for {icao.upper()}")
         return f"NO SHORT TAF AVAILABLE FOR {icao.upper()}"
 
 
