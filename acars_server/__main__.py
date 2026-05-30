@@ -14,6 +14,7 @@ from time import sleep
 from typing import Annotated, Any, Dict
 
 # Third Party Libraries
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
@@ -34,13 +35,17 @@ from acars_server import __VERSION__, auth, common, databases, static_data, netw
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
 
+load_dotenv()
+
 # Initialize OpenTelemetry
 resource = Resource(attributes={"service.name": "fastapi-service"})
 tracer_provider = TracerProvider(resource=resource)
 trace.set_tracer_provider(tracer_provider)
 
 # Set up OTLP exporter for traces
-otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
+otlp_exporter = OTLPSpanExporter(
+    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}",
+    insecure=True)
 span_processor = BatchSpanProcessor(otlp_exporter)
 tracer_provider.add_span_processor(span_processor)
 
