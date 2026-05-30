@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.7.0](https://github.com/SimACARS/acars-server/compare/v1.6.2...v1.7.0) (2026-05-30)
+
+
+### Features
+
+* 19 chore implement opentelemetry openobserve ([#21](https://github.com/SimACARS/acars-server/issues/21)) ([52a8d07](https://github.com/SimACARS/acars-server/commit/52a8d076f570a6b547656c7ababd71d2208a60df))
+
 ## [1.6.2](https://github.com/SimACARS/acars-server/compare/v1.6.1...v1.6.2) (2026-05-29)
 
 
