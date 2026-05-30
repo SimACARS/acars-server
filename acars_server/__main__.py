@@ -14,10 +14,17 @@ from time import sleep
 from typing import Annotated, Any, Dict
 
 # Third Party Libraries
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
+from opentelemetry import trace
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from redis_om import Migrator # type: ignore
 from sqlmodel import select
 from sse_starlette.sse import EventSourceResponse
@@ -27,6 +34,20 @@ from acars_server import __VERSION__, auth, common, databases, static_data, netw
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
+
+load_dotenv()
+
+# Initialize OpenTelemetry
+resource = Resource(attributes={"service.name": "fastapi-service"})
+tracer_provider = TracerProvider(resource=resource)
+trace.set_tracer_provider(tracer_provider)
+
+# Set up OTLP exporter for traces
+otlp_exporter = OTLPSpanExporter(
+    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}",
+    insecure=True)
+span_processor = BatchSpanProcessor(otlp_exporter)
+tracer_provider.add_span_processor(span_processor)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,6 +85,7 @@ app = FastAPI(
     },
     openapi_tags=static_data.METADATA_TAGS
 )
+FastAPIInstrumentor.instrument_app(app)
 # Serve some static files
 app.mount("/static", StaticFiles(directory=os.path.join(PWD.parent, "front_end")), name="static")
 # Add the API Key header
@@ -236,6 +258,26 @@ async def test_inforeq(
     sf_msg = databases.StoreAndForward.model_validate(t_msg)
     common.logger.success(sf_msg)
     background_tasks.add_task(tasks.message_parse, sf_msg)
+    return JSONResponse(content={"status": "ok"})
+
+@app.post("/test/tx", status_code=204, tags=["testing"])
+async def test_tx(
+    msg:databases.StoreAndForward,
+    background_tasks: BackgroundTasks,
+    ):
+    """INFOREQ Test"""
+    sf_msg = databases.StoreAndForward.model_validate(msg)
+    t_msg = {
+        "created": dt.now(tz.utc).timestamp(),
+        "msg_type": sf_msg["msg_type"],
+        "network": sf_msg["network"],
+        "packet": sf_msg["packet"],
+        "msg_to": sf_msg["msg_to"],
+        "msg_from": sf_msg["msg_from"]
+    }
+    sf2_msg = databases.StoreAndForward.model_validate(t_msg)
+    common.logger.success(sf2_msg)
+    background_tasks.add_task(tasks.message_parse, sf2_msg)
     return JSONResponse(content={"status": "ok"})
 
 # ------------------------------------------------------------------

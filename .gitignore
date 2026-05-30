@@ -182,3 +182,5 @@ cython_debug/
 
 *.key
 *.db
+telementry/
+.secret/
