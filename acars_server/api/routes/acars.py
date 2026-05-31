@@ -23,7 +23,7 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # ACARS Endpoints
 # ------------------------------------------------------------------
-@router.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["Messaging"])
+@router.post("/poll", responses=static_data.COMMON_ERRORS)
 async def poll_for_new_messages(
     session:databases.SessionDep,
     api_key:str = Depends(common.header_api_key)
@@ -80,10 +80,9 @@ async def poll_for_new_messages(
         detail=error)
 
 @router.post(
-        "/msg/post/oooi",
+        "/post/oooi",
         status_code=201,
-        responses=static_data.COMMON_ERRORS,
-        tags=["Messaging"])
+        responses=static_data.COMMON_ERRORS)
 async def post_msg_progress(
     session:databases.SessionDep,
     api_key:str = Depends(common.header_api_key)
@@ -129,11 +128,10 @@ async def hoppie_formated_url(
         session=session)
 
 @router.post(
-        "/msg/tx",
+        "/tx",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
-        response_model=databases.StoreAndForward,
-        tags=["Messaging"]
+        response_model=databases.StoreAndForward
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,

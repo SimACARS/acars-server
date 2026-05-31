@@ -29,13 +29,14 @@ async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
     with open(common.AUTH_KEY, "rb") as key_file:
         signing_key = key_file.read()
 
-    smoosh = f"{msg['logon_from']}:{msg['logon_to']}:{msg['pk']}:{dt.now(tz.utc).timestamp()}".encode()
+    smoosh = (f"{msg['logon_from']}:{msg['logon_to']}:"
+              "{msg['pk']}:{dt.now(tz.utc).timestamp()}").encode()
     h = blake2b(digest_size=32, key=signing_key)
     h.update(smoosh)
 
     return h.hexdigest()
 
-@router.post("/dlic/aircraft/logon", tags=["Data Link Initiation and Capability"])
+@router.post("/aircraft/logon")
 async def dlic_aircraft_logon(
     msg:databases.DataLinkInitiationCapability,
     session:databases.SessionDep,
@@ -79,7 +80,7 @@ async def dlic_aircraft_logon(
     sf2_msg.save()
     return JSONResponse(content={"status": "logged on", "data": sf2_msg.model_dump()})
 
-@router.post("/dlic/aircraft/logoff", tags=["Data Link Initiation and Capability"])
+@router.post("/aircraft/logoff")
 async def dlic_aircraft_logoff(
     msg: databases.LogoffRequest,
     session:databases.SessionDep,

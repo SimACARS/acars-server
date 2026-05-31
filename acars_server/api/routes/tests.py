@@ -22,9 +22,8 @@ router = APIRouter()
 # Test Endpoints
 # ------------------------------------------------------------------
 @router.get(
-        "/test/auth/new_user/{cid}",
-        response_model=databases.ApiKeyPublic,
-        tags=["Testing"])
+        "/auth/new_user/{cid}",
+        response_model=databases.ApiKeyPublic)
 async def test_auth_new_user(
     cid:str,
     session: databases.SessionDep
@@ -47,7 +46,7 @@ async def test_auth_new_user(
     session.refresh(db_add)
     return db_add
 
-@router.get("/test/poll/{callsign}", tags=["Testing"])
+@router.get("/poll/{callsign}")
 async def test_poll(callsign:str) -> Response:
     """Test POLL"""
     # If the callsign has been validated
@@ -89,7 +88,7 @@ async def test_poll(callsign:str) -> Response:
     common.logger.success(f"No messages to retrive for {callsign}")
     return JSONResponse(content={"msg_count": 0})
 
-@router.get("/test/{ir_type}/{network}/{station}", status_code=204, tags=["Testing"])
+@router.get("/{ir_type}/{network}/{station}", status_code=204)
 async def test_inforeq(
     ir_type:str,
     network:str,
@@ -110,7 +109,7 @@ async def test_inforeq(
     background_tasks.add_task(tasks.message_parse, sf_msg)
     return JSONResponse(content={"status": "ok"})
 
-@router.post("/test/tx", status_code=204, tags=["Testing"])
+@router.post("/tx", status_code=204)
 async def test_tx(
     msg:databases.StoreAndForward,
     background_tasks: BackgroundTasks,

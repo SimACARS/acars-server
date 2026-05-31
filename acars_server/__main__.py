@@ -98,8 +98,8 @@ app.include_router(status.router)
 # User Endpoints
 app.include_router(users.router)
 # Test Endpoints
-app.include_router(tests.router)
+app.include_router(tests.router, prefix="/test", tags=["Testing"])
 # DLIC (Data Link Initiation and Capability) Endpoints
-app.include_router(dlic.router)
+app.include_router(dlic.router, prefix="/dlic", tags=["Data Link Initiation and Capability"])
 # ACARS Endpoints
-app.include_router(acars.router)
+app.include_router(acars.router, prefix="/acars", tags=["Messaging"])
