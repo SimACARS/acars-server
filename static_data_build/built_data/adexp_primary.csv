@@ -1,0 +1,285 @@
+primary_field,type,syntax,semantic
+aatot,basic,"'-' ""AATOT” timehhmm",The Anticipated Actual Take-Off Time (AATOT) of the flight.
+ad,compound,"'-' ""AD"" adid [(fl | flblock)] [eto] [to] [cto] [sto]  [ptstay] [ptrfl] [ptrulchg] [(ptspeed | ptmach)]",The designator of an aerodrome. In cases where the  aerodrome forms part of the route description additional  routing information may be provided.
+ada,basic,"'-' ""ADA"" date",Actual date of arrival.
+adarr,basic,‘-’ “ADARR” (icaoaerodrome | 'ZZZZ'),Actual aerodrome of arrival.
+adarrz,basic,"'-' ""ADARRZ"" 1{LIM_CHAR}20",Name of actual aerodrome of arrival if no ICAO location  indicator exists.
+add,basic,"'-' ""ADD"" date",Actual date of departure.
+addr,compound,"'- ""BEGIN"" ""ADDR"" 1 { fac } '-' ""END"" ""ADDR""",List of addressees.
+adep,basic,"'-' ""ADEP"" (icaoaerodrome | 'AFIL' | 'ZZZZ')",ICAO location indicator of the aerodrome of departure or the  indication ‘AFIL’ meaning an air-filed flight plan or ‘ZZZZ’  when no ICAO location indicator is assigned to the  aerodrome of departure.
+adepk,basic,"'-' ""ADEPK"" (icaoaerodrome | 'AFIL' | 'ZZZZ' |  icaoaerodromewldcrd)","Aerodrome of departure used as database key in a query,  may be wild-carded.  May contain an ICAO location indicator or the indication  ‘AFIL’ meaning an air-filed flight plan or ‘ZZZZ’ when no  ICAO location indicator is assigned to the aerodrome of  departure or a combination of alphabetic and wildcard  characters."
+adepold,basic,"'-' ""ADEPOLD"" (icaoaerodrome | 'AFIL' | 'ZZZZ')","The ""previous"" aerodrome of departure. May contain the  ICAO location indicator or the indication ‘AFIL’ meaning an  air-filed flight plan or ‘ZZZZ’ when no ICAO location indicator  is assigned to the aerodrome of departure."
+ades,basic,"'-' ""ADES"" (icaoaerodrome | 'ZZZZ')",The ICAO location indicator of the aerodrome of destination  or ‘ZZZZ’ when no ICAO location indicator is assigned to the  aerodrome of destination.
+adesk,basic,"'-' ""ADESK"" (icaoaerodrome | 'ZZZZ' |  icaoaerodromewldcrd)","The aerodrome of destination used as database key in a  query, may be wild-carded.  May contain an ICAO location indicator or ‘ZZZZ’ when no  ICAO location indicator has been assigned to the aerodrome  of destination or a combination of alphabetic and wildcard  characters."
+adesold,basic,"'-' ""ADESOLD"" (icaoaerodrome | ‘ZZZZ’)","The ""previous"" aerodrome of destination. May contain the  ICAO location indicator or ‘ZZZZ’ when no ICAO location  indicator has been assigned to the aerodrome of destination."
+adexptxt,compound,"'-' ""ADEXPTXT""  (preproctxt | postproctxt)",Contains an ADEXP message.
+af,basic,‘-‘ “AF” “ATN” | “FANS1A”,Type of logon parameters ATN or FANS/1A.
+afildata,compound,"'-' ""AFILDATA"" ptid fl eto","Estimate data for an air-filed flight plan.  A point identification, the joining flight level and the estimate  date-time at the point.   NOTE: The flight level indicated is the level at which the  flight has been cleared to join controlled airspace over the  point indicated. It need not be the same as the RFL."
+afregullist,compound,"'-' ""BEGIN"" ""AFREGULLIST"" { regul } '-' ""END""  ""AFREGULLIST""",List of ATFCM regulations that affect a flight.
+ahead,basic,"'-' ""AHEAD"" (heading | ""ZZZ"" | [""PH"" | ""AW""])","The heading assigned to a flight, expressed in degrees  Must be a three digit numeric or the value ‘ZZZ’ indicating  that no heading is assigned. Optionally, this field may  contain the value ‘PH’ indicating holding the present heading  or the value ‘AW’ indicating that the aircraft is cleared to  avoid weather, but no heading is assigned."
+airtemp,basic,‘-‘ “AIRTEMP” airtemperature,The temperature of the air.
+altnz,compound,"'-' ""ALTNZ"" (adname  [ geoid | refid ] ) | ptid","Name of destination alternate aerodrome if no ICAO location  indicator exists. Optionally, the location of the aerodrome if it  is not listed in the national AIP given by bearing and  distance or Lat. Long. Alternatively, if the aircraft did not  depart from an aerodrome, the first point of the route given  by Waypoint/Nav Aid or Lat. Long."
+altrnt1,basic,"'-' ""ALTRNT1"" (icaoaerodrome | ‘ZZZZ’)",The ICAO location indicator of the first destination alternate  aerodrome or the indicator ‘ZZZZ’ when no ICAO location  indicator has been assigned to the aerodrome.
+altrnt2,basic,"'-' ""ALTRNT2"" (icaoaerodrome | ‘ZZZZ’)",The ICAO location indicator of the second destination  alternate aerodrome or the indicator ‘ZZZZ’ when no ICAO  location indicator has been assigned to the aerodrome.
+amantime,basic,‘-‘ “AMANTIME” timehhmmss,The time at which a flight should be overhead the  appropriate Coordination Point (COP) as calculated by the  arrival manager.
+aoarcid,basic,"'-' ""AOARCID"" 3{ALPHA}3","The ICAO three-letter designator of the aircraft operator as  indicated in the aircraft identification, ARCID or ICAO Field  7a."
+aobd,basic,"'-' ""AOBD"" date",Actual Off_Block Date.
+aobt,basic,"'-' ""AOBT"" timehhmm",Actual Off_Block Time.
+aoopr,basic,"'-' ""AOOPR"" 3{ALPHA}3",The ICAO three-letter designator of the aircraft operator as  derived from the OPR/ element of ICAO Field 18.
+applipt,basic,"'-' ""APPLIPT"" point","An identifier for a point at which an ATC constraint applies,  either a coded designator of a point or a name given  artificially (GEOxx, RENxx or REFxx)."
+apptot,basic,‘-‘ “APPTOT” timehhmm,The approved take off time is the time at which the flight  should take off at the aerodrome as approved by the next  ATC unit.
+apptyp,basic,"'-' ""APPTYP"" 2{ALPHANUM}7","Approach type of the flight, free text field between 2 and 7  characters."
+arcaddr,basic,"'-' ""ARCADDR"" ( 6{hexadecimal}6 | 'NIL' )","The ICAO 24-bit aircraft address as used for Mode S,  Datalink. The 'NIL' indication is used to suppress a  previously provided aircraft address."
+arcid,basic,"'-' ""ARCID"" aircraftid","Aircraft Identification.  May be the registration marking of the aircraft, or the ICAO  designator of the aircraft operator followed by the flight  identifier."
+arcidk,basic,"'-' ""ARCIDK"" (aircraftid | aircraftidwldcrd)",Aircraft Identification used as database key in a query; may  be wild-carded.  Must be a combination of alphanumeric and wild-card  characters up to maximum 7 characters in total.
+arcidold,basic,'-' ARCIDOLD aircraftid,"The ""previous"" aircraft id. Where the aircraft id. Is to be  amended, the new value will be given in ""ARCID""."
+arctyp,basic,"'-' ""ARCTYP"" (icaoaircrafttype | ""ZZZZ"")",Type of aircraft (ICAO identification of the type) or ZZZZ.
+areasts,basic,‘-‘ “AREASTS” (“ACTIVE” | “INACTIVE”) !1  {LIM_CHAR},The status of an airspace expressed as free text indicating if  the area is active or inactive and the type of activity.
+arrproc,basic,‘-‘ “ARRPROC” sidstarid | “DCT” | point,An indication of the procedure an arriving aircraft is expected  to fly from the last en-route point.  May be:  - the identifier of a Standard Arrival Route procedure;  - an indication that the aircraft will fly direct to the initial  approach fix;  - an indication that no procedure is specified for the aircraft  to reach the defined point.
+arrseqnumber,basic,"'-' ""ARRSEQNUMBER"" 2{ DIGIT }2",An arrival sequence number.
+aspeed,basic,"'-' ""ASPEED"" (spd | machnumber | ""ZZZ"")","The currently assigned speed of the flight, in kilometres per  hour, knots or Mach number.  Must be 'M' followed by three digits, 'K' or 'N' followed by  four digits or 'ZZZ' indicating that a previously assigned  speed no longer applies."
+asplist,compound,"'-' ""BEGIN"" ""ASPLIST"" { asp } '-' ""END""  ""ASPLIST""",List of airspaces crossed by a flight.
+ata,basic,"'-' ""ATA"" timehhmm",Actual time of arrival.
+atd,basic,"'-' ""ATD"" timehhmm",Actual time of departure.
+atfmdelay,basic,"'-' ""ATFMDELAY” timehhmm",The ATFM delay allocated to a flight.
+atnlogon,compound,‘-‘ “ATNLOGON” cmltsp adsqvltsp cpcqvltsp  atiqv,Logon parameters for ATN aircraft.
+atnlogonb2,compound,‘-‘ “ATNLOGONB2” adsqvltsp cpcqvltsp,Logon parameters for ATNB2 equipped aircraft.
+atot,basic,"'-' ""ATOT"" timehhmm",Actual Time of Take-off
+attot,basic,"'-' ""ATTOT” timehhmm",The Aircraft operator Target Take-Off Time (ATTOT) of the  flight.
+atsrt,basic,"'-' ""ATSRT"" atsroute point point",ATS route designator and identifiers of first and last points.
+awr,basic,"'-' ""AWR"" “R” ! 1{ ""1"" | ""2"" | ""3"" | ""4"" | ""5"" | ""6"" | ""7""  | ""8"" | ""9"" }1",A reference included in the FPL when the flight has been re- routed using the 'AO What-If-Reroute' mechanism.
+cassaddr,compound,"'-' ""BEGIN"" ""CASSADDR"" { fac } '-' ""END""  ""CASSADDR""",Addresses to which ATFM messages should be addressed.
+cda,basic,"'-' ""CDA"" date",Calculated Date of Arrival
+cdmstatus,basic,‘-‘ “CDMSTATUS” cdmstatusvalue,Departure planning status information
+cta,basic,"'-' ""CTA"" timehhmm",Calculated Time of Arrival
+ceqpt,basic,"'-' ""CEQPT"" aidequipment","Radio communication, navigation and approach equipment  and capabilities (as ICAO field 10a)."
+cfl,compound,"'-' ""CFL"" fl [ptid] [sfl]",Cleared Flight Level. The level currently assigned by ATC to  the flight. It may optionally include a point and a level  restriction at the point.
+chgrul,basic,"'-' ""CHGRUL"" ( rulechg | flighttypechg | rulechg  flighttypechg ) point","Indication of a change in either the ""flight rules""(VFR/IFR) or  the ""type of flight""(OAT/GAT) or both together with the point  at which the change occurs."
+cobd,basic,"'-' ""COBD"" date",Calculated Off-Block Date.
+cobt,basic,"'-' ""COBT"" timehhmm",Calculated Off-Block Time.
+com,basic,"'-' ""COM"" 1 {LIM_CHAR} 50",As ICAO Field 18 COM/. It indicates communications  applications or capabilities.
+comment,basic,"'-' ""COMMENT"" 1 { LIM_CHAR }",A general comment in free text without hyphen.
+condid,basic,"'-' ""CONDID"" 1 {LIM_CHAR} 30",Identification of an ‘exceptional condition’ raised in the  context of ATFM.
+coordata,compound,"'-' ""COORDATA"" (ptid | gid ) to tfl [sfl]","The transfer conditions of a flight. A point id or gate id, the  flight level and estimated time at that point and optional  supplementary flight level information."
+cop,basic,"'-' ""COP"" point","A co-ordination point identifier, either a coded designator of  a point or a name given artificially (GEOxx, RENxx or  REFxx)."
+crsclimb,compound,"'-' ""CRSCLIMB"" ptid (crspeed | crmach) crfl1  crfl2","Indication of a cruiseclimb. Giving the point at which the  climb will begin, speed or mach no. and the two levels  indicating the flight level band to be occupied during the  climb. The second level may be ""PLUS"" where the upper  level is unknown."
+cstat,compound,"'-' ""CSTAT"" statid statreason",An indicator confirming the new co-ordination status of a  flight and the reason for the change.
+ctod,basic,"'-' ""CTOD""  date",Calculated Take-Off Date.
+ctot,basic,"'-' ""CTOT"" timehhmm",Calculated Take-Off Time (CTOT): reference time of an  ATFM Slot.
+dat,basic,"'-' ""DAT"" datalink",Indication of the data applications and capabilities carried by  the aircraft.
+days,basic,"'-' ""DAYS"" numdays","Days of operation for a repetitive flight plan (1234567 where  1 is for Monday, 2 for Tuesday, ..., with 0 in columns of non- operation)."
+daysk,basic,"'-' ""DAYSK"" (numdays | numdayswldcrd)","Days of operation for a repetitive flight plan, used as  database key in a query message, may be wildcarded."
+daysold,basic,"'-' ""DAYSOLD"" numdays","The ""previous"" days of operation. Used as a database key.  Where the days of operation of an RPL are to be amended,  the new values will be given in ""DAYS""."
+dct,basic,"'-' ""DCT"" point point","Indicates a direct route between two points.  The points may either be a valid ICAO designator of a point  or a point appearing in a GEO, REN or REF field of the form  GEOxx, RENxx or REFxx."
+delay,basic,"'-' ""DELAY"" timehhmm","A period of time representing a delay. The nature of the  delay i.e. delay to a flight, processing delay, etc. is  dependent upon its context."
+depaptype,basic,‘-‘ “DEPAPTYPE” airporttype,An indication of the A-CDM capabilities of the aerodrome of  departure
+deparctyp,basic,‘-‘ DEPARCTYP” (icaoaircrafttype | “ZZZZ”),The aircraft type as received from the airport via a DPI  message.
+depproc,basic,‘-‘ “DEPPROC” sidstarid | “DCT” | point,An indication of the procedure a departing aircraft is  expected to fly to reach the first en-route point.  May be:  - the identifier of a Standard Instrument Departure  procedure;  - an indication that the aircraft will fly direct to the first en- route point;  - an indication that no procedure is specified for the aircraft  reach the defined point.
+depreg,basic,‘-‘ “DEPREG” 1{LIM_CHAR}7,The aircraft registration mark as received from the airport via  a DPI message.
+depstatus,basic,"'-' ""DEPSTATUS"" 1 {LIM_CHAR}","Indicates the status of the flight prior to the departure, e.g.  “DEICING”."
+depz,compound,"'-' ""DEPZ"" "" (adname [ geoid | refid ]) | ptid","Name of departure aerodrome if no ICAO location indicator  exists. Optionally, the location of the aerodrome if it is not  listed in the national AIP given by bearing and distance or  Lat. Long. Alternatively, if the aircraft did not depart from an  aerodrome, the first point of the route given by  Waypoint/Nav Aid or Lat. Long."
+desc,basic,"'-' ""DESC"" 1 {LIM_CHAR}",Description of a condition or entity which is of relevance to  the content of the message.
+destz,compound,"'-' ""DESTZ"" "" (adname [ geoid | refid ] ) | ptid","Name of destination aerodrome if no ICAO location indicator  exists. Optionally, the location of the aerodrome if it is not  listed in the national AIP given by bearing and distance or  Lat. Long. Alternatively, if the aircraft did not depart from an  aerodrome, the first point of the route given by  Waypoint/Nav Aid or Lat. Long."
+dle,basic,‘-‘ “DLE” point  timehhmm_elapsed,As in ICAO Field 18 DLE/. Used to indicate an en-route  delay or holding.
+dpistatus,basic,"'-' ""DPISTATUS"" (""EARLY” | “PROV” |  “TARGET” | “SEQ” | “ATC” | “CNL”)",The status of the DPI Message. It indicates the sub-type of  the DPI message.
+eda,basic,"'-' ""EDA"" date",Estimated date of arrival
+eetfir,basic,"'-' ""EETFIR"" firindicator timehhmm_elapsed",FIR identification and the accumulated elapsed time (in  hours and minutes) to the FIR boundary.
+eetlat,compound,"'-' ""EETLAT"" lattd time",Indication of an elapsed time to a position given by latitude  only.
+eetlong,compound,"'-' ""EETLONG"" longtd time",Indication of an elapsed time to a position given by longitude  only.
+eetpt,basic,"'-' ""EETPT"" point timehhmm_elapsed",Point identifier and the accumulated elapsed time to the  point.
+efl,compound,"'-' ""EFL"" fl [ptid]",Flight Level to be communicated in a coordination in  advance. It shall include the flight level to be applied and  optionally  the point at which this flight level is applied.
+eldt,basic,‘-‘ “ELDT” date ! timehhmm ! seconds,The Estimated Landing Time.
+endtime,basic,"'-' ""ENDTIME"" day ! timehhmm",The time at which a period of time ends.
+entrydata,compound,"'-' ""ENTRYDATA"" (ptid | airspdes | (ptid  airspdes)) [fl] [ptrfl] [(ptspeed | ptmach)] [ptfltrul]  [ptmilrul]","The flight plan data which is applicable to a flight at the point  given or at the entry of the flight into the airspace concerned.  One or both of the fields; ‘ptid’, ‘airspdes’, must be present."
+eobd,basic,"'-' ""EOBD"" date",Estimated Off-Block Date.
+eobdk,basic,"'-' ""EOBDK"" date","Estimated Off-Block Date used as database key in a query,  may be wildcarded.  Must be a combination of digits and wild-card characters, up  to maximum 6 characters in total."
+eobdold,basic,"'-' ""EOBDOLD"" date","The ""previous"" estimated off block date. Used as a database  key. Where the estimated off block date is to be amended,  the new value will be given in ""EOBD""."
+eobt,basic,"'-' ""EOBT"" timehhmm",Estimated Off-Block Time (EOBT)
+eobtk,basic,"'-' ""EOBTK"" (timehhmm | timewldcrd)","Estimated Off-Block Time used as database key in a query,  may be wildcarded."
+eobtold,basic,"'-' ""EOBTOLD"" timehhmm","The ""previous"" estimated off block time. Used as a database  key. Where the estimated off block time is to be amended,  the new value will be given in ""EOBT""."
+eqcst,compound,"'-' ""BEGIN"" "" EQCST"" 1{eqpt | sureqpt } '-' ""END""  "" EQCST""",List of equipment capability codes each followed by a status  value which specifies the current status of the capability.
+errfield,basic,"'-' ""ERRFIELD"" fieldid",ADEXP name of erroneous field(s).
+error,basic,"'-' ""ERROR"" [errorcode] 1{ LIM_CHAR }",Error message text. May optionally contain an error  identification code.
+estdata,compound,"'-' ""ESTDATA"" ptid eto fl [sfl]","Estimate data. A point id., the estimated flight level (flight  level number) and the estimate date-time at this point  followed optionally by the supplementary flight level (flight  level number followed by the indicator A or B)."
+eta,basic,"'-' ""ETA"" timehhmm",Estimated time of arrival.
+etod,basic,"'-' ""ETOD"" date",Estimated Take_Off Date.
+etot,basic,"'-' ""ETOT” timehhmm",Estimated Take-Off Time.
+eur,basic,‘-‘ “EUR” eurflightplanstatus,"Indicates specific status, capabilities or lack thereof, as  prescribed for use within the EUR region."
+event,basic,"'-' ""EVENT” eventtype",Triggering event.
+eventclass,basic,"'-' ""EVENTCLASS” atfmreasonclass",Classification of an event.
+extaddr,compound,"'-' ""EXTADDR"" num | { fac } | (num {fac})",Addresses which are provided in addition to those which are  determined automatically i.e. 'extra addresses'. May contain  only the number of addresses or the actual addresses or  both.
+fanslogon,compound,‘-‘ “FANSLOGON” 2{appname appversion}2,Logon parameters from FANS 1/A aircraft.
+filrte,basic,"'-' ""FILRTE"" {LIM_CHAR}",The route exactly as filed i.e. without any processing.
+filtim,basic,"'-' ""FILTIM"" day ! timehhmm",Day-time group specifying when the message was filed for  transmission.
+flband,compound,"'-' ""FLBAND"" fl fl","A flight level band defining the airspace vertically, inclusive  of the flight levels given."
+fltrul,basic,"'-' ""FLTRUL"" flightrule","Flight rule, as ICAO field 8."
+fltstate,basic,"'-' ""FLTSTATE"" atfmflightstate",The ATFM status of a flight.
+flttyp,basic,"'-' ""FLTTYP"" flighttype","Type of flight, as ICAO field 8."
+fmp,basic,"'-' ""FMP"" 4{ ALPHA }4",Identifier of a ‘Flow Management Position’.
+fmplist,compound,"'-' ""BEGIN"" ""FMPLIST"" fmp reglist   '-' ""END"" ""FMPLIST""",List of FMPs and their associated ATFM regulations.
+freq,basic,"'-' ""FREQ"" rtf",Radio frequency.
+frmgroup,compound,"'-' ""BEGIN"" ""FRMGROUP"" { frmfli } '-' ""END""  ""FRMGROUP""",List of flights inside a formation group.
+fstday,basic,"'-' ""FSTDAY"" date",First day of operation for a repetitive flight plan. This is used  to give the actual first day from which flight plans will be  generated from a RPL (see valfrom field) or the first day on  which an amendment to an RPL is effective.
+furthrte,basic,"'-' ""FURTHRTE"" {LIM_CHAR}",The further routing of a flight. For use within messages  containing estimate data to indicate the further routing of the  flight following the estimate point. It may contain only the  next point or the complete further routing until the  destination.
+geo,compound,"'-' ""GEO"" geoid lattd longtd","Point along a route defined by latitude and longitude and  given in the flight plan, as GEOxx (where xx is a sequence  number)."
+groundspeed,basic,‘-‘ “GROUNDSPEED” spd,The speed relative to the ground.
+ifp,basic,"'-' ""IFP"" ifpvalue",An indicator or flag used by IFPS to warn or to notify ATC  units of additional information concerning a flight plan.
+ifpdlist,compound,"'-' ""BEGIN"" ""IFPDLIST"" 1 { ifpdlong } '-' ""END""  ""IFPDLIST""",List of complete IFPDs matching the database key given in a  query message.  Contains a list of complete information for each individual  flight which matches given query keys.
+ifpdslist,compound,"'-' ""BEGIN"" ""IFPDSLIST"" 1 { ifpdsum } '-' ""END""  ""IFPDSLIST""",List of ifpdsum matching the database key given in a query  message.  Contains a list of summarised information for each individual  flight which matches given query keys.
+ifplid,basic,"'-' ""IFPLID"" 2{ALPHA}2 ! 8{ DIGIT }8","A unique flight plan identifier, assigned by the IFPS."
+ifpsdiscrepancy,basic,‘-‘ “IFPSDISCREPANCY”  1{ifpsdiscrepancyvalue}3,Provides an indication of the information item(s) within the  flight plan that are inconsistent with the information held  within the system originating the message.
+ifpsmod,basic,"'-' ""IFPSMOD"" fieldid modifind","An indication given by IFPS of those fields which have been  modified, and the nature of the modification."
+ifpuresp,basic,"'-' ""IFPURESP"" ifpuid",Identifier of the IFPU which is responsible for a query. It  must process the query and answer to it.
+ignore,compound,"'-' “BEGIN” ""IGNORE""  { (condition | condition  ptid ptid) }’-’ “END” “IGNORE”","Indication of conditions which have been 'ignored' or by- passed in the processing of the message concerned. An  'ignored' condition may be limited to a specific portion of the  route delimited by the route points given. A condition may,  for example, be a time restriction (route access condition),  flight level restriction or TOS violation."
+iobd,basic,"'-' ""IOBD"" date","The 'Initial' Off Block Date - the 'off-block date' as given in  the FPL and updated by flight plan associated messages  (DLA, CHG, etc.). This is the reference date used for  accessing the flight plan in the database and is the only 'off- block date' known by the concerned ATS units.  Note: The IOBD is not affected by changes requested or  notified through the exchange of ATFM messages."
+iobt,basic,"'-' ""IOBT"" timehhmm","The 'Initial' Off Block Time - the 'off-block time' as given in  the FPL and updated by flight plan associated messages  (DLA, CHG, etc.). This is the reference time used for  accessing the flight plan in the database and is the only 'off- block time' known by the concerned ATS units.  Note: The IOBT is not affected by changes requested or  notified through the exchange of ATFM messages."
+irules,basic,"'-' ""IRULES"" rulechg flighttypechg ifpsprocess","Contains the initial flight rules, initial flight type and initial  IFPS processing."
+lacdr,compound,"'-' ""BEGIN"" ""LACDR"" { airroute } '-' ""END""  ""LACDR""",List of Active Conditional Routes.
+latsa,compound,"'-' ""BEGIN"" ""LATSA"" { airspace } '-' ""END""  ""LATSA""",List of Active Temporary Segregated Areas.
+lcatsrte,compound,"'-' ""BEGIN"" ""LCATSRTE"" { airroute } '-' ""END""  ""LCATSRTE""",List of Closed ATS Routes.
+lfir,compound,"'-' ""BEGIN"" ""LFIR"" 1{ fir ( lacdr | ( lacdr lcatsrte  latsa lrar lrca) ) } '-' ""END"" ""LFIR""","List of FIRs, including the name of the region followed by  either the list of Available Conditional Routes or the lists of  Available Conditional Routes, Closed ATS Routes, Active  Temporary Segregated Areas, Reduced Airspace  Restrictions and Reduced Co-ordination Airspaces."
+lrar,compound,"'-' ""BEGIN"" ""LRAR"" { airspace } '-' ""END"" ""LRAR""",List of Reduced Airspace Restrictions.
+lrca,compound,"'-' ""BEGIN"" ""LRCA"" { airspace } '-' ""END"" ""LRCA""",List of Reduced Co-ordination Areas.
+lstday,basic,"'-' ""LSTDAY"" date",Last day of operation for a repetitive flight plan. This is used  to give the actual last day from which flight plans will be  generated from a RPL (see valuntil field) or the last day on  which an amendment to an RPL is effective   =>  Must be a date between VALFROM and VALUNTIL.
+mach,basic,"'-' ""MACH"" machnumber [ point ]","Mach number, in hundredths of a unit and optionally the  point at which the change is requested."
+mesvalperiod,basic,"'-' ""MESVALPERIOD"" fulldatetime fulldatetime","The validity period of a message, inclusive of the times  given."
+mfx,basic,"'-' ""MFX"" point",The identifier of the metering fix.
+minlineup,basic,"'-' ""MINLINEUP"" timehhmm","The minimum time required for a flight, which has declared  itself ready to depart, to get from it's present holding position  to airborne."
+modeltyp,basic,"'-' ""MODELTYP” atfmmodeltype",The type of flight model included in the message.
+modifnb,basic,"'-' ""MODIFNB"" 1{ DIGIT }3",Number of modifications that were necessary to correct an  original message.
+msgref,compound,"'-' ""MSGREF""  sender recvr seqnum","Reference data for associated, previously transmitted  messages."
+msgsum,compound,"'-' ""BEGIN"" ""MSGSUM"" { [arcid] [adep] [ades]  [eobt] [eobd] [orgn] [days] [valfrom] [valuntil] }  '-' ""END"" MSGSUM""","Contains a summary of a message.  Note: Must contain one or more* of the fields arcid, adep,  ades, eobt and orgn but without repetition.  * one or more of the fields may have been missing or  garbled in received message"
+msgtxt,basic,"'-' ""MSGTXT"" icaomsg",Contains a complete ICAO message.
+msgtyp,basic,"'-' ""MSGTYP"" titleid",Contains the title of the referenced or copied message.  May be any valid ADEXP message title (see Annex B).
+nav,basic,"'-' ""NAV"" 1 {LIM_CHAR} 50",As ICAO field 18 NAV/.
+nbarc,basic,"'-' ""NBARC"" 1{ DIGIT }2",Number of aircraft if more than one.
+nbrfpd,basic,"'-' ""NBRFPD"" 1{ DIGIT }3",Number of flight plan data matching a query.  Must be between 0 and 999.
+nbt,basic,"'-' ""NBT"" timehhmm",The time before which the aircraft shall not enter the ICAO  NAT Region.
+nlt,basic,"'-' ""NLT"" timehhmm",The time after which the aircraft shall not enter the ICAO  NAT Region.
+newctot,basic,"'-' ""NEWCTOT"" timehhmm","A new Calculated Take-Off Time, as updated by ETFMS."
+newendtime,basic,"'-' ""NEWENDTIME"" day ! timehhmm",A new time at which a period of time ends.
+neweobd,basic,"'-' ""NEWEOBD""  date",A new Estimated Off-Block Date.
+neweobt,basic,"'-' ""NEWEOBT"" timehhmm",A new Estimated Off-Block Time.
+newptot,basic,"'-' ""NEWPTOT"" timehhmm",A new Provisional Take-Off Time.
+newrte,basic,"'-' ""NEWRTE"" { LIM_CHAR }",A new route between the same aerodromes of departure  and arrival as in the original message.
+newstarttime,basic,‘-’ “NEWSTARTTIME” day ! timehhmm,A new time at which a period of time starts.
+nextssrcode,basic,"'-' ""NEXTSSRCODE"" ‘A’ !   4{‘0’ | ‘1’ | ‘2’ | ‘3’ | ‘4’ | ‘5’ | ‘6’ | ‘7’}4",SSR Mode and Code to be used by the flight after the SSR  Mode and Code given in field ‘SSRCODE’.
+obtlimit,compound,‘-‘ “OBTLIMIT” valperiod,"An indication of the time period during which the off-block  time together with the taxitime and route, as referenced, is  valid with regard to published constraints such as  route/airspace availability, as known at the reference  timestamp. It should be noted that the published constraints  referred to do not include any tactical traffic management  measures to which the trajectory may be subject."
+oldmsg,basic,"'-' ""OLDMSG"" { CHARACTER }","A complete original message, exactly (and in the same  format) as it was received."
+opr,basic,"'-' ""OPR"" 1 { LIM_CHAR }","Name of the company or agency operating the flight, as  ICAO Field 18 element OPR/."
+orgmsg,basic,"'-' ""ORGMSG"" titleid","The ADEXP Title of an erroneous message, as it was  received."
+orgn,basic,"'-' ""ORGN"" 1{LIM_CHAR}30",The address of the originator of a message.
+orgnid,basic,"'-' ""ORGNID"" originatorid",The designator of an addressee having originated a  message.
+orgrte,basic,"'-' ""ORGRTE"" { LIM_CHAR }",Original route between the aerodromes of departure and  arrival.
+origin,compound,"'-' ""ORIGIN"" networktype | fac | (networktype  fac)",Information concerning the originator of a message. May  include the type of network used or the address concerned  or both.
+origindt,basic,"'-' ""ORIGINDT"" datetime",Date and time of receipt of original message by the IFPS.  Note: This is not the filing time of the message.  Format is YYMMDDHHMM.
+part,compound,"'-' ""PART"" num lastnum","Identification of the part of the message identified by the title,  filing time and validity period."
+pbn,basic,‘-‘ “PBN” pbncode,As in ICAO Field 18 PBN/. Used to indicate RNAV and/or  performance based navigation capabilities.
+per,basic,"'-' ""PER"" performancecategory","Aircraft performance category, as ICAO field 18 PER/."
+pntsector,basic,‘-’ “PNTSECTOR” 1{ALPHANUM}8,Identifier of the sector that originates the point action.
+position,compound,"'-' ""POSITION"" (adid | ptid)[(to | sto)] [fl] [cto]",The position of an aircraft given as either a point or an  aerodrome with optional time and flight level information.
+prevarcid,basic,"'-' ""PREVARCID"" aircraftid",The previous callsign used.
+prevssrcode,basic,"'-' ""PREVSSRCODE"" ‘A‘ ! 4{ '0' | '1' | '2' | '3' | '4' |  '5' | '6' | '7' }4",SSR Mode and Code used by the flight immediately prior to  the SSR Mode and Code given in field '-SSRCODE'.
+prf1,basic,‘-‘ “PRF1” 1{DIGIT}6,An indicator used by NM for statistical analysis
+prf2,basic,‘-‘ “PRF2” 1{DIGIT}8,An indicator used by NM for statistical analysis
+prf3,basic,‘-‘ “PRF3” 1{DIGIT}8,An indicator used by NM for statistical analysis
+prf4,basic,‘-‘ “PRF4” 1{DIGIT}8,An indicator used by NM for statistical analysis
+propfl,compound,"'-' ""PROPFL"" tfl [sfl]",A flight level proposed by an accepting unit for the transfer of  a flight.
+ptot,basic,"'-' ""PTOT"" timehhmm",Provisional Take-Off Time. Provisional reference time for an  ATFM slot.
+qrorgn,basic,"'-' ""QRORGN"" originatorid",Identifier of the originator of the Query.
+ralt,basic,"'-' ""RALT"" (1 {LIM_CHAR} 100",As in ICAO Field 18 RALT/. An indication of the en-route  alternate.
+rate,basic,"'-' ""RATE"" (((""C"" | ""D"") ! (2{DIGIT}2 | “ZZZ”)) |  ""ZZZ"" )","Rate of change: the climb or descent rate assigned to an  aircraft, expressed in hundreds of feet per minute.  => Must be 'C' indicating a climb rate, or 'D' indicating a  descent rate, followed by a two digit number indicating the  assigned rate in hundreds of feet per minute. Alternatively  the designator 'ZZZ' may be used to indicate that a  previously assigned rate of climb/descent no longer applies.  ‘C’ or ‘D’ followed by ‘ZZZ’ can be used to indicate that a  flight is climbing or descending with an unknown rate."
+ratelimit,basic,"'-' ""RATELIMIT"" 1{ “MIN” |  “EQL” |  “MAX” }1","Indication of a minimum, fixed or maximum value for a rate  of climb/descent."
+ratepdlst,compound,"'-' ""BEGIN"" ""RATEPDLST"" 1 {rateperiod} '-'  ""END"" ""RATEPDLST""",List of time periods and their respective flow rates for an  ATFM condition.
+rdystate,basic,"'-' ""RDYSTATE"" readyforimpr ! atfmrdystate",The ready status of a flight.
+reason,basic,"'-' ""REASON"" 4{ALPHA}20",Information in support of the message dependent on its  context.
+ref,compound,"'-' ""REF"" refid ptid brng distnc",Point along a route which is defined in terms of magnetic  bearing and distance from another point and is given the  designator REFxx.
+refdata,compound,"'-' ""REFDATA"" sender recvr seqnum",Reference data for message being transmitted.
+reg,basic,"'-' ""REG"" 1{ LIM_CHAR }50","Registration markings, as ICAO field 18 REG/. In the case of  a formation flight more than one registration may be  provided."
+regcause,basic,"'-' ""REGCAUSE"" regulationreason  iatalocationcat iatadelaycode",The NM and IATA coded designators indicating the reason  for a regulation.
+regloc,basic,"'-' ""REGLOC"" 1 {LIM_CHAR} 15",Reference location for an ATFM Regulation.
+regul,basic,"'-' ""REGUL"" regulid",Identifier of a Regulation concerning a flight.
+rejctot,basic,"'-' ""REJCTOT"" timehhmm",Rejected Calculated Take-Off Time: negative response to a  Slot Improvement Proposal.
+release,basic,"'-' ""RELEASE"" 1{ALPHA}1",An indication that the flight is released by the transferring  controller to the receiving controller.  C = released for climb  D = released for descent  T = released for turn  R = released for right turn  L = released for left turn  F = released for all actions
+rename,compound,"'-' ""RENAME"" renid ptid","Indication of a temporary, new name given to a 'significant  point' which appears more than once in the route description  in order to avoid confusion. This temporary name is applied  only for the purpose of clarity in the representation of the  route and does not imply an actual modification of the real  identification of the point ."
+respby,basic,"'-' ""RESPBY"" timehhmm",Respond By: time by which a response to a Slot  Improvement Proposal has to be made.
+rfl,basic,"'-' ""RFL"" (flightlevel [point]) | “VFR”","Either requested flight level (in flight level number, tens of  meters or hundreds of feet) and optionally the point at which  a change of RFL is required.  Or VFR as in ICAO Field 15b"
+rfp,basic,"'-' ""RFP"" ""Q"" ( '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'  )","Replacement Flight Plan (RFP) indicator.  Must be ""Q"" followed by a digit (1 - 9)."
+rfpdlist,compound,"'-' ""BEGIN"" ""RFPDLIST"" { rfpdlong } '-' ""END""  ""RFPDLIST""",List of complete RFPDs matching the database keys given  in a Query.
+rfpdslist,compound,"'-' ""BEGIN"" ""RFPDSLIST"" { rfpdsum } '-' ""END""  ""RFPDSLIST""",List of rfpdsum (RFPD summarised information) matching  the database keys given in a Query.
+rif,basic,"'-' ""RIF 4{LIM_CHAR}",Revised route subject to clearance in flight and terminating  with the ICAO designator of the revised aerodrome of  destination.
+rmk,basic,"'-' ""RMK"" 1{ LIM_CHAR }","Plain language remarks, as ICAO field 18 RMK/."
+route,basic,"'-' ""ROUTE"" {LIM_CHAR}","Complete ICAO Field 15 information containing speed, RFL  and route (conforming to the syntax given in Ref. [3])."
+rrtefrom,compound,"'-' ""RRTEFROM"" tfvid refloc flowlst flblock",Description of a traffic flow which is to be re-routed.
+rrteref,basic,"'-' ""RRTEREF"" rrteid",Re-Route Reference.
+rrteto,compound,"'-' ""RRTETO"" tfvid refloc flowlst flblock",Description of a traffic flow to which traffic is to be re-routed.
+rtepts,compound,"'-' ""BEGIN"" ""RTEPTS"" { pt I ad | vec} '-' ""END""  ""RTEPTS""",List of route points. May also contain an aerodrome  identifier.
+rvr,basic,"'-' ""RVR"" 1{ DIGIT }3",Runway Visual Range (RVR).  Operating minima when special meteorological conditions  exist. Expressed in meters.
+rvrcond,compound,"'-' ""BEGIN"" ""RVRCOND"" 1 {rvrperiod} '-' ""END""  ""RVRCOND""",List of time periods and their applicable RVR limits.
+rvrperiod,compound,"'-' ""RVRPERIOD"" from until rvrlimit",The period of time within which the RVR limit provided is  applicable.
+rwyarr,basic,‘-‘ “RWYARR” 2{DIGIT}2  [1{ ‘L’ | ‘C’ | ‘R’}2],Arrival Runway.
+rwydep,basic,‘-‘ “RWYDEP” 2{DIGIT}2  [1{ ‘L’ | ‘C’ | ‘R’}2],Departure Runway.
+rwylist,compound,‘-‘ “BEGIN” “RWYLIST” { rwyinfo } ‘-‘ “END”  “RWYLIST”,List of runway data used for runway configurations  exchange.
+seclist,compound,"'-' ""BEGIN"" ""SECLIST"" {asec}  '-' ""END"" ""SECLIST""",List of assigned sectors
+sector,basic,"'-' ""SECTOR"" 1{ ALPHANUM }8",Identification of an ATC sector.
+sel,basic,"'-' ""SEL"" 4{ ALPHA }5",SELCAL code as ICAO Feld 18 element ‘SEL/’.
+sendto,compound,"'-' ""BEGIN""""SENDTO"" {unit} '-' ""END""""SENDTO""",List of air navigation units which are to be sent a message
+seqpt,basic,"'-' ""SEQPT"" surequipment","Surveillance equipment and capabilities, as ICAO Field 10b."
+sequencedata,compound,"'-' ""SEQUENCEDATA"" txtime num",Sequence data of a message in order to be able to re-build  the original transmission sequence of messages.
+severity,basic,"'-' ""SEVERITY"" 1{ LIM_CHAR}",To provide a severity indication
+skfreq,basic,"'-' ""SKFREQ"" rtf",Skipped sector radio frequency.
+sksec,basic,"'-' ""SKSEC"" secidentification",Skipped sector identifier.
+sid,basic,"'-' ""SID"" point ! 1{DIGIT}1 ! 0{ALPHA}1",Identifier of a Standard Instrument Departure procedure.
+sobd,basic,"'-' ""SOBD” date",Scheduled Off-Block Date of a flight
+sobt,basic,"'-' ""SOBT” timehhmm",Scheduled Off-Block Time of a flight
+speed,basic,"'-' ""SPEED"" spd [ point ]","True airspeed (in kilometres per hours or knots) and  optionally, the point at which a change of airspeed is  requested."
+speedlimit,basic,"'-' ""SPEEDLIMIT"" 1{ “MIN” |  “EQL” |  “MAX” }1","Indication of a minimum, fixed or maximum value for an  assigned speed."
+spla,basic,"'-' ""SPLA"" 1{ LIM_CHAR }50","Colour of markings on aircraft, as ICAO Field 19 element  ‘A/’."
+spladdr,compound,"'-' ""BEGIN"" ""SPLADDR"" { fac } '-' ""END""  ""SPLADDR""","Contact data, where flight plan Supplementary information  may be obtained."
+splc,basic,"'-' ""SPLC"" 1{ LIM_CHAR }50","Name of pilot in command, as ICAO Field 19 element ‘C/’."
+spldcap,basic,"'-' ""SPLDCAP"" 1{ DIGIT }3","Dinghies total capacity, as ICAO Field 19 element ‘D/’."
+spldcol,basic,"'-' ""SPLDCOL"" 1{ LIM_CHAR }50","Dinghies colour, as ICAO Field 19 element ‘D/’."
+spldcov,basic,"'-' ""SPLDCOV"" ('T' | 'F')","Dinghies: indication if they are covered, as ICAO Field 19  element ‘D/’.  T = True (=> ‘C’ in ICAO)  F = False, not covered."
+spldnb,basic,"'-' ""SPLDNB"" 1{ DIGIT }2","Dinghies: number, as ICAO field 19 element ‘D/’."
+sple,basic,"'-' ""SPLE"" timehhmm_elapsed","Fuel endurance, as ICAO Field 19 element ‘E/’."
+splj,basic,"'-' ""SPLJ"" lifejackets","Life jackets, as ICAO Feld 19 element ‘J/’."
+spln,basic,"'-' ""SPLN"" 1{ LIM_CHAR }","Any other survival equipment and useful remarks, as ICAO  Field 19 element ‘N/’."
+splp,basic,"'-' ""SPLP"" 1{DIGIT}3","Persons on board, as ICAO Field 19 element ‘P/’."
+splr,basic,"'-' ""SPLR"" emergradio","Emergency radio equipment, as ICAO Field 19 element ‘R/’."
+spls,basic,"'-' ""SPLS"" survivaleqpt","Survival equipment, as ICAO Field 19 element ‘S/’."
+src,basic,"'-' ""SRC"" 1{ ""RPL"" | ""FPL"" | ""AFIL"" | ""MFS"" |  ""FNM"" | ""RQP"" | ""AFP"" | ""DIV""  (icaoaerodrome |  ‘ZZZZ’) }1",Indication of the data source. Contents depend on the TITLE  field.
+ssrcode,basic,"'-' ""SSRCODE"" ('A' ! 4{ '0' | '1' | '2' | '3' | '4' | '5' |  '6' | '7' }4 | ""REQ"" )","Either;  - SSR mode and code, as ICAO field 7 elements b and c.  or  - the letters ""REQ"" meaning that the code is requested."
+star,basic,"'-' ""STAR"" point ! 1{DIGIT}1 ! 0{ALPHA}1",Identification of a Standard Arrival Route.
+starttime,basic,"'-' ""STARTTIME"" day ! timehhmm",Time at which a period of time begins.
+stay,compound,"'-' ""STAY"" stayident time ((adid adid) | (ptid ptid)  (adid | ptid) | (ptid adid)) [ptspeed] [ptrfl]","Indication in the route of flight of a period of ‘special activity’  when the aircraft will ‘stay’ in the area defined by the points  and/or aerodromes given for the length of time indicated, i.e.  training, mid-air re-fuelling, photographic mission etc.  NOTE: The order in which the points and/or aerodromes are  given is significant"
+stayinfo,compound,"'-' ""STAYINFO"" stayident remark","Information concerning the type of activity (training,  photographic mission, etc.) to be performed during a ‘stay’  period in the route of a flight."
+sts,basic,"'-' ""STS"" flightplanstatus",As ICAO Field 18 STS/. Reason for special handling.
+sur,basic,‘-‘ “SUR” 1{LIM_CHAR}50,As ICAO Field 18 SUR/. Used to provide surveillance  applications or capabilities not specified in -SEQPT”.
+talt,basic,‘-‘ “TALT” (1 {LIM_CHAR} 100,As ICAO Field 18 TALT/. An indication of the take-off  alternate aerodrome
+taxitime,basic,"'-' ""TAXITIME"" timehhmm",The difference in time between the ‘off blocks time’ and the  ‘take-off time’. The times referred to may be actual or  estimated depending upon the context.
+tfcvol,basic,"'-' ""TFCVOL"" 1 {ALPHANUM} 15",Identification of a ‘traffic volume’.
+tfv,compound,"'-' ""TFCVOL"" tfvid refloc flowlst flblock",Description of a traffic volume.
+timesep,,"'-' ""TIMESEP"" arcid timeint",Time separation in minutes between a coordinated aircraft  and a preceeding aircraft.
+timestamp,basic,"'-' ""TIMESTAMP"" datetime ! seconds",The time at which an event occurred.
+title,basic,"'-' ""TITLE"" titleid",Message title.
+tom,basic,"'-' ""TOM"" timehhmmss",The calculated time at which a flight should leave the  metering fix.
+ttg,basic,"'-' ""TTG"" timemmss_elapsed",Number of minutes and seconds that the flight has to gain  before reaching the metering fix.
+ttl,basic,‘-’ “TTL” timemmss_elapsed,Number of minutes and seconds that the flight has to lose  before reaching the metering fix.
+ttleet,basic,"'-' ""TTLEET"" timehhmm_elapsed",Total estimated elapsed time in hours and minutes.
+tto,compound,‘-‘ “TTO” (adid | ptid) to [fl],Target Time Over an aerodrome or a point on the route of  flight.
+ttot,basic,"'-' ""TTOT"" timehhmm",Target take-off time.
+twyarr,basic,"'-' ""TWYARR"" 1{LIM_CHAR}10",Arrival Taxiway
+twydep,basic,"'-' ""VALIDEND"" 1{LIM_CHAR}10",Departure Taxiway
+typz,basic,"'-' ""TYPZ"" 1 {LIM_CHAR} 60",Type of aircraft when no ICAO code exists.
+unit,compound,"'-' ""UNIT"" unitid [addrinfo]","Information concerning an ‘air navigation unit’ i.e. an ATC unit,  an aircraft operator or flight plan originator. Contains the  identification of the unit and optionally address data."
+valfrom,basic,"'-' ""VALFROM"" date","First date from which the flight is scheduled to operate (in  year, month and day)."
+valfromk,basic,"'-' ""VALFROMK"" ( date | datewldcrd )","First date from which the flight is scheduled to operate, used  as database key in a query, may be wildcarded.  Must be a valid date or a combination of a valid date and  wild-card characters."
+valfromold,basic,"'-' ""VALFROMOLD"" date","The ""previous"" ""valfrom"" date. Used as a database key.  Where the start of validity date is to be amended, the new  value will be given in ""VALFROM""."
+validitydate,basic,"'-' ""VALIDITYDATE"" date",Date of validity.
+valuntil,basic,"'-' ""VALUNTIL"" date","Last date from which the flight is scheduled to operate (in  year, month and day)."
+valuntilk,basic,"'-' ""VALUNTILK"" ( date | datewldcrd )","Last date from which the flight is scheduled to operate, used  as database key in a Query, may be wildcarded.  Must be a valid date or a combination of a valid date and  wild-card characters."
+valuntilold,basic,"'-' ""VALUNTILOLD"" date","The ""previous"" ""valuntil"" date. Used as a database key.  Where the end of validity date is to be amended, the new  value will be given in ""VALUNTIL""."
+vec,compound,"'-' ""VEC"" fl eto reldist",An unpublished point along the route of flight where a  change to the trajectory (vector point) is performed. Typically  this may be the initiation or achievement of a climb or  descent phase of flight.
+winddir,basic,‘-‘ “WINDDIR” 3{DIGIT}3,The wind direction expressed as a three digit number in the  range 001 to 360.
+windspeed,basic,‘-‘ “WINDSPEED” spd,The wind speed.
+wktrc,basic,"'-' ""WKTRC"" waketurbcat",Wake turbulence category.

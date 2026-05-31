@@ -1,0 +1,2 @@
+- [eurocontrol-adexp=specification-4-0.pdf](https://www.eurocontrol.int/sites/default/files/2026-04/eurocontrol-adexp-specification-4-0.pdf)
+- [gold_2edition.pdf](https://www.caa.co.uk/media/2cdpufa4/gold_2edition.pdf)

@@ -24,11 +24,19 @@ from acars_server import common, static_data
 
 load_dotenv()
 
-def generate_key(key_name:str="master"):
+def generate_master_key(key_name:str="master"):
     """
     Generates a key and save it into a file
     """
     key = Fernet.generate_key()
+    with open(f"{key_name}.key", "wb") as key_file:
+        key_file.write(key)
+
+def generate_auth_key(key_name:str="auth"):
+    """
+    Generates a key and save it into a file
+    """
+    key = secrets.token_bytes(32)
     with open(f"{key_name}.key", "wb") as key_file:
         key_file.write(key)
 
