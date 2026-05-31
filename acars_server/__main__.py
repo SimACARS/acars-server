@@ -197,6 +197,32 @@ async def auth_new_user_callback_vatsim(
 # ------------------------------------------------------------------
 # Test Endpoints
 # ------------------------------------------------------------------
+@app.get(
+        "/test/auth/new_user/{cid}",
+        response_model=databases.ApiKeyPublic,
+        tags=["testing"])
+async def test_auth_new_user(
+    cid:str,
+    session: databases.SessionDep
+    ):
+    """Creates a test user for testing purposes. Not to be used in production"""
+    # Generate the API key using the cid
+    api_key = crypto.api_key_generator(cid, "testing")
+
+    # Add the API key to the DB
+    dtnow = dt.now(tz.utc).timestamp()
+    db_data = {
+        "api_key": api_key,
+        "network": "testing",
+        "created": dtnow,
+        "last_used": dtnow
+    }
+    db_add = databases.ApiKey.model_validate(db_data)
+    session.add(db_add)
+    session.commit()
+    session.refresh(db_add)
+    return db_add
+
 @app.get("/test/poll/{callsign}", tags=["testing"])
 async def test_poll(callsign:str) -> Response:
     """Test POLL"""
