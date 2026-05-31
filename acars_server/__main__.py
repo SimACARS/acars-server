@@ -8,17 +8,12 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime as dt, timezone as tz
-from hashlib import blake2b
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Any, Dict
 
 # Third Party Libraries
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
-from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi.security import APIKeyHeader
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -27,16 +22,10 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from redis_om import Migrator # type: ignore
-from redis_om.model.model import NotFoundError
-from sqlmodel import select
-from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
-from acars_server import __VERSION__, auth, common, databases, static_data, networks, tasks
-
-PWD = Path(os.path.dirname(__file__))
-MASTER_KEY = os.path.join(PWD.parent, "master.key")
-AUTH_KEY = os.path.join(PWD.parent, "auth.key")
+from acars_server import __VERSION__, auth, common, databases, static_data
+from acars_server.api.routes import acars, dlic, status, tests, users
 
 load_dotenv()
 
@@ -61,6 +50,7 @@ async def lifespan(app: FastAPI):
 
     # Create DB and Tables
     databases.create_db_and_tables()
+    # Run Redis OM Migrator
     Migrator().run()
 
     # ------------------------------------------------------------------
@@ -90,475 +80,26 @@ app = FastAPI(
 )
 FastAPIInstrumentor.instrument_app(app)
 # Serve some static files
-app.mount("/static", StaticFiles(directory=os.path.join(PWD.parent, "front_end")), name="static")
-# Add the API Key header
-header_api_key = APIKeyHeader(name="x-key")
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(common.PWD.parent, "front_end")),
+    name="static")
 
 # Check that a master key exists, if not then create one
-if not Path(MASTER_KEY).exists():
+if not Path(common.MASTER_KEY).exists():
     auth.generate_master_key()
     sleep(1)
-if not Path(AUTH_KEY).exists():
+if not Path(common.AUTH_KEY).exists():
     auth.generate_auth_key()
     sleep(1)
-crypto = auth.Auth()
 
-# ------------------------------------------------------------------
-# Server Status
-# ------------------------------------------------------------------
-@app.get("/", tags=["status"])
-async def ping():
-    """Ping the server. Returns 'OK' and VERSION"""
-    return {"server_status": "OK", "server_version": __VERSION__}
-
-@app.get("/logs/stream")
-async def stream_logs():
-    """Log Streamer"""
-    async def event_generator():
-        while True:
-            # Get item from the queue
-            item = await common.stream.get()
-
-            yield {
-                "event": "log",
-                "data": item
-            }
-
-            # Compete the processing
-            common.stream.task_done()
-
-    return EventSourceResponse(event_generator())
-
-# ------------------------------------------------------------------
+# Server Status Endpoints
+app.include_router(status.router)
 # User Endpoints
-# ------------------------------------------------------------------
-responses_user_new_network:dict[int|str,dict[str,Any]]|None  = {
-    307: {},
-    400: {},
-    501: {},
-}
-
-@app.get("/user/new/{network}", tags=["user management"], responses=responses_user_new_network)
-async def auth_new_user(network: str):
-    """Authenticate a new user and generate an API key"""
-    if network in static_data.NETWORKS:
-        if network == "vatsim":
-            v_auth = auth.VatsimAuth()
-            v_url = v_auth.authorise()
-            common.logger.success("Client redirected to VATSIM OAuth")
-            return RedirectResponse(v_url[0])
-
-        error = f"{network} doesn't appear to exist although it really should..."
-        common.logger.error(error)
-        raise HTTPException(
-            status_code=501,
-            detail=error)
-
-    error = (f"{network} is not a recognised network. Needs to be one of "
-             f"{', '.join(static_data.NETWORKS)}")
-    common.logger.error(error)
-    raise HTTPException(
-        status_code=400,
-        detail=error)
-
-@app.get(
-        "/callback/oauth/vatsim/{state}/{code}",
-        response_model=databases.ApiKeyPublic,
-        tags=["callbacks"])
-async def auth_new_user_callback_vatsim(
-    state:str,
-    code:str,
-    session: databases.SessionDep
-    ):
-    """A callback point for VATSIM"""
-    # Get the access token from VATSIM
-    v_auth = auth.VatsimAuth()
-    v_token = v_auth.get_access_token(code)
-    if v_token[0] != 200:
-        raise HTTPException(status_code=v_token[0], detail=v_token[1]["hint"])
-
-    # Get the user details using the access token
-    v_user = v_auth.get_user_details(v_token[1]["access_token"])
-    if v_user[0] != 200:
-        raise HTTPException(status_code=v_user[0], detail=v_user[1])
-
-    # Generate the API key using the cid
-    v_cid = v_user[1]["data"]["cid"]
-    api_key = crypto.api_key_generator(v_cid, "vatsim")
-
-    # Add the API key to the DB
-    dtnow = dt.now(tz.utc).timestamp()
-    db_data = {
-        "api_key": api_key,
-        "network": "vatsim",
-        "created": dtnow,
-        "last_used": dtnow
-    }
-    db_add = databases.ApiKey.model_validate(db_data)
-    session.add(db_add)
-    session.commit()
-    session.refresh(db_add)
-    return db_add
-
-# ------------------------------------------------------------------
+app.include_router(users.router)
 # Test Endpoints
-# ------------------------------------------------------------------
-@app.get(
-        "/test/auth/new_user/{cid}",
-        response_model=databases.ApiKeyPublic,
-        tags=["testing"])
-async def test_auth_new_user(
-    cid:str,
-    session: databases.SessionDep
-    ):
-    """Creates a test user for testing purposes. Not to be used in production"""
-    # Generate the API key using the cid
-    api_key = crypto.api_key_generator(cid, "testing")
-
-    # Add the API key to the DB
-    dtnow = dt.now(tz.utc).timestamp()
-    db_data = {
-        "api_key": api_key,
-        "network": "testing",
-        "created": dtnow,
-        "last_used": dtnow
-    }
-    db_add = databases.ApiKey.model_validate(db_data)
-    session.add(db_add)
-    session.commit()
-    session.refresh(db_add)
-    return db_add
-
-@app.get("/test/poll/{callsign}", tags=["testing"])
-async def test_poll(callsign:str) -> Response:
-    """Test POLL"""
-    # If the callsign has been validated
-    update_msg = {
-        "relayed": True,
-        "relayed_at": dt.now(tz.utc).timestamp()
-    }
-    all_messages = databases.StoreAndForward.find(
-                (databases.StoreAndForward.msg_to == callsign)
-                & (databases.StoreAndForward.relayed == "0")
-            ).all()
-    if len(all_messages) > 0:
-        rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
-        update_id_list = []
-        for m in all_messages:
-            update_id_list.append(m["pk"])
-            data_block = {
-                "pk": m["pk"],
-                "msg_from": m["msg_from"],
-                "msg_to": m["msg_to"],
-                "msg_type": m["msg_type"],
-                "packet": m["packet"],
-                "network": m["network"]
-            }
-            rtn["messages"].append(data_block)
-
-        if len(update_id_list) > 0:
-            records = databases.StoreAndForward.find(
-                (databases.StoreAndForward.msg_to == callsign)
-                & (databases.StoreAndForward.pk << update_id_list)
-            ).all()
-
-            for record in records:
-                for k, v in update_msg.items():
-                    setattr(record, k, v)
-                record.save()
-                common.logger.success(f"Message retrieved for {callsign} - {record}")
-        return JSONResponse(rtn)
-    common.logger.success(f"No messages to retrive for {callsign}")
-    return JSONResponse(content={"msg_count": 0})
-
-@app.get("/test/{ir_type}/{network}/{station}", status_code=204, tags=["testing"])
-async def test_inforeq(
-    ir_type:str,
-    network:str,
-    station:str,
-    background_tasks: BackgroundTasks,
-    ):
-    """INFOREQ Test"""
-    t_msg = {
-        "created": dt.now(tz.utc).timestamp(),
-        "msg_type": "inforeq",
-        "network": network,
-        "packet": ir_type.upper(),
-        "msg_to": station,
-        "msg_from": "TEST1"
-    }
-    sf_msg = databases.StoreAndForward.model_validate(t_msg)
-    common.logger.success(sf_msg)
-    background_tasks.add_task(tasks.message_parse, sf_msg)
-    return JSONResponse(content={"status": "ok"})
-
-@app.post("/test/tx", status_code=204, tags=["testing"])
-async def test_tx(
-    msg:databases.StoreAndForward,
-    background_tasks: BackgroundTasks,
-    ):
-    """INFOREQ Test"""
-    sf_msg = databases.StoreAndForward.model_validate(msg)
-    t_msg = {
-        "created": dt.now(tz.utc).timestamp(),
-        "msg_type": sf_msg["msg_type"],
-        "network": sf_msg["network"],
-        "packet": sf_msg["packet"],
-        "msg_to": sf_msg["msg_to"],
-        "msg_from": sf_msg["msg_from"]
-    }
-    sf2_msg = databases.StoreAndForward.model_validate(t_msg)
-    common.logger.success(sf2_msg)
-    background_tasks.add_task(tasks.message_parse, sf2_msg)
-    return JSONResponse(content={"status": "ok"})
-
-# ------------------------------------------------------------------
-# DLIC (Data Link Initiation and Capability)
-# ------------------------------------------------------------------
-async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
-    """Generate a logoff code for a DLIC logoff message"""
-    # Load the signing key
-    with open(AUTH_KEY, "rb") as key_file:
-        signing_key = key_file.read()
-
-    smoosh = f"{msg['logon_from']}:{msg['logon_to']}:{msg['pk']}:{dt.now(tz.utc).timestamp()}".encode()
-    h = blake2b(digest_size=32, key=signing_key)
-    h.update(smoosh)
-
-    return h.hexdigest()
-
-@app.post("/dlic/aircraft/logon", tags=["DataLinkInitiationCapability"])
-async def dlic_aircraft_logon(
-    msg:databases.DataLinkInitiationCapability,
-    session:databases.SessionDep,
-    api_key:str = Depends(header_api_key)
-    ):
-    """DLIC Aircraft Logon"""
-    user_data = await api_authentication(session, api_key)
-    if msg.network == "testing":
-        common.logger.warning(
-            ("Message received with network 'testing' - This is only for testing "
-             "purposes and should not be used in production"))
-        callsign = str(msg.logon_from)
-    else:
-        callsign = await callsign_verification(user_data)
-
-    all_messages = databases.DataLinkInitiationCapability.find(
-                (databases.DataLinkInitiationCapability.logon_from == callsign)
-            ).all()
-    if len(all_messages) > 0:
-        common.logger.warning(f"{callsign} is already logged on {all_messages[0].model_dump()}")
-        return JSONResponse(content={
-            "status": "already logged on",
-            "callsign": callsign,
-            "atsu": all_messages[0].logon_to
-            })
-
-    sf_msg = databases.DataLinkInitiationCapability.model_validate(msg)
-    logoff_code = await dlic_logoff_hash(sf_msg)
-    t_msg = {
-        "created": dt.now(tz.utc).timestamp(),
-        "logon_from": callsign,
-        "logon_to": sf_msg["logon_to"],
-        "network": sf_msg["network"],
-        "fans_1_a_atn_b1": sf_msg["fans_1_a_atn_b1"],
-        "atn_b1": sf_msg["atn_b1"],
-        "fans_1_a": sf_msg["fans_1_a"],
-        "logoff_code": logoff_code
-    }
-    sf2_msg = databases.DataLinkInitiationCapability.model_validate(t_msg)
-    common.logger.success(sf2_msg)
-    sf2_msg.save()
-    return JSONResponse(content={"status": "logged on", "data": sf2_msg.model_dump()})
-
-@app.post("/dlic/aircraft/logoff", tags=["DataLinkInitiationCapability"])
-async def dlic_aircraft_logoff(
-    msg: databases.LogoffRequest,
-    session:databases.SessionDep,
-    api_key:str = Depends(header_api_key)
-    ):
-    """DLIC Aircraft Logoff"""
-    await api_authentication(session, api_key)
-
-    try:
-        sf2_msg = databases.DataLinkInitiationCapability.find(
-                    (databases.DataLinkInitiationCapability.logoff_code == msg.logoff_code)
-                ).first()
-        common.logger.debug(sf2_msg)
-    except NotFoundError as err:
-        common.logger.error(f"Logoff code {msg.logoff_code} not found")
-        raise HTTPException(status_code=404, detail="Logoff code not found") from err
-
-    sf2_msg.delete(sf2_msg.pk)
-    common.logger.success(f"Logoff successful for {sf2_msg.logon_from}")
-    return JSONResponse(content={"status": "logged off", "callsign": sf2_msg.logon_from})
-
-# ------------------------------------------------------------------
-# ACARS Functions
-# ------------------------------------------------------------------
-async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[str,str]:
-    """Authenticates an API Key"""
-    db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
-    api_user = session.exec(db_auth).first()
-    if not api_user:
-        common.logger.error("401: API key not recognised")
-        raise HTTPException(status_code=401, detail="Unauthorised")
-    return crypto.api_key_reader(api_key)
-
-async def callsign_verification(user_data) -> str|None:
-    """Validate callsign on various networks"""
-    callsign = None
-    if user_data["network"] == "vatsim":
-        vc = networks.Vatsim()
-        callsign = vc.get_callsign_from_cid(user_data["uid"])
-    elif user_data["network"] == "ivao":
-        pass
-    else:
-        common.logger.error(f"400: Network '{user_data['network']}' is not valid. "
-                    f"Expected one of {', '.join(static_data.NETWORKS)}")
-        raise HTTPException(
-            status_code=400,
-            detail=(f"Network '{user_data['network']}' is not valid. "
-                    f"Expected one of {', '.join(static_data.NETWORKS)}"))
-    return callsign
-
-# ------------------------------------------------------------------
+app.include_router(tests.router)
+# DLIC (Data Link Initiation and Capability) Endpoints
+app.include_router(dlic.router)
 # ACARS Endpoints
-# ------------------------------------------------------------------
-@app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
-async def poll_for_new_messages(
-    session:databases.SessionDep,
-    api_key:str = Depends(header_api_key)
-    ) -> Response:
-    """Poll for new messages"""
-
-    user_data = await api_authentication(session, api_key)
-    callsign = await callsign_verification(user_data)
-
-    # If the callsign has been validated
-    if callsign:
-        update_msg = {
-            "relayed": True,
-            "relayed_at": dt.now(tz.utc).timestamp()
-        }
-        all_messages = databases.StoreAndForward.find(
-                    (databases.StoreAndForward.msg_to == callsign)
-                    & (databases.StoreAndForward.relayed == "0")
-                ).all()
-        if len(all_messages) > 0:
-            rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
-            update_id_list = []
-            for m in all_messages:
-                update_id_list.append(m["pk"])
-                data_block = {
-                    "pk": m["pk"],
-                    "msg_from": m["msg_from"],
-                    "msg_to": m["msg_to"],
-                    "msg_type": m["msg_type"],
-                    "packet": m["packet"],
-                    "network": m["network"]
-                }
-                rtn["messages"].append(data_block)
-
-            if len(update_id_list) > 0:
-                records = databases.StoreAndForward.find(
-                    (databases.StoreAndForward.msg_to == callsign)
-                    & (databases.StoreAndForward.pk << update_id_list)
-                ).all()
-
-                for record in records:
-                    for k, v in update_msg.items():
-                        setattr(record, k, v)
-                    record.save()
-                    common.logger.success(f"Message retrieved for {callsign} - {record}")
-            return JSONResponse(rtn)
-        common.logger.success(f"No messages to retrive for {callsign}")
-        return JSONResponse(content={"msg_count": 0})
-    error = ("Unable to retrieve callsign for user - Network: "
-                f"{user_data['network']}, User ID: {user_data['uid']}")
-    common.logger.error(error)
-    raise HTTPException(
-        status_code=403,
-        detail=error)
-
-@app.post("/msg/post/oooi", status_code=201, responses=static_data.COMMON_ERRORS)
-async def post_msg_progress(
-    session:databases.SessionDep,
-    api_key:str = Depends(header_api_key)
-    ):
-    """Post a message"""
-    # ------------------------------------------------------------------
-    # API Auth
-    # ------------------------------------------------------------------
-    db_select = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
-    api_user = session.exec(db_select).first()
-    if not api_user:
-        raise HTTPException(status_code=401, detail="Unauthorised")
-    # ------------------------------------------------------------------
-    # Function
-    # ------------------------------------------------------------------
-    pass
-
-@app.get("/connect.html", tags=["legacy messaging"], deprecated=True)
-async def hoppie_formated_url(
-    api_key: Annotated[str, Query(alias="logon")],
-    msg_from: Annotated[str, Query(alias="from")],
-    msg_to: Annotated[str, Query(alias="to")],
-    msg_type: Annotated[str, Query(alias="type")],
-    packet: Annotated[str, Query(alias="packet")],
-    background_tasks: BackgroundTasks,
-    session:databases.SessionDep,
-    ):
-    """
-    Provides a psudo html endpoint for legacy clients.
-    Connects directly to the <b>/msg/legacy/tx</b> endpoint
-    """
-    msg = {
-        "msg_from": msg_from,
-        "msg_to": msg_to,
-        "msg_type": msg_type,
-        "packet": packet
-    }
-    sf_msg = databases.StoreAndForward.model_validate(msg)
-    await transmit_a_message(
-        msg=sf_msg,
-        api_key=api_key,
-        background_tasks=background_tasks,
-        session=session)
-
-@app.post(
-        "/msg/tx",
-        status_code=201,
-        responses=static_data.COMMON_ERRORS,
-        response_model=databases.StoreAndForward,
-        tags=["messaging"]
-        )
-async def transmit_a_message(
-    msg:databases.StoreAndForward,
-    session:databases.SessionDep,
-    background_tasks: BackgroundTasks,
-    api_key:str = Depends(header_api_key)):
-    """Legacy message"""
-
-    user_data = await api_authentication(session, api_key)
-    if msg.network == "testing":
-        common.logger.warning("Message received with network 'testing' - "
-                              "This is only for testing purposes and should not "
-                              "be used in production")
-        callsign = str(msg.msg_from)
-    else:
-        callsign = await callsign_verification(user_data)
-    sf_msg = databases.StoreAndForward.model_validate(msg)
-
-    # If the callsign has been validated
-    if callsign:
-        background_tasks.add_task(tasks.message_parse, sf_msg)
-        return sf_msg
-
-    error = (f"Callsign validation failed - Network: {user_data['network']}, "
-             f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")
-    common.logger.error(error)
-    raise HTTPException(
-        status_code=403,
-        detail=error
-        )
+app.include_router(acars.router)
