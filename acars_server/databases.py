@@ -102,6 +102,35 @@ def check_valid_network(legacy_type: str):
     return legacy_type
 
 
+class DataLinkInitiationCapability(HashModel, index=True): # type: ignore
+    """A table to hold all the messages"""
+    logon_from: Annotated[
+        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
+    logon_to: Annotated[
+        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
+    created: float
+    network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
+    logoff_code: Optional[str] = RedisField(index=True)
+    fans_1_a_atn_b1: Optional[bool] = False
+    atn_b1: Optional[bool] = False
+    fans_1_a: Optional[bool] = False
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    class Meta:
+        """MetaData"""
+        database = redis_db
+
+
+class LogoffRequest(HashModel):
+    """A DLIC logoff request"""
+    logoff_code: Annotated[
+        str, Query(min_length=64, max_length=64, pattern="^[a-f0-9]+$")]
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
 class StoreAndForward(HashModel, index=True): # type: ignore
     """A table to hold all the messages"""
     msg_from: Annotated[
