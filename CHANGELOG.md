@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.8.0](https://github.com/SimACARS/acars-server/compare/v1.7.0...v1.8.0) (2026-05-31)
+
+
+### Features
+
+* cpdlc message elements and standardized free text messages ([#23](https://github.com/SimACARS/acars-server/issues/23)) ([cf228eb](https://github.com/SimACARS/acars-server/commit/cf228eb56aa7c4eaa9c28018cb30fcb7c7c0d7d4))
+
 # [1.7.0](https://github.com/SimACARS/acars-server/compare/v1.6.2...v1.7.0) (2026-05-30)
 
 
