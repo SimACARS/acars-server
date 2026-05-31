@@ -114,7 +114,8 @@ class StoreAndForward(HashModel, index=True): # type: ignore
         str, Query(
             min_length=4,
             max_length=10,
-            pattern=r"[A-Z0-9\s\(\)\-\?\:\.\,\'\=\+\/\n\r]+")] = RedisField(index=True)
+            pattern=r"[A-Z0-9\s\(\)\-\?\:\.\,\'\=\+\/\n\r]+")] = RedisField(
+                index=True, full_text_search=True)
     network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
     created: float
     relayed: Optional[bool] = RedisField(index=True, default=False)
