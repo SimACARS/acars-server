@@ -22,9 +22,10 @@ PWD = Path(os.path.dirname(__file__))
 class PdfParser:
     """Parses a PDF"""
 
-    def __init__(self, file_path:str, pages:str="all") -> None:
+    def __init__(self, file_path:str, title:str, pages:str="all") -> None:
         logger.debug(file_path)
         self.file_path = file_path
+        self.title = title
         self.page_range = pages
         self._read_pdf()
 
@@ -65,10 +66,16 @@ class PdfParser:
 
         logger.info("Writing cleaned data to csv...")
         for key, data in lines_out.items():
-            write_path = os.path.join(PWD, "built_data", f"output_{key}.csv")
+            write_path = os.path.join(PWD, "built_data", f"{self.title}_output_{key}.csv")
             with open(write_path, "w+", encoding="utf-8") as file:
                 file.writelines(data)
             logger.success(f"Written to {write_path}")
 
-pdf_path = os.path.join(PWD.parent, "reference_docs", "gold_2edition.pdf")
-p = PdfParser(pdf_path, "214-266")
+FILES_TO_PARSE = [
+    ("gold", "gold_2edition.pdf", "214-266"),
+    ("adexp", "eurocontrol-adexp-specification-4-0.pdf", "44-54")
+]
+
+for file in FILES_TO_PARSE:
+    pdf_path = os.path.join(PWD.parent, "reference_docs", file[1])
+    PdfParser(pdf_path, file[0], file[2])
