@@ -94,6 +94,13 @@ def check_valid_legacy_msg_type(legacy_type: str):
             f"Invalid message type: Valid types are: {', '.join(static_data.LEGACY_MSG_TYPES)}")
     return legacy_type
 
+def check_valid_network(legacy_type: str):
+    """Check if the message type is valid"""
+    if legacy_type not in static_data.NETWORKS:
+        raise ValueError(
+            f"Invalid network: Valid networks are: {', '.join(static_data.NETWORKS)}")
+    return legacy_type
+
 
 class StoreAndForward(HashModel, index=True): # type: ignore
     """A table to hold all the messages"""
@@ -107,7 +114,7 @@ class StoreAndForward(HashModel, index=True): # type: ignore
             min_length=4,
             max_length=10,
             pattern=r"[A-Z0-9\s\(\)\-\?\:\.\,\'\=\+\/\n\r]+")] = RedisField(index=True)
-    network: str
+    network: Annotated[str, AfterValidator(check_valid_network)]
     created: float
     relayed: Optional[bool] = RedisField(index=True, default=False)
     relayed_at: Optional[float] = 0.0
