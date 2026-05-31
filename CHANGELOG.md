@@ -1,5 +1,42 @@
 # Changelog
 
+# [1.9.0](https://github.com/SimACARS/acars-server/compare/v1.8.0...v1.9.0) (2026-05-31)
+
+
+### Bug Fixes
+
+* EUROCONTROL-SPEC-107 - 5.1.1.4 - Allowed Characters ([5698302](https://github.com/SimACARS/acars-server/commit/5698302958d9f4bc834952bb802be035a2e034bf))
+* network not being validated ([fa5f99d](https://github.com/SimACARS/acars-server/commit/fa5f99d9133365d09d9adbb1253d68cd63f7e570))
+* packet should be full text search ([0396c4d](https://github.com/SimACARS/acars-server/commit/0396c4d996f0a507877de1783db7b3333f03c222))
+* should be to page 266 ([c2719cf](https://github.com/SimACARS/acars-server/commit/c2719cf2396989239fffec90c294a4abfc4cc680))
+* should direct call the subclass ([7d9af9d](https://github.com/SimACARS/acars-server/commit/7d9af9d5910e94d68e082bb04af620972aa5e956))
+* some fields not being  indexed ([c8f10be](https://github.com/SimACARS/acars-server/commit/c8f10be729dd02b7342dc3d2b0fb440389a6f183))
+* sql should be databases ([9885ed3](https://github.com/SimACARS/acars-server/commit/9885ed36acec9b131b12665015f7b256f740fb83))
+* unable to bypass callsign verificatino for testing ([f03e37c](https://github.com/SimACARS/acars-server/commit/f03e37cc0342408574ec69f8e6def0a4aba076aa))
+
+
+### Features
+
+* ability to add test users ([e71a385](https://github.com/SimACARS/acars-server/commit/e71a38529279d2c244cd17191e34d5bebb8f03b5))
+* added rcp standards ([88a80fa](https://github.com/SimACARS/acars-server/commit/88a80fa67d7f63038581b0abc63d222a45bdef54))
+* CPDLC downlink messages ([2d43b93](https://github.com/SimACARS/acars-server/commit/2d43b93ad5aa00bdc8a6af5ddddf10b2012cb510))
+* CPDLC uplink messages ([79631e2](https://github.com/SimACARS/acars-server/commit/79631e2ed4e36bde02d4247d59f966f5867e5382))
+* DLIC logon and logoff ([d826f09](https://github.com/SimACARS/acars-server/commit/d826f09d46b2151815cfc7e70273f6b70076b52f))
+* ground and aircraft CPDLC systems ([39e0c18](https://github.com/SimACARS/acars-server/commit/39e0c180dc9f875b3536c196baec9d29d03854d2))
+* write cpdlc data to sql db ([80ff99a](https://github.com/SimACARS/acars-server/commit/80ff99a49763b3e174b10a6c6074eeeb25f6052c))
+
+
+### Performance Improvements
+
+* remove unused import ([b6580a1](https://github.com/SimACARS/acars-server/commit/b6580a1e8a1ee3ea98a8219262e23f98b8d6c4e0))
+
+# [1.8.0](https://github.com/SimACARS/acars-server/compare/v1.7.0...v1.8.0) (2026-05-31)
+
+
+### Features
+
+* cpdlc message elements and standardized free text messages ([#23](https://github.com/SimACARS/acars-server/issues/23)) ([cf228eb](https://github.com/SimACARS/acars-server/commit/cf228eb56aa7c4eaa9c28018cb30fcb7c7c0d7d4))
+
 # [1.7.0](https://github.com/SimACARS/acars-server/compare/v1.6.2...v1.7.0) (2026-05-30)
 
 

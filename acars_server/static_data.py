@@ -207,23 +207,23 @@ COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
 
 METADATA_TAGS:list[dict[str, Any]] = [
     {
-        "name": "status",
+        "name": "Status",
         "description": "System status",
     },
     {
-        "name": "user management",
+        "name": "User Management",
         "description": "User management",
     },
     {
-        "name": "callbacks",
+        "name": "Callbacks",
         "description": "These are callback endpoints for third party OAuth2 services",
     },
     {
-        "name": "messaging",
+        "name": "Messaging",
         "description": "All things non-legacy messaging"
     },
     {
-        "name": "legacy messaging",
+        "name": "Legacy Messaging",
         "description": ("Provides backwards compatability for "
                         "clients configured to work with Hoppie's ACARS"),
         "externalDocs": {
@@ -232,7 +232,12 @@ METADATA_TAGS:list[dict[str, Any]] = [
         },
     },
     {
-        "name": "testing",
+        "name": "Testing",
         "description": "Test bits, you need a DEV API code to do anything here"
     },
+    {
+        "name": "Data Link Initiation and Capability",
+        "description": ("Endpoints related to the Data Link Initiation and "
+                        "Capability (DLIC) process as defined in ICAO Doc 4444")
+    }
 ]

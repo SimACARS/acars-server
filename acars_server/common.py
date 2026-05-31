@@ -11,12 +11,19 @@ import os
 from pathlib import Path
 
 # Third Party Libraries
+from fastapi.security import APIKeyHeader
 from loguru import logger
+
+# Add the API Key header
+header_api_key = APIKeyHeader(name="x-key")
 
 # Init a message queue for web consumer
 stream:asyncio.Queue = asyncio.Queue()
 
 PWD = Path(os.path.dirname(__file__))
+MASTER_KEY = os.path.join(PWD.parent, "master.key")
+AUTH_KEY = os.path.join(PWD.parent, "auth.key")
+
 LOGFILE = os.path.join(PWD.parent, "telementry", "acars-server.log")
 # Custom Loguru sink
 LOG_FORMAT = (
