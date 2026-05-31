@@ -31,6 +31,9 @@ redis_db = get_redis_connection(
     username="default",
     decode_responses=True
 )
+# ------------- DEV CODE -------------
+redis_db.flushall(asynchronous=True) # Clear Redis DB on startup
+# ------------- DEV CODE -------------
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(SQLITE_URL, connect_args=connect_args)

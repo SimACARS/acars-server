@@ -11,15 +11,22 @@ from contextlib import asynccontextmanager
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Any, Dict, List
+from typing import Annotated, Any, Dict
 
 # Third Party Libraries
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
-from redis_om import Migrator
-from sqlmodel import and_, select, update
+from opentelemetry import trace
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from redis_om import Migrator # type: ignore
+from sqlmodel import select
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
@@ -27,6 +34,20 @@ from acars_server import __VERSION__, auth, common, databases, static_data, netw
 
 PWD = Path(os.path.dirname(__file__))
 MASTER_KEY = os.path.join(PWD.parent, "master.key")
+
+load_dotenv()
+
+# Initialize OpenTelemetry
+resource = Resource(attributes={"service.name": "fastapi-service"})
+tracer_provider = TracerProvider(resource=resource)
+trace.set_tracer_provider(tracer_provider)
+
+# Set up OTLP exporter for traces
+otlp_exporter = OTLPSpanExporter(
+    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}",
+    insecure=True)
+span_processor = BatchSpanProcessor(otlp_exporter)
+tracer_provider.add_span_processor(span_processor)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,6 +85,7 @@ app = FastAPI(
     },
     openapi_tags=static_data.METADATA_TAGS
 )
+FastAPIInstrumentor.instrument_app(app)
 # Serve some static files
 app.mount("/static", StaticFiles(directory=os.path.join(PWD.parent, "front_end")), name="static")
 # Add the API Key header
@@ -102,7 +124,7 @@ async def stream_logs():
     return EventSourceResponse(event_generator())
 
 # ------------------------------------------------------------------
-# User Functions
+# User Endpoints
 # ------------------------------------------------------------------
 responses_user_new_network:dict[int|str,dict[str,Any]]|None  = {
     307: {},
@@ -173,7 +195,7 @@ async def auth_new_user_callback_vatsim(
     return db_add
 
 # ------------------------------------------------------------------
-# Test Functions
+# Test Endpoints
 # ------------------------------------------------------------------
 @app.get("/test/poll/{callsign}", tags=["testing"])
 async def test_poll(callsign:str) -> Response:
@@ -238,31 +260,41 @@ async def test_inforeq(
     background_tasks.add_task(tasks.message_parse, sf_msg)
     return JSONResponse(content={"status": "ok"})
 
+@app.post("/test/tx", status_code=204, tags=["testing"])
+async def test_tx(
+    msg:databases.StoreAndForward,
+    background_tasks: BackgroundTasks,
+    ):
+    """INFOREQ Test"""
+    sf_msg = databases.StoreAndForward.model_validate(msg)
+    t_msg = {
+        "created": dt.now(tz.utc).timestamp(),
+        "msg_type": sf_msg["msg_type"],
+        "network": sf_msg["network"],
+        "packet": sf_msg["packet"],
+        "msg_to": sf_msg["msg_to"],
+        "msg_from": sf_msg["msg_from"]
+    }
+    sf2_msg = databases.StoreAndForward.model_validate(t_msg)
+    common.logger.success(sf2_msg)
+    background_tasks.add_task(tasks.message_parse, sf2_msg)
+    return JSONResponse(content={"status": "ok"})
+
 # ------------------------------------------------------------------
 # ACARS Functions
 # ------------------------------------------------------------------
-@app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
-async def poll_for_new_messages(
-    session:databases.SessionDep,
-    api_key:str = Depends(header_api_key)
-    ) -> Response:
-    """Poll for new messages"""
-    # ------------------------------------------------------------------
-    # API Auth
-    # ------------------------------------------------------------------
+
+async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[str,str]:
+    """Authenticates an API Key"""
     db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
     api_user = session.exec(db_auth).first()
     if not api_user:
         common.logger.error("401: API key not recognised")
         raise HTTPException(status_code=401, detail="Unauthorised")
-    # ------------------------------------------------------------------
-    # Function
-    # ------------------------------------------------------------------
+    return crypto.api_key_reader(api_key)
 
-    # Read API Key
-    user_data = crypto.api_key_reader(api_key)
-
-    # Validate callsign on various networks
+async def callsign_verification(user_data) -> str|None:
+    """Validate callsign on various networks"""
     callsign = None
     if user_data["network"] == "vatsim":
         vc = networks.Vatsim()
@@ -276,6 +308,20 @@ async def poll_for_new_messages(
             status_code=400,
             detail=(f"Network '{user_data['network']}' is not valid. "
                     f"Expected one of {', '.join(static_data.NETWORKS)}"))
+    return callsign
+
+# ------------------------------------------------------------------
+# ACARS Endpoints
+# ------------------------------------------------------------------
+@app.post("/msg/poll", responses=static_data.COMMON_ERRORS, tags=["messaging"])
+async def poll_for_new_messages(
+    session:databases.SessionDep,
+    api_key:str = Depends(header_api_key)
+    ) -> Response:
+    """Poll for new messages"""
+
+    user_data = await api_authentication(session, api_key)
+    callsign = await callsign_verification(user_data)
 
     # If the callsign has been validated
     if callsign:
@@ -381,39 +427,13 @@ async def transmit_a_message(
     background_tasks: BackgroundTasks,
     api_key:str = Depends(header_api_key)):
     """Legacy message"""
-    # ------------------------------------------------------------------
-    # API Auth
-    # ------------------------------------------------------------------
-    db_select = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
-    api_user = session.exec(db_select).first()
-    if not api_user:
-        raise HTTPException(status_code=401, detail="Unauthorised")
-    # ------------------------------------------------------------------
-    # Function
-    # ------------------------------------------------------------------
 
-    # Read API Key
-    user_data = crypto.api_key_reader(api_key)
+    user_data = await api_authentication(session, api_key)
+    callsign = await callsign_verification(user_data)
     sf_msg = databases.StoreAndForward.model_validate(msg)
 
-    # Validate callsign on various networks
-    check = False
-    if user_data["network"] == "vatsim":
-        vc = networks.Vatsim()
-        check = vc.corrolate_cid_to_callsign(user_data["uid"], sf_msg["msg_from"])
-    elif user_data["network"] == "ivao":
-        pass
-    else:
-        error = (f"Network '{user_data['network']}' is not valid. "
-                f"Expected one of {', '.join(static_data.NETWORKS)}")
-        common.logger.error(error)
-        raise HTTPException(
-            status_code=400,
-            detail=error
-            )
-
     # If the callsign has been validated
-    if check:
+    if callsign:
         background_tasks.add_task(tasks.message_parse, sf_msg)
         return sf_msg
 

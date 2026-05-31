@@ -13,12 +13,23 @@ Your user ID is verified using your network's OAuth2 protocol. We ONLY store you
  - Python >= 3.14.4
  - Python pip >= 26.1.1
  - Git >= 2.54.0 (windows)
+ - Redis >= 8.0.0
+ - OpenObserve >= 0.11.0 (windows)
+ - OpenTelemetry Collector >= 0.107.0
+
 ### Getting Started (Visual Studio Code)
     git clone https://github.com/SimACARS/acars-server.git
-   Create and activate a virtual environment
+
+Create and activate a virtual environment
+
+Setup OpenObserve using this guide https://openobserve.ai/blog/monitoring-fastapi-application-using-opentelemetry-and-openobserve/
 
     pip install -r requirements.txt
+    pip install opentelemetry-distro
+    opentelemetry-bootstrap -a install
+    pip install opentelemetry-exporter-otlp
     fastapi dev
+
 Browse to http://127.0.0.1:8000 for the API or http://127.0.0.1:8000/docs for OpenAPI docs
 
 # Authentication Flows
@@ -33,6 +44,7 @@ E -- Encrypt with master.key --> F@{ shape: procs, label: "Generated API Key" }
 F --> G@{ shape: curv-trap, label: "Display API Key to User" }
 F --> H@{ shape: lin-cyl, label: "Store API Key" }
 ```
+
 ## Existing User (Message Store on VATSIM)
 ```mermaid
 graph LR
@@ -47,6 +59,7 @@ F --> G@{ shape: dbl-circ, label: "Return 201" }
 DB -- No --> DC@{ shape: dbl-circ, label: "Return 403" }
 D -- No --> H@{ shape: dbl-circ, label: "Return 401" }
 ```
+
 ## Existing User (Message Forward on VATSIM)
 ```mermaid
 graph LR

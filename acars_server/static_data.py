@@ -195,7 +195,8 @@ NETWORKS = [
     "poscon",
     "apoc",
     "sayintentions",
-    "offline"
+    "offline",
+    "testing"
 ]
 
 COMMON_ERRORS:dict[int|str,dict[str,Any]]|None = {
