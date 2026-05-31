@@ -73,7 +73,8 @@ class PdfParser:
 
 FILES_TO_PARSE = [
     ("gold", "gold_2edition.pdf", "214-266"),
-    ("adexp_primary", "eurocontrol-adexp-specification-4-0.pdf", "44-54")
+    ("adexp_primary", "eurocontrol-adexp-specification-4-0.pdf", "44-54"),
+    ("adexp_subfields", "eurocontrol-adexp-specification-4-0.pdf", "55-61"),
 ]
 
 for file in FILES_TO_PARSE:
