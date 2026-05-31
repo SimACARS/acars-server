@@ -89,9 +89,9 @@ class ApiKeyUpdate(ApiKeyBase):
 # ------------------------------------------------------------------
 def check_valid_legacy_msg_type(legacy_type: str):
     """Check if the message type is valid"""
-    if legacy_type not in static_data.LEGACY_MSG_TYPES:
+    if legacy_type not in static_data.MSG_TYPES:
         raise ValueError(
-            f"Invalid message type: Valid types are: {', '.join(static_data.LEGACY_MSG_TYPES)}")
+            f"Invalid message type: Valid types are: {', '.join(static_data.MSG_TYPES)}")
     return legacy_type
 
 def check_valid_network(legacy_type: str):

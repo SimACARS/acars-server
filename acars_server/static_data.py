@@ -174,7 +174,7 @@ CPDLC_DOWNLINK_MESSAGE_RESPONSES = {
 }
 
 # Ref: https://www.hoppie.nl/acars/system/tech.html
-LEGACY_MSG_TYPES = [
+MSG_TYPES = [
     "progress",
     "cpdlc",
     "telex",
