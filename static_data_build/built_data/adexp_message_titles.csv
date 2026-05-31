@@ -1,0 +1,88 @@
+title,definition,section
+ABI,Advance Boundary Information Message,E.4.2
+ACK,Acknowledge Message,E.2.2
+ACP,Acceptance Message,E.4.2
+ACT,Activation Message,E.4.2
+AMA,Arrival Management Message,E.4.2
+APR,Aircraft Position Report Message,E.6.2
+AUP,Airspace Use Plan Message,E.5.2
+BFD,Basic Flight Data Message,E.4.2
+CAM,Code Assignment Message,E.7.2
+CCM,Code Cancellation Message,E.7.2
+CDN,Co-ordination Message,E.4.2
+CFD,Change to Flight Data Message,E.4.2
+COD,SSR Code Assignment Message,E.4.2
+COF,Change of Frequency Message,E.4.2
+COR,Code Request Message,E.7.2
+CRAM,Conditional Route Availability Message,E.5.2
+CRE,Code Release Message,E.7.2
+CRP,Clearance Response Message,E.4.2
+CRQ,Clearance Request Message,E.4.2
+DES,De-Suspension Message,E.3.2
+DPI,Departure Planning Information Message,E.6.2
+EFD,ETFMS Flight Data Message,E.6.2
+ERR,Error Message,"E.3.2, E.6.2. E.7.2"
+FCM,Flight Confirmation Message,E.3.2
+FLS,Flight Suspension Message,E.3.2
+FSA,First System Activation Message,E.6.2
+FUM,Flight Update Message,E.6.2
+HOP,Hand-Over Proposal Message,E.4.2
+IACH,Individual ATC Modification Message,E.6.2
+IAFP,Individual ATC Flight Plan Proposal Message,E.6.2
+IAPL,Individual ATC Flight Plan Message,E.6.2
+IARR,Individual Arrival Message,E.2.2
+ICHG,Individual Modification Message,E.2.2
+ICNL,Individual Cancellation Message,E.2.2
+IDEP,Individual Departure Message,E.2.2
+IDLA,Individual Delay Message,E.2.2
+IFPL,Individual Flight Plan Message,E.2.2
+INF,Information Message,E.4.2
+IRPL,Individual Repetitive Flight Plan,E.2.2
+IRQP,Individual Request Flight Plan Message,E.2.2
+LAM,Logical Acknowledgement Message,E.4.2
+LOF,Logon Forward Message,E.4.2
+LRM,Logical Rejection Message,E.4.2
+MAC,Message for Abrogation of Co-ordination,E.4.2
+MAN,Manual Processing Pending Message,E.2.2
+MAS,Manual Assumption of Communications Message,E.4.2
+NAN,Next Authority Notified Message,E.4.2
+OCM,Oceanic Clearance Message,E.4.2
+PAC,Preliminary Activation Message,E.4.2
+PNT,Point Message,E.4.2
+RAP,Referred Activate Proposal Message,E.4.2
+RCHG,Repetitive Flight Plan Data Modification Message,E.2.2
+RCL,Request Oceanic Clearance Message,E.4.2
+RCNL,Repetitive Flight Plan Data Cancellation Message,E.2.2
+REA,Ready Message,E.3.2
+REJ,Rejection Message,E.2.2
+REV,Revision Message,E.4.2
+RFI,Ready for Improvement,E.3.2
+RJC,Reject Co-ordination Message,E.4.2
+RJT,Re-Routing Rejection Message,E.3.2
+RLS,Release Message,E.4.2
+ROF,Request On Frequency Message,E.4.2
+RRN,Re-Routing Notification,E.3.2
+RRQ,Release Request Message,E.4.2
+RRP,Re-Routing Proposal Message,E.3.2
+RRV,Referred Revision Proposal Message,E.4.2
+RTI,Request Tactical Instructions Message,E.4.2
+SAM,Slot Allocation Message,E.3.2
+SBY,Stand-by Message,E.4.2
+SCO,Skip Communication,E.4.2
+SDM,Supplementary Data Message,E.4.2
+SIP,Slot Improvement Proposal Message,E.3.2
+SKC,Skip Cancellation Message,E.4.2
+SLC,Slot Requirement Cancellation Message,E.3.2
+SMM,Slot Missed Message,E.3.2
+SPA,Slot Proposal Acceptance Message,E.3.2
+SRJ,Slot Proposal Rejection Message,E.3.2
+SRM,Slot Revision Message,E.3.2
+SWM,SIP Wanted Message,E.3.2
+TIM,Transfer Initiation Message,E.4.2
+TIP,Tactical Instructions Proposal Message,E.4.2
+UUP,Updated Airspace Use Plan Message,E.5.2
+WAR,Warning Message,E.7.2
+XAP,Crossing Alternate Proposal Message,E.4.2
+XCM,Crossing Cancellation Message,E.4.2
+XIN,Crossing Intention Notification Message,E.4.2
+XRQ,Crossing Request Message,E.4.2

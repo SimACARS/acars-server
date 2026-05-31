@@ -15,7 +15,7 @@ from typing import Any, Dict
 from datetime import datetime as dt, timezone as tz
 
 # Local Libraries
-from acars_server import common, databases, inforeq
+from acars_server import adexp, common, databases, inforeq
 
 
 vs = inforeq.Vatsim()
@@ -34,6 +34,11 @@ def message_parse(msg:databases.StoreAndForward):
             return
     # CPDLC
     elif msg["msg_type"] == "cpdlc":
+        if not msg_type_cpdlc(msg):
+            return
+    # ADEXP
+    elif msg["msg_type"] == "adexp":
+        adexp_msg = adexp.Adexp(msg)
         if not msg_type_cpdlc(msg):
             return
 

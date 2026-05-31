@@ -178,6 +178,7 @@ MSG_TYPES = [
     "progress",
     "cpdlc",
     "telex",
+    "adexp",
     "ping",
     "posreq",
     "position",
