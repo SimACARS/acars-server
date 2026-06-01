@@ -55,13 +55,13 @@ async def dlic_airline_logon(
 
     cs_logon = databases.DataLinkInitiationCapability.find(
                 (databases.DataLinkInitiationCapability.logon_from == msg.logon_from)
-            ).all()
+            ).first()
     if len(cs_logon) > 0:
-        common.logger.warning(f"{msg.logon_from} is already logged on {cs_logon[0].model_dump()}")
+        common.logger.warning(f"{msg.logon_from} is already logged on {cs_logon.model_dump()}")
         return JSONResponse(content={
             "status": "already logged on",
             "callsign": msg.logon_from,
-            "atsu": cs_logon[0].logon_to
+            "atsu": cs_logon.logon_to
             })
 
     logoff_code = await dlic_logoff_hash(msg)
