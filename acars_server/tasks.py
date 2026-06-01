@@ -58,15 +58,21 @@ def message_parse(msg:databases.StoreAndForward):
 
     # Commit the message to the relevant stream
     stream = None
+    if sf_msg.relayed:
+        sf_msg.relayed = 1
+    else:
+        sf_msg.relayed = 0
+
     if str(sf_msg.msg_to).startswith("_COY_"):
         stream = f"msg:coy:{sf_msg.network}:{sf_msg.msg_to}"
-        databases.redis_db.xadd(stream, sf_msg)
     elif str(sf_msg.msg_to).startswith("_ATC_"):
         stream = f"msg:atc:{sf_msg.network}:{sf_msg.msg_to}"
-        databases.redis_db.xadd(stream, sf_msg)
 
-    # Expire any stream messages older than 24hrs
     if stream is not None:
+        common.logger.debug(f"Adding message to stream: {stream} {sf_msg.model_dump()}")
+        databases.redis_db.xadd(stream, sf_msg.model_dump())
+
+        # Expire any stream messages older than 24hrs
         expire = int((time.time() - 86400) * 1000)
         expire_id = f"{expire}-0"
         databases.redis_db.xtrim(stream, minid=expire_id)
