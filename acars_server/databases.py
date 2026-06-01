@@ -125,6 +125,9 @@ class AirlineApiKey(AirlineApiKeyBase, table=True):
     created: float
     last_used: float
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
 
 class AirlineApiKeyCreate(AirlineApiKeyBase):
     """A table to hold all API keys"""
