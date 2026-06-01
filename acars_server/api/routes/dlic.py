@@ -13,7 +13,7 @@ from hashlib import blake2b
 # Third Party Libraries
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from redis_om.model.model import NotFoundError
+from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
 from acars_server import common, databases
