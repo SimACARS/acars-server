@@ -25,7 +25,7 @@ from redis_om import Migrator # type: ignore
 
 # Local Libraries
 from acars_server import __VERSION__, auth, common, databases, static_data
-from acars_server.api.routes import acars, dlic, status, tests, users
+from acars_server.api.routes import acars, airlines, dlic, status, tests, users
 
 load_dotenv()
 
@@ -97,6 +97,8 @@ if not Path(common.AUTH_KEY).exists():
 app.include_router(status.router)
 # User Endpoints
 app.include_router(users.router)
+# Airline Endpoints
+app.include_router(airlines.router, prefix="/airline", tags=["Airline Management"])
 # Test Endpoints
 app.include_router(tests.router, prefix="/test", tags=["Testing"])
 # DLIC (Data Link Initiation and Capability) Endpoints

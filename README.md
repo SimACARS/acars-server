@@ -33,7 +33,8 @@ Setup OpenObserve using this guide https://openobserve.ai/blog/monitoring-fastap
 Browse to http://127.0.0.1:8000 for the API or http://127.0.0.1:8000/docs for OpenAPI docs
 
 # Authentication Flows
-## New User (API Key Generation)
+## Users
+### New User (API Key Generation)
 ```mermaid
 graph LR
 A((New User)) --> B@{ shape: lean-r, label: "/user/new/NETWORK" }
@@ -45,7 +46,7 @@ F --> G@{ shape: curv-trap, label: "Display API Key to User" }
 F --> H@{ shape: lin-cyl, label: "Store API Key" }
 ```
 
-## Existing User (Message Store on VATSIM)
+### Existing User (Message Store on VATSIM)
 ```mermaid
 graph LR
 A((Existing User)) --> B@{ shape: sl-rect, label: "API Key set via x-key header" }
@@ -60,7 +61,7 @@ DB -- No --> DC@{ shape: dbl-circ, label: "Return 403" }
 D -- No --> H@{ shape: dbl-circ, label: "Return 401" }
 ```
 
-## Existing User (Message Forward on VATSIM)
+### Existing User (Message Forward on VATSIM)
 ```mermaid
 graph LR
 A((Existing User)) --> B@{ shape: sl-rect, label: "API Key set via x-key header" }
@@ -73,4 +74,19 @@ DB -- Yes --> F@{ shape: datastore, label: "Forward Messages to User" }
 F --> G@{ shape: dbl-circ, label: "Return 201" }
 DB -- No --> DC@{ shape: dbl-circ, label: "Return 403" }
 D -- No --> H@{ shape: dbl-circ, label: "Return 401" }
+```
+
+## Airlines
+### New Airline
+Anyone can request a temporary (24hour) airline API key. Domain verification is required for a permanent API key.
+```mermaid
+graph LR
+A((New Airline)) --> B@{ shape: lean-r, label: "POST /airline/new" }
+B -- Mandatory Fields --> C@{ shape: tri, label: "airline_name, airline_callsign, network" }
+C -- Optional Fields --> BA@{ shape: tri, label: "domain" }
+BA -- Domain Auth --> BB@{ shape: lean-r, label: "_acars-verification.DOMAIN IN TXT 'acars-verify-TOKEN'" }
+BB -- Permanent Key --> F
+C -- 24 Hour Temp Key--> F@{ shape: procs, label: "Generated API Key" }
+F --> G@{ shape: curv-trap, label: "Display API Key to User" }
+F --> H@{ shape: lin-cyl, label: "Store API Key" }
 ```

@@ -147,7 +147,7 @@ async def transmit_a_message(
                               "be used in production")
         callsign = str(msg.msg_from)
     else:
-        callsign = await callsign_verification(user_data)
+        callsign = str(await callsign_verification(user_data))
     sf_msg = databases.StoreAndForward.model_validate(msg)
 
     # If the callsign has been validated
