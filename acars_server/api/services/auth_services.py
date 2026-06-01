@@ -21,8 +21,8 @@ async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[
     db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
     api_user = session.exec(db_auth).first()
     if not api_user:
-        common.logger.error("401: API key not recognised")
-        raise HTTPException(status_code=401, detail="Unauthorised")
+        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint.")
+        raise HTTPException(status_code=401, detail="Unauthorised. This is an AIRCRAFT endpoint.")
     return auth.Auth().api_key_reader(api_key)
 
 async def airline_api_authentication(
@@ -31,8 +31,8 @@ async def airline_api_authentication(
     db_auth = select(databases.AirlineApiKey).where(databases.AirlineApiKey.api_key == api_key)
     api_airline = session.exec(db_auth).first()
     if not api_airline:
-        common.logger.error("401: API key not recognised")
-        raise HTTPException(status_code=401, detail="Unauthorised")
+        common.logger.error("401: API key not recognised. This is an AIRLINE endpoint.")
+        raise HTTPException(status_code=401, detail="Unauthorised. This is an AIRLINE endpoint.")
     return api_airline
 
 async def callsign_verification(user_data) -> str|None:
