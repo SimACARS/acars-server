@@ -13,13 +13,14 @@ from datetime import datetime as dt, timezone as tz
 from dns.resolver import Resolver
 
 # Third Party Libraries
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
 # Local Libraries
-from acars_server import common, databases, static_data
+from acars_server import common, databases, static_data, tasks
+from acars_server.api.services.auth_services import airline_api_authentication
 from acars_server.api.services.user_services import responses_user_new_network
 
 templates = Jinja2Templates(directory=os.path.join(common.PWD, "api", "templates"))
@@ -27,6 +28,41 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # Airline Endpoints
 # ------------------------------------------------------------------
+@router.post(
+        "/tx",
+        status_code=201,
+        responses=static_data.COMMON_ERRORS,
+        response_model=databases.StoreAndForward
+        )
+async def transmit_a_message(
+    msg:databases.StoreAndForward,
+    session:databases.SessionDep,
+    background_tasks: BackgroundTasks,
+    api_key:str = Depends(common.header_api_key)):
+    """Airline Send a Message"""
+
+    airline_data = await airline_api_authentication(session, api_key)
+
+    sf_msg = databases.StoreAndForward.model_validate(msg)
+
+    # If airline has been authenticated via API key
+    if airline_data:
+        # An airline should only be able to send a message to an online station
+        cs_logon = databases.DataLinkInitiationCapability.find(
+                (databases.DataLinkInitiationCapability.logon_from == msg.msg_to)
+            ).first()
+        if cs_logon:
+            background_tasks.add_task(tasks.message_parse, sf_msg)
+            return sf_msg
+        return JSONResponse(content={"error": f"{msg.msg_to} is not active on the network"})
+
+    error = f"No airline data identified for {msg.msg_from}"
+    common.logger.error(error)
+    raise HTTPException(
+        status_code=403,
+        detail=error
+        )
+
 @router.post(
         "/new",
         response_model=databases.AirlineApiKeyPublic,
