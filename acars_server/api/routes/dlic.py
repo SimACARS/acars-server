@@ -30,7 +30,7 @@ async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
         signing_key = key_file.read()
 
     smoosh = (f"{msg['logon_from']}:{msg['logon_to']}:"
-              "{msg['pk']}:{dt.now(tz.utc).timestamp()}").encode()
+              f"{msg['pk']}:{dt.now(tz.utc).timestamp()}").encode()
     h = blake2b(digest_size=32, key=signing_key)
     h.update(smoosh)
 
