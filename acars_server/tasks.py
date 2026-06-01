@@ -48,8 +48,12 @@ def message_parse(msg:databases.StoreAndForward):
     else:
         sf_msg = databases.StoreAndForward.model_validate(send_msg)
 
-    # Commit the message to the store
+    # Commit the message to the store and expire in 24 hours
     sf_msg.save()
+    databases.redis_db.expire(
+        sf_msg.key(),
+        86400,
+    )
 
 def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
     """Validates ADS-C messages"""
