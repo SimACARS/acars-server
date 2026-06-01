@@ -56,7 +56,7 @@ async def dlic_airline_logon(
     cs_logon = databases.DataLinkInitiationCapability.find(
                 (databases.DataLinkInitiationCapability.logon_from == f"_COY_{msg.logon_from}")
             ).first()
-    if len(cs_logon) > 0:
+    if cs_logon:
         common.logger.warning(f"{msg.logon_from} is already logged on {cs_logon.model_dump()}")
         return JSONResponse(content={
             "status": "already logged on",
@@ -99,12 +99,12 @@ async def dlic_aircraft_logon(
     cs_logon = databases.DataLinkInitiationCapability.find(
                 (databases.DataLinkInitiationCapability.logon_from == callsign)
             ).all()
-    if len(cs_logon) > 0:
-        common.logger.warning(f"{callsign} is already logged on {cs_logon[0].model_dump()}")
+    if cs_logon:
+        common.logger.warning(f"{callsign} is already logged on {cs_logon.model_dump()}")
         return JSONResponse(content={
             "status": "already logged on",
             "callsign": callsign,
-            "atsu": cs_logon[0].logon_to
+            "atsu": cs_logon.logon_to
             })
 
     sf_msg = databases.DataLinkInitiationCapability.model_validate(msg)
