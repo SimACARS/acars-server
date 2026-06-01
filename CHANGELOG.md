@@ -1,5 +1,31 @@
 # Changelog
 
+# [1.10.0](https://github.com/SimACARS/acars-server/compare/v1.9.0...v1.10.0) (2026-06-01)
+
+
+### Bug Fixes
+
+* ambiguous error message ([bf8f944](https://github.com/SimACARS/acars-server/commit/bf8f944d348332c6b7ee54b413edd4d508c650ab))
+* incompatable type ([4e99188](https://github.com/SimACARS/acars-server/commit/4e99188fbca9f18e009b499e8d4201d775a237d4))
+* incorrect if statement ([41d734c](https://github.com/SimACARS/acars-server/commit/41d734c1e834e6e42913d2750e6c7928c00eabac))
+* missing f string ([cc42825](https://github.com/SimACARS/acars-server/commit/cc42825035d9d3c9b8b6314f5fe578889ac27728))
+* no follow on link ([8572b13](https://github.com/SimACARS/acars-server/commit/8572b131e4d602e4917a108201e68dc3fa027efc))
+* non-expiring messages ([9b7c1ed](https://github.com/SimACARS/acars-server/commit/9b7c1ed669f77a49a8f056a778d2d62410a616c8))
+* should be select one not select all ([7d8af75](https://github.com/SimACARS/acars-server/commit/7d8af7578aa23a0d47a1b16fe31a04dc9ff48de5))
+* unable to access key ([e71f270](https://github.com/SimACARS/acars-server/commit/e71f27023173d3456a5592a70e0bd4438727a8d1))
+* unable to call get_items ([dc33017](https://github.com/SimACARS/acars-server/commit/dc3301757159173d828a0b6a9cbd6b19389ff1f8))
+
+
+### Features
+
+* _COY_ prefix for airlines ([e377d9f](https://github.com/SimACARS/acars-server/commit/e377d9f1a9248f60c9c985cf1379ab3790e4d43b))
+* airline dlic logon ([3f32b19](https://github.com/SimACARS/acars-server/commit/3f32b194250ff2957f635378da036f1fe20f462e))
+* airline domain verification ([2c7bc21](https://github.com/SimACARS/acars-server/commit/2c7bc218bcb3f418ba6385d8046228bfb9d34d83))
+* airlines only allowed to send to an online station ([4246b42](https://github.com/SimACARS/acars-server/commit/4246b42a1b6da2d7630a63650a265ffb70182c4a))
+* domain authentication ([02c775e](https://github.com/SimACARS/acars-server/commit/02c775e51bd688569982db436c27f5f1a108a9b6))
+* globall dlic logoff ([bb45d9a](https://github.com/SimACARS/acars-server/commit/bb45d9a14b18cf7c80223fa082acda407f290dfc))
+* use SSE to send events to airlines ([eb8527b](https://github.com/SimACARS/acars-server/commit/eb8527b99058c6df8dbb16b67ec1fd8e8fbc51c2))
+
 # [1.9.0](https://github.com/SimACARS/acars-server/compare/v1.8.0...v1.9.0) (2026-05-31)
 
 
