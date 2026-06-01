@@ -54,7 +54,7 @@ async def dlic_airline_logon(
         raise HTTPException(status_code=401, detail="Unauthorised")
 
     cs_logon = databases.DataLinkInitiationCapability.find(
-                (databases.DataLinkInitiationCapability.logon_from == msg.logon_from)
+                (databases.DataLinkInitiationCapability.logon_from == f"_COY_{msg.logon_from}")
             ).first()
     if len(cs_logon) > 0:
         common.logger.warning(f"{msg.logon_from} is already logged on {cs_logon.model_dump()}")
@@ -67,7 +67,7 @@ async def dlic_airline_logon(
     logoff_code = await dlic_logoff_hash(msg)
     t_msg = {
         "created": dt.now(tz.utc).timestamp(),
-        "logon_from": msg.logon_from,
+        "logon_from": f"_COY_{msg.logon_from}",
         "logon_to": "_SYSTEM_DLIC",
         "network": msg.network,
         "fans_1_a_atn_b1": msg.fans_1_a_atn_b1,

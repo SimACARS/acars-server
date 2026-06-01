@@ -111,7 +111,7 @@ async def domain_auth_check(verification_token:str, session: databases.SessionDe
                     "api_key": secrets.token_hex(64),
                     "network": verifcation_request.network,
                     "airline_name": verifcation_request.airline_name,
-                    "airline_callsign": verifcation_request.airline_callsign,
+                    "airline_callsign": f"_COY_{verifcation_request.airline_callsign}",
                     "domain": verifcation_request.domain,
                     "verified": True,
                     "created": dt.now(tz.utc).timestamp()
