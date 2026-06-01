@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.10.1](https://github.com/SimACARS/acars-server/compare/v1.10.0...v1.10.1) (2026-06-01)
+
+
+### Bug Fixes
+
+* awaiting sync function ([71ee6b1](https://github.com/SimACARS/acars-server/commit/71ee6b1cbb08842e53fe430e482f0d8080edc17d))
+* message should be commited to sf first ([fa50a8c](https://github.com/SimACARS/acars-server/commit/fa50a8c4dd8ce1d1455408c4d951bffa0940b459))
+* redis.exceptions.DataError ([634b0c5](https://github.com/SimACARS/acars-server/commit/634b0c5ae05aed1f0ad1cb4f2b7587e82b62addc))
+
 # [1.10.0](https://github.com/SimACARS/acars-server/compare/v1.9.0...v1.10.0) (2026-06-01)
 
 
