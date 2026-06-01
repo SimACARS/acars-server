@@ -9,6 +9,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import ast
 import re
+import time
 from typing import Any, Dict
 
 # Third Party Libraries
@@ -48,7 +49,22 @@ def message_parse(msg:databases.StoreAndForward):
     else:
         sf_msg = databases.StoreAndForward.model_validate(send_msg)
 
-    # Commit the message to the store and expire in 24 hours
+    # Commit the message to the relevant stream
+    stream = None
+    if str(sf_msg.msg_to).startswith("_COY_"):
+        stream = f"msg:coy:{sf_msg.network}:{sf_msg.msg_to}"
+        databases.redis_db.xadd(stream, sf_msg)
+    elif str(sf_msg.msg_to).startswith("_ATC_"):
+        stream = f"msg:atc:{sf_msg.network}:{sf_msg.msg_to}"
+        databases.redis_db.xadd(stream, sf_msg)
+
+    # Expire any stream messages older than 24hrs
+    if stream is not None:
+        expire = int((time.time() - 86400) * 1000)
+        expire_id = f"{expire}-0"
+        databases.redis_db.xtrim(stream, minid=expire_id)
+
+    # Always save to the 24hr message store for visability
     sf_msg.save()
     databases.redis_db.expire(
         sf_msg.key(),

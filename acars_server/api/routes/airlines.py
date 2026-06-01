@@ -13,8 +13,9 @@ from datetime import datetime as dt, timezone as tz
 from dns.resolver import Resolver
 
 # Third Party Libraries
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
+from fastapi.sse import EventSourceResponse, ServerSentEvent
 from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
@@ -28,6 +29,61 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # Airline Endpoints
 # ------------------------------------------------------------------
+@router.get("/rx/{network}/{callsign}", response_class=EventSourceResponse)
+async def receive_message_stream(
+    callsign:str,
+    network:str,
+    session:databases.SessionDep,
+    last_event_id: str | None = Query(default=None),
+    api_key:str = Depends(common.header_api_key)
+    ):
+    """
+    Airline receive messages via HTTPX (Server-Sent Events)
+
+    Example client side JavaScript:
+
+        const es = new EventSource("/stream/BAW");
+
+        es.onmessage = (event) => {
+            console.log("MSG:", JSON.parse(event.data));
+        };
+
+    https://developer.mozilla.org/en-US/docs/Web/API/EventSource
+    """
+    airline_data = await airline_api_authentication(session, api_key)
+
+    if f"_COY_{callsign}" == airline_data.airline_callsign and network == airline_data.network:
+        stream_key = f"msg:coy:{airline_data.network}:{airline_data.airline_callsign}"
+        # default = start of stream
+        start_id = last_event_id or "0-0"
+
+        # Replay any missed messages
+        if start_id != "0-0":
+            history = await databases.redis_db.xrange(stream_key, min=start_id)
+            for msg_id, data in history:
+                yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
+
+        # Then block while sending new SSE messages...
+        last_id = start_id
+        while True:
+            response = await databases.redis_db.xread(
+                streams={stream_key: last_id},
+                block=30000,  # 30s long poll
+                count=100
+            )
+            if not response:
+                continue
+
+            _, messages = response[0]
+            for msg_id, data in messages:
+                last_id = msg_id
+                yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
+
+    raise HTTPException(
+        status_code=403,
+        detail=f"{callsign} is an unauthorised callsign for provided API key"
+        )
+
 @router.post(
         "/tx",
         status_code=201,
