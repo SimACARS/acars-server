@@ -80,13 +80,13 @@ async def dlic_aircraft_logon(
     sf2_msg.save()
     return JSONResponse(content={"status": "logged on", "data": sf2_msg.model_dump()})
 
-@router.post("/aircraft/logoff")
-async def dlic_aircraft_logoff(
+@router.post("/logoff")
+async def dlic_any_station_logoff(
     msg: databases.LogoffRequest,
     session:databases.SessionDep,
     api_key:str = Depends(common.header_api_key)
     ):
-    """DLIC Aircraft Logoff"""
+    """DLIC Any Station Logoff"""
     await api_authentication(session, api_key)
 
     try:
