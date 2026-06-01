@@ -52,15 +52,15 @@ async def dlic_aircraft_logon(
     else:
         callsign = str(await callsign_verification(user_data))
 
-    all_messages = databases.DataLinkInitiationCapability.find(
+    cs_logon = databases.DataLinkInitiationCapability.find(
                 (databases.DataLinkInitiationCapability.logon_from == callsign)
             ).all()
-    if len(all_messages) > 0:
-        common.logger.warning(f"{callsign} is already logged on {all_messages[0].model_dump()}")
+    if len(cs_logon) > 0:
+        common.logger.warning(f"{callsign} is already logged on {cs_logon[0].model_dump()}")
         return JSONResponse(content={
             "status": "already logged on",
             "callsign": callsign,
-            "atsu": all_messages[0].logon_to
+            "atsu": cs_logon[0].logon_to
             })
 
     sf_msg = databases.DataLinkInitiationCapability.model_validate(msg)
