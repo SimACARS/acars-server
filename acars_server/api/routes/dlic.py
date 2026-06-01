@@ -17,7 +17,11 @@ from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
 from acars_server import common, databases
-from acars_server.api.services.auth_services import api_authentication, callsign_verification
+from acars_server.api.services.auth_services import (
+    airline_api_authentication,
+    api_authentication,
+    callsign_verification
+    )
 
 router = APIRouter()
 # ------------------------------------------------------------------
@@ -35,6 +39,46 @@ async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
     h.update(smoosh)
 
     return h.hexdigest()
+
+@router.post("/airline/logon")
+async def dlic_airline_logon(
+    msg:databases.DataLinkInitiationCapability,
+    session:databases.SessionDep,
+    api_key:str = Depends(common.header_api_key)
+):
+    """DLIC Airline Logon"""
+    airline_data = await airline_api_authentication(session, api_key)
+
+    if airline_data.airline_callsign != msg.logon_from:
+        common.logger.error("401: API Key doesn't match stored airline code")
+        raise HTTPException(status_code=401, detail="Unauthorised")
+
+    cs_logon = databases.DataLinkInitiationCapability.find(
+                (databases.DataLinkInitiationCapability.logon_from == msg.logon_from)
+            ).all()
+    if len(cs_logon) > 0:
+        common.logger.warning(f"{msg.logon_from} is already logged on {cs_logon[0].model_dump()}")
+        return JSONResponse(content={
+            "status": "already logged on",
+            "callsign": msg.logon_from,
+            "atsu": cs_logon[0].logon_to
+            })
+
+    logoff_code = await dlic_logoff_hash(msg)
+    t_msg = {
+        "created": dt.now(tz.utc).timestamp(),
+        "logon_from": msg.logon_from,
+        "logon_to": "_SYSTEM_DLIC",
+        "network": msg.network,
+        "fans_1_a_atn_b1": msg.fans_1_a_atn_b1,
+        "atn_b1": msg.atn_b1,
+        "fans_1_a": msg.fans_1_a,
+        "logoff_code": logoff_code
+    }
+    logon_msg = databases.DataLinkInitiationCapability.model_validate(t_msg)
+    common.logger.success(logon_msg)
+    logon_msg.save()
+    return JSONResponse(content={"status": "logged on", "data": logon_msg.model_dump()})
 
 @router.post("/aircraft/logon")
 async def dlic_aircraft_logon(
