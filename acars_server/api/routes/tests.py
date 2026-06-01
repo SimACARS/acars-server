@@ -11,8 +11,9 @@ from datetime import datetime as dt, timezone as tz
 from typing import Any, Dict
 
 # Third Party Libraries
-from fastapi import APIRouter, BackgroundTasks, Response
+from fastapi import APIRouter, BackgroundTasks, Query, Response
 from fastapi.responses import JSONResponse
+from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 # Local Libraries
 from acars_server import auth, common, databases, tasks
@@ -88,7 +89,7 @@ async def test_poll(callsign:str) -> Response:
     common.logger.success(f"No messages to retrive for {callsign}")
     return JSONResponse(content={"msg_count": 0})
 
-@router.get("/{ir_type}/{network}/{station}", status_code=204)
+@router.get("/inforeq/{ir_type}/{network}/{station}", status_code=204)
 async def test_inforeq(
     ir_type:str,
     network:str,
@@ -128,3 +129,52 @@ async def test_tx(
     common.logger.success(sf2_msg)
     background_tasks.add_task(tasks.message_parse, sf2_msg)
     return JSONResponse(content={"status": "ok"})
+
+@router.get(
+        "/rx/{network}/{callsign}",
+        response_class=EventSourceResponse
+        )
+async def receive_message_stream(
+    callsign:str,
+    network:str,
+    last_event_id: str | None = Query(default=None),
+    ):
+    """
+    Airline receive messages via HTTPX (Server-Sent Events)
+
+    Example client side JavaScript:
+
+        const es = new EventSource("/stream/BAW");
+
+        es.onmessage = (event) => {
+            console.log("MSG:", JSON.parse(event.data));
+        };
+
+    https://developer.mozilla.org/en-US/docs/Web/API/EventSource
+    """
+
+    stream_key = f"msg:coy:{network}:{callsign}"
+    # default = start of stream
+    start_id = last_event_id or "0-0"
+
+    # Replay any missed messages
+    if start_id != "0-0":
+        history = await databases.redis_async_db.xrange(stream_key, min=start_id)
+        for msg_id, data in history:
+            yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
+
+    # Then block while sending new SSE messages...
+    last_id = start_id
+    while True:
+        response = await databases.redis_async_db.xread(
+            streams={stream_key: last_id},
+            block=30000,  # 30s long poll
+            count=100
+        )
+        if not response:
+            continue
+
+        _, messages = response[0]
+        for msg_id, data in messages:
+            last_id = msg_id
+            yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)

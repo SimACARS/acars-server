@@ -1,0 +1,10 @@
+<html>
+    Hi, this is a test page for the COY BAW stream. Open your browser console to see messages.
+    <script>
+        const es = new EventSource("http://127.0.0.1:8000/test/rx/testing/_COY_BAW");
+
+        es.onmessage = (event) => {
+            console.log("MSG:", JSON.parse(event.data));
+        };
+    </script>
+</html>
