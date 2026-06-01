@@ -50,7 +50,7 @@ async def dlic_aircraft_logon(
              "purposes and should not be used in production"))
         callsign = str(msg.logon_from)
     else:
-        callsign = await callsign_verification(user_data)
+        callsign = str(await callsign_verification(user_data))
 
     all_messages = databases.DataLinkInitiationCapability.find(
                 (databases.DataLinkInitiationCapability.logon_from == callsign)
