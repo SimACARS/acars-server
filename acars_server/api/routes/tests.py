@@ -152,29 +152,29 @@ async def receive_message_stream(
 
     https://developer.mozilla.org/en-US/docs/Web/API/EventSource
     """
+    if network == "testing":
+        stream_key = f"msg:coy:{network}:{callsign}"
+        # default = start of stream
+        start_id = last_event_id or "0-0"
 
-    stream_key = f"msg:coy:{network}:{callsign}"
-    # default = start of stream
-    start_id = last_event_id or "0-0"
+        # Replay any missed messages
+        if start_id != "0-0":
+            history = await databases.redis_async_db.xrange(stream_key, min=start_id)
+            for msg_id, data in history:
+                yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
 
-    # Replay any missed messages
-    if start_id != "0-0":
-        history = await databases.redis_async_db.xrange(stream_key, min=start_id)
-        for msg_id, data in history:
-            yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
+        # Then block while sending new SSE messages...
+        last_id = start_id
+        while True:
+            response = await databases.redis_async_db.xread(
+                streams={stream_key: last_id},
+                block=30000,  # 30s long poll
+                count=100
+            )
+            if not response:
+                continue
 
-    # Then block while sending new SSE messages...
-    last_id = start_id
-    while True:
-        response = await databases.redis_async_db.xread(
-            streams={stream_key: last_id},
-            block=30000,  # 30s long poll
-            count=100
-        )
-        if not response:
-            continue
-
-        _, messages = response[0]
-        for msg_id, data in messages:
-            last_id = msg_id
-            yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
+            _, messages = response[0]
+            for msg_id, data in messages:
+                last_id = msg_id
+                yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
