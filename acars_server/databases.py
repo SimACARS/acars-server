@@ -116,6 +116,9 @@ class AirlineApiKeyBase(SQLModel):
         str, Query(min_length=3, max_length=4, pattern="^[A-Z]+$")]
     domain: Annotated[str, AfterValidator(check_valid_domain)] | None = None
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
 
 class AirlineApiKey(AirlineApiKeyBase, table=True):
     """A table to hold all API keys"""
@@ -168,7 +171,7 @@ class AirlineVerification(JsonModel, index=True): # type: ignore
 
 
 # ------------------------------------------------------------------
-# Legacy Store and Forward Model
+# Store and Forward Model
 # ------------------------------------------------------------------
 def check_valid_legacy_msg_type(legacy_type: str):
     """Check if the message type is valid"""
@@ -207,12 +210,18 @@ class LogoffRequest(HashModel):
         return getattr(self, key)
 
 
-class StoreAndForward(HashModel, index=True): # type: ignore
+class StoreAndForward(JsonModel, index=True): # type: ignore
     """A table to hold all the messages"""
     msg_from: Annotated[
-        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
+        str, Query(
+            min_length=4,
+            max_length=10,
+            pattern="^(_COY_|_ATC_)?[A-Z0-9]+$")] = RedisField(index=True)
     msg_to: Annotated[
-        str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
+        str, Query(
+            min_length=4,
+            max_length=10,
+            pattern="^(_COY_|_ATC_)?[A-Z0-9]+$")] = RedisField(index=True)
     msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)] = RedisField(index=True)
     # EUROCONTROL-SPEC-107 - 5.1.1.4 - Allowed Characters
     packet: Annotated[
