@@ -49,6 +49,13 @@ def message_parse(msg:databases.StoreAndForward):
     else:
         sf_msg = databases.StoreAndForward.model_validate(send_msg)
 
+    # Always save to the 24hr message store for visability
+    sf_msg.save()
+    databases.redis_db.expire(
+        sf_msg.key(),
+        86400,
+    )
+
     # Commit the message to the relevant stream
     stream = None
     if str(sf_msg.msg_to).startswith("_COY_"):
@@ -63,13 +70,6 @@ def message_parse(msg:databases.StoreAndForward):
         expire = int((time.time() - 86400) * 1000)
         expire_id = f"{expire}-0"
         databases.redis_db.xtrim(stream, minid=expire_id)
-
-    # Always save to the 24hr message store for visability
-    sf_msg.save()
-    databases.redis_db.expire(
-        sf_msg.key(),
-        86400,
-    )
 
 def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
     """Validates ADS-C messages"""
