@@ -131,10 +131,9 @@ class AirlineApiKey(AirlineApiKeyBase, table=True):
 
 class AirlineApiKeyCreate(AirlineApiKeyBase):
     """A table to hold all API keys"""
-    airline_name: str
-    airline_callsign: Annotated[
-        str, Query(min_length=3, max_length=4, pattern="^[A-Z]+$")]
-    domain: Annotated[str, AfterValidator(check_valid_domain)] | None = None
+    api_key: str
+    verified: bool = False
+    created: float
 
 
 class AirlineApiKeyPublic(AirlineApiKeyBase):
@@ -156,7 +155,7 @@ class AirlineApiKeyUpdate(AirlineApiKeyBase):
 
 class AirlineVerification(JsonModel, index=True): # type: ignore
     """Airline Verification for domain ownership"""
-    verification_token: str
+    verification_token: str = RedisField(index=True)
     network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
     airline_name: str = RedisField(index=True)
     airline_callsign: Annotated[

@@ -10,14 +10,16 @@ Chris Parkinson (@chssn)
 import os
 import secrets
 from datetime import datetime as dt, timezone as tz
+from dns.resolver import Resolver
 
 # Third Party Libraries
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+from sqlmodel import select
 
 # Local Libraries
-from acars_server import auth, common, databases, static_data
+from acars_server import common, databases, static_data
 from acars_server.api.services.user_services import responses_user_new_network
 
 templates = Jinja2Templates(directory=os.path.join(common.PWD, "api", "templates"))
@@ -32,19 +34,32 @@ router = APIRouter()
 async def auth_new_airline(
     request: Request,
     msg:databases.AirlineApiKeyCreate,
+    session: databases.SessionDep
     ):
     """Authenticate a new airline and generate an API key"""
     if msg.network in static_data.NETWORKS:
+
+        # Check to see if verified callsign exists for this network already
+        db_check = select(databases.AirlineApiKey).where(
+            (databases.AirlineApiKey.airline_callsign == msg.airline_callsign),
+            (databases.AirlineApiKey.network == msg.network),)
+        db_result = session.exec(db_check).first()
+        if db_result:
+            return JSONResponse(content={
+                "error": f"{msg.airline_callsign} already exists and is controlled by {msg.domain}"
+                })
+
         if msg.domain is not None:
             # Check to see if request is already live
             all_requests = databases.AirlineVerification.find(
-                            (databases.AirlineVerification.airline_callsign == msg.airline_callsign) &
-                            (databases.AirlineVerification.network == msg.network) &
-                            (databases.AirlineVerification.airline_name == msg.airline_name)
-                        ).all()
+                        (databases.AirlineVerification.airline_callsign == msg.airline_callsign) &
+                        (databases.AirlineVerification.network == msg.network) &
+                        (databases.AirlineVerification.airline_name == msg.airline_name)
+                    ).all()
             if len(all_requests) > 0:
                 common.logger.info(f"Request already exists for {all_requests[0].model_dump()}")
                 return JSONResponse(all_requests[0].model_dump())
+
             # Generate a random verification token
             verification_token = secrets.token_urlsafe(32)
 
@@ -77,30 +92,38 @@ async def auth_new_airline(
         status_code=400,
         detail=error)
 
+@router.get("/domain_auth/{verification_token}")
+async def domain_auth_check(verification_token:str, session: databases.SessionDep):
+    """Checks to see if a verification code has been added to the domain"""
+    verifcation_request = databases.AirlineVerification.find(
+        (databases.AirlineVerification.verification_token == verification_token)
+    ).first()
+    if len(verification_token) == 1:
+        res = Resolver()
+        res.nameservers = ["8.8.8.8", "1.1.1.1"]
+        dns_answers = res.resolve(
+            f"_acars-verification.{verifcation_request.domain}",
+            "TXT"
+        )
+        for txt in dns_answers:
+            if txt == verifcation_request.verification_token:
+                new_record = {
+                    "api_key": secrets.token_hex(64),
+                    "network": verifcation_request.network,
+                    "airline_name": verifcation_request.airline_name,
+                    "airline_callsign": verifcation_request.airline_callsign,
+                    "domain": verifcation_request.domain,
+                    "verified": True,
+                    "created": dt.now(tz.utc).timestamp()
+                }
 
-"""all_messages = databases.DataLinkInitiationCapability.find(
-                (databases.DataLinkInitiationCapability.logon_from == callsign)
-            ).all()
-    if len(all_messages) > 0:
-        common.logger.warning(f"{callsign} is already logged on {all_messages[0].model_dump()}")
-        return JSONResponse(content={
-            "status": "already logged on",
-            "callsign": callsign,
-            "atsu": all_messages[0].logon_to
-            })
+                # Validate and add record to database
+                validated_record = databases.AirlineApiKeyCreate.model_validate(new_record)
+                session.add(validated_record)
+                session.commit()
+                session.refresh(validated_record)
 
-    sf_msg = databases.DataLinkInitiationCapability.model_validate(msg)
-    logoff_code = await dlic_logoff_hash(sf_msg)
-    t_msg = {
-        "created": dt.now(tz.utc).timestamp(),
-        "logon_from": callsign,
-        "logon_to": sf_msg["logon_to"],
-        "network": sf_msg["network"],
-        "fans_1_a_atn_b1": sf_msg["fans_1_a_atn_b1"],
-        "atn_b1": sf_msg["atn_b1"],
-        "fans_1_a": sf_msg["fans_1_a"],
-        "logoff_code": logoff_code
-    }
-    sf2_msg = databases.DataLinkInitiationCapability.model_validate(t_msg)
-    common.logger.success(sf2_msg)
-    sf2_msg.save()"""
+                # Remove record for Airline Verification
+                verifcation_request.delete(verifcation_request.pk)
+
+                return JSONResponse(content={"api_key": validated_record.api_key})
