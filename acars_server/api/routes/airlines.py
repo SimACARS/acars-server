@@ -29,7 +29,11 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # Airline Endpoints
 # ------------------------------------------------------------------
-@router.get("/rx/{network}/{callsign}", response_class=EventSourceResponse)
+@router.get(
+        "/rx/{network}/{callsign}",
+        response_class=EventSourceResponse,
+        tags=["Messaging"]
+        )
 async def receive_message_stream(
     callsign:str,
     network:str,
@@ -88,7 +92,8 @@ async def receive_message_stream(
         "/tx",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
-        response_model=databases.StoreAndForward
+        response_model=databases.StoreAndForward,
+        tags=["Messaging"]
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
