@@ -21,7 +21,7 @@ from acars_server import adexp, common, databases, inforeq
 
 vs = inforeq.Vatsim()
 
-def message_parse(msg:databases.StoreAndForward):
+async def message_parse(msg:databases.StoreAndForward):
     """Parse a message"""
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
@@ -70,12 +70,12 @@ def message_parse(msg:databases.StoreAndForward):
 
     if stream is not None:
         common.logger.debug(f"Adding message to stream: {stream} {sf_msg.model_dump()}")
-        databases.redis_db.xadd(stream, sf_msg.model_dump())
+        await databases.redis_async_db.xadd(stream, sf_msg.model_dump())
 
         # Expire any stream messages older than 24hrs
         expire = int((time.time() - 86400) * 1000)
         expire_id = f"{expire}-0"
-        databases.redis_db.xtrim(stream, minid=expire_id)
+        await databases.redis_async_db.xtrim(stream, minid=expire_id)
 
 def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
     """Validates ADS-C messages"""

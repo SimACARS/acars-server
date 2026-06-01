@@ -12,6 +12,7 @@ import re
 from typing import Annotated, Optional
 
 # Third Party Libraries
+import redis.asyncio as redis
 from dotenv import load_dotenv
 from fastapi import Depends, Query
 from pydantic import AfterValidator
@@ -25,6 +26,7 @@ load_dotenv()
 
 SQLITE_FILE_NAME = "database.db"
 SQLITE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
+
 redis_db = get_redis_connection(
     host=os.environ["REDIS_HOST"],
     port=int(os.environ["REDIS_PORT"]),
@@ -32,6 +34,15 @@ redis_db = get_redis_connection(
     username="default",
     decode_responses=True
 )
+
+redis_async_db = redis.Redis(
+    host=os.environ["REDIS_HOST"],
+    port=int(os.environ["REDIS_PORT"]),
+    password=os.environ["REDIS_PASSWORD"],
+    username="default",
+    decode_responses=True
+)
+
 # ------------- DEV CODE -------------
 redis_db.flushall(asynchronous=True) # Clear Redis DB on startup
 # ------------- DEV CODE -------------
