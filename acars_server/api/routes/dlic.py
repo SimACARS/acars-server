@@ -88,13 +88,7 @@ async def dlic_aircraft_logon(
     ):
     """DLIC Aircraft Logon"""
     user_data = await api_authentication(session, api_key)
-    if msg.network == "testing":
-        common.logger.warning(
-            ("Message received with network 'testing' - This is only for testing "
-             "purposes and should not be used in production"))
-        callsign = str(msg.logon_from)
-    else:
-        callsign = str(await callsign_verification(user_data))
+    callsign = str(await callsign_verification(user_data))
 
     cs_logon = databases.DataLinkInitiationCapability.find(
                 (databases.DataLinkInitiationCapability.logon_from == callsign)
