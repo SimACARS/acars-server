@@ -200,7 +200,7 @@ class DataLinkInitiationCapability(HashModel, index=True): # type: ignore
         str, Query(min_length=4, max_length=10, pattern="^[A-Z0-9]+$")] = RedisField(index=True)
     created: float
     network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
-    logoff_code: Optional[str] = RedisField(index=True)
+    logoff_code: Optional[str] = RedisField(index=True, schema_type="tag")
     fans_1_a_atn_b1: Optional[bool] = False
     atn_b1: Optional[bool] = False
     fans_1_a: Optional[bool] = False
