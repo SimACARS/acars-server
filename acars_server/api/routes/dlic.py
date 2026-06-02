@@ -130,14 +130,25 @@ async def dlic_aircraft_logon(
     sf2_msg.save()
     return JSONResponse(content={"status": "logged on", "data": sf2_msg.model_dump()})
 
-@router.post("/logoff")
+@router.post("/{station_type}/logoff")
 async def dlic_any_station_logoff(
     msg: databases.LogoffRequest,
     session:databases.SessionDep,
+    station_type: str | None = None,
     api_key:str = Depends(common.header_api_key)
     ):
     """DLIC Any Station Logoff"""
-    await api_authentication(session, api_key)
+    if station_type == "aircraft" or station_type is None:
+        await api_authentication(session, api_key)
+    elif station_type == "airline":
+        await airline_api_authentication(session, api_key)
+    elif station_type == "atsu":
+        pass
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail="Incorrect station type. Needs to be one of aircraft, airline or atsu")
+
 
     databases.LogoffRequest.model_validate(msg)
 
