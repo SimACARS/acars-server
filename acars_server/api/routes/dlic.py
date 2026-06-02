@@ -127,6 +127,8 @@ async def dlic_any_station_logoff(
     """DLIC Any Station Logoff"""
     await api_authentication(session, api_key)
 
+    databases.LogoffRequest.model_validate(msg)
+
     try:
         sf2_msg = databases.DataLinkInitiationCapability.find(
                     (databases.DataLinkInitiationCapability.logoff_code == msg.logoff_code)
