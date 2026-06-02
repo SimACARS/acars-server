@@ -65,6 +65,13 @@ def setup_test_database():
     Migrator().run()
     yield
 
+@pytest.fixture(scope="function", autouse=True)
+def clear_redis_cache():
+    """Clears the redis cache"""
+    redis_db.flushall(asynchronous=True)
+    Migrator().run()
+    yield
+
 @pytest.fixture(scope="session", autouse=True)
 def enable_test_mode():
     """Enable test mode for the duration of the tests"""
