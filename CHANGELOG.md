@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.10.2](https://github.com/SimACARS/acars-server/compare/v1.10.1...v1.10.2) (2026-06-02)
+
+
+### Bug Fixes
+
+* fails on NotFoundError ([06c2bce](https://github.com/SimACARS/acars-server/commit/06c2bcea98b9776cb94a2ef809093f280669ee91))
+* fails on redis NotFoundError ([f76d8d7](https://github.com/SimACARS/acars-server/commit/f76d8d7b61ba2f010a582e3bd2b11ca67b01af03))
+* inconsistent startup behaviour ([f70b283](https://github.com/SimACARS/acars-server/commit/f70b2833eee22790e08322f1aa0b1d7fe73e7ea1))
+* not returning json string ([313baec](https://github.com/SimACARS/acars-server/commit/313baec81fe4cfbb1641f8f8f9884ca504000a3e))
+* searching text when should be tag ([1feb2bd](https://github.com/SimACARS/acars-server/commit/1feb2bda6a184a35ab10347dcc79cb8943e63c5f))
+* unable to logoff as an airline ([b7f510f](https://github.com/SimACARS/acars-server/commit/b7f510fd0359fff26f2ae22084838db308cfff9f))
+* unvalidated logoff request model ([96a0a44](https://github.com/SimACARS/acars-server/commit/96a0a44c4f9b7871fec71fafcbfdaeb795937175))
+* won't accept an airline trigram for logon ([081d358](https://github.com/SimACARS/acars-server/commit/081d3586a28100e94f7b5d82adbc6cadccb98fdd))
+
+
+### Performance Improvements
+
+* removed test code ([635e066](https://github.com/SimACARS/acars-server/commit/635e0662e0a06d6b8336b086927df2a89b9dddc2))
+
 ## [1.10.1](https://github.com/SimACARS/acars-server/compare/v1.10.0...v1.10.1) (2026-06-01)
 
 
