@@ -26,7 +26,7 @@ def dlic_logon_request(
     endpoint:str,
     client: TestClient):
     """Generate a DLIC logon request"""
-    login_data: dict = {
+    logon_data: dict = {
             "logon_from": logon_from,
             "logon_to": logon_to,
             "network": "vatsim",
@@ -41,11 +41,10 @@ def dlic_logon_request(
         "acars_server.api.routes.dlic.callsign_verification",
         new=AsyncMock(return_value=logon_from)
     ):
-        response = client.post(endpoint, json=login_data)
-    print(response.json())
+        response = client.post(endpoint, json=logon_data)
     client.headers.pop("x-key")
 
-    return response, login_data
+    return response, logon_data
 
 
 class TestAirlineLogon:
@@ -151,6 +150,28 @@ class TestAirlineLogon:
         assert response.status_code == 200
         assert response.json()["status"] == "logged off"
         assert response.json()["callsign"] == f"_COY_{airline.airline_callsign}"
+
+    def test_dlic_airline_incorrect_callsign(self, client: TestClient):
+        """
+        Test that an airline can log off using the logoff code from logon.
+        """
+        # Create the database entry
+        airline_a: AirlineApiKey = AirlineApiKeyFactory()
+        airline_b: AirlineApiKey = AirlineApiKeyFactory()
+        print(f"AIRLINE A: {airline_a}")
+        print(f"AIRLINE B: {airline_b}")
+
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=airline_b.airline_callsign,
+            logon_to="_SYSTEM_DLIC",
+            api_key=airline_a.api_key,
+            endpoint="/dlic/airline/logon",
+            client=client
+        )
+
+        # Check the results
+        assert response.status_code == 401
 
 class TestAircraftLogon:
     """Aircraft Logon"""

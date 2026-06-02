@@ -49,31 +49,35 @@ def load_airline_tsv(path: str):
 
 
 class AirlineProvider(BaseProvider):
+    """Faker provider for airlines"""
     def __init__(self, generator):
         super().__init__(generator)
-        airlines = load_airline_tsv(
+        self.airlines = load_airline_tsv(
             os.path.join(PWD, "ICAO_Airlines_Clean.txt")
         )
-        self.choice = self.random_element(airlines)
+
+    def _choice(self):
+        return self.random_element(self.airlines)
 
     def airline(self):
-        return self.choice
+        return self._choice()
 
     def airline_name(self):
-        return self.choice["name"]
+        return self._choice()["name"]
 
     def airline_icao(self):
-        return self.choice["icao"]
+        return self._choice()["icao"]
 
     def airline_callsign(self):
-        return self.choice["callsign"]
+        return self._choice()["callsign"]
 
     def airline_country(self):
-        return self.choice["country"]
+        return self._choice()["country"]
 
     def full_callsign(self):
+        airline = self._choice()
         suffix = self.generator.bothify("####")
-        return f"{self.choice['icao']}{suffix}"
+        return f"{airline['icao']}{suffix}"
 
 
 class NetworkProvider(BaseProvider):
