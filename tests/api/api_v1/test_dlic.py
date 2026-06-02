@@ -81,6 +81,77 @@ class TestAirlineLogon:
         assert re.fullmatch(r"[a-f0-9]{64}", obj.logoff_code)
         assert obj.logoff_code != login_data["logoff_code"]
 
+    def test_dlic_airline_logon_duplicate(self, client: TestClient):
+        """
+        Test that a duplicate airline cannot log on using the API key authentication.
+        """
+        # Create the database entry
+        airline: AirlineApiKey = AirlineApiKeyFactory()
+
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=airline.airline_callsign,
+            logon_to="_SYSTEM_DLIC",
+            api_key=airline.api_key,
+            endpoint="/dlic/airline/logon",
+            client=client
+        )
+
+        # Check the results
+        assert response.status_code == 200
+
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=airline.airline_callsign,
+            logon_to="_SYSTEM_DLIC",
+            api_key=airline.api_key,
+            endpoint="/dlic/airline/logon",
+            client=client
+        )
+
+        # Check the results
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "status": "already logged on",
+            "callsign": airline.airline_callsign,
+            "atsu": "_SYSTEM_DLIC"}
+
+    def test_dlic_airline_logoff(self, client: TestClient):
+        """
+        Test that an airline can log off using the logoff code from logon.
+        """
+        # Create the database entry
+        airline: AirlineApiKey = AirlineApiKeyFactory()
+
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=airline.airline_callsign,
+            logon_to="_SYSTEM_DLIC",
+            api_key=airline.api_key,
+            endpoint="/dlic/airline/logon",
+            client=client
+        )
+
+        # Check the results
+        assert response.status_code == 200
+        obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
+        logoff_code = obj.logoff_code
+        print(f"Logoff code: {obj}")
+
+        # Logoff using the returned logoff_code
+        logoff_data: dict = {
+            "logoff_code": logoff_code
+        }
+        client.headers.update({"x-key": airline.api_key})
+        response = client.post("/dlic/airline/logoff", json=logoff_data)
+        print(f"Logoff response: {response.json()}")
+        client.headers.pop("x-key")
+
+        assert response.status_code == 200
+        assert response.json()["status"] == "logged off"
+        assert response.json()["callsign"] == f"_COY_{airline.airline_callsign}"
+
 class TestAircraftLogon:
     """Aircraft Logon"""
     def test_dlic_aircraft_logon(self, client: TestClient):
@@ -117,7 +188,7 @@ class TestAircraftLogon:
 
     def test_dlic_aircraft_logon_duplicate(self, client: TestClient):
         """
-        Test that an aircraft can log on using the API key authentication.
+        Test that a duplicate callsign cannot log on using the API key authentication.
         """
         # Create the database entry
         aircraft: ApiKey = UserApiKeyFactory()
@@ -180,7 +251,7 @@ class TestAircraftLogon:
             "logoff_code": logoff_code
         }
         client.headers.update({"x-key": aircraft.api_key})
-        response = client.post("/dlic/logoff", json=logoff_data)
+        response = client.post("/dlic/aircraft/logoff", json=logoff_data)
         print(f"Logoff response: {response.json()}")
         client.headers.pop("x-key")
 
