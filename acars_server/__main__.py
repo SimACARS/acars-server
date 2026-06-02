@@ -25,9 +25,11 @@ from redis_om import Migrator # type: ignore
 
 # Local Libraries
 from acars_server import __VERSION__, auth, common, databases, static_data
+from acars_server.config import Settings
 from acars_server.api.routes import acars, airlines, dlic, status, tests, users
 
 load_dotenv()
+settings = Settings()
 
 # Initialize OpenTelemetry
 resource = Resource(attributes={"service.name": "fastapi-service"})
@@ -41,17 +43,27 @@ otlp_exporter = OTLPSpanExporter(
 span_processor = BatchSpanProcessor(otlp_exporter)
 tracer_provider.add_span_processor(span_processor)
 
+def run_startup_tasks():
+    """Startup Tasks"""
+    databases.create_db_and_tables()
+    Migrator().run()
+
+    # Check that a master key exists, if not then create one
+    if not Path(common.MASTER_KEY).exists():
+        auth.generate_master_key()
+        sleep(1)
+    if not Path(common.AUTH_KEY).exists():
+        auth.generate_auth_key()
+        sleep(1)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """async Context Manager"""
     # ------------------------------------------------------------------
     # Pre App Start
     # ------------------------------------------------------------------
-
-    # Create DB and Tables
-    databases.create_db_and_tables()
-    # Run Redis OM Migrator
-    Migrator().run()
+    if not settings.testing:
+        run_startup_tasks()
 
     # ------------------------------------------------------------------
     # App Start
@@ -84,14 +96,6 @@ app.mount(
     "/static",
     StaticFiles(directory=os.path.join(common.PWD.parent, "front_end")),
     name="static")
-
-# Check that a master key exists, if not then create one
-if not Path(common.MASTER_KEY).exists():
-    auth.generate_master_key()
-    sleep(1)
-if not Path(common.AUTH_KEY).exists():
-    auth.generate_auth_key()
-    sleep(1)
 
 # Server Status Endpoints
 app.include_router(status.router)
