@@ -51,11 +51,18 @@ async def dlic_airline_logon(
 
     if airline_data.airline_callsign != msg.logon_from:
         common.logger.error("401: API Key doesn't match stored airline code")
-        raise HTTPException(status_code=401, detail="Unauthorised")
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorised: API Key doesn't match stored airline code")
 
-    cs_logon = databases.DataLinkInitiationCapability.find(
-                (databases.DataLinkInitiationCapability.logon_from == f"_COY_{msg.logon_from}")
-            ).first()
+    cs_logon = None
+    try:
+        cs_logon = databases.DataLinkInitiationCapability.find(
+                    (databases.DataLinkInitiationCapability.logon_from == f"_COY_{msg.logon_from}")
+                ).first()
+    except NotFoundError:
+        pass
+
     if cs_logon:
         common.logger.warning(f"{msg.logon_from} is already logged on {cs_logon.model_dump()}")
         return JSONResponse(content={
