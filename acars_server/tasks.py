@@ -16,7 +16,8 @@ from typing import Any, Dict
 from datetime import datetime as dt, timezone as tz
 
 # Local Libraries
-from acars_server import adexp, common, databases, inforeq
+from acars_server import common, databases
+from acars_server.api.message_types import adexp, inforeq
 
 
 vs = inforeq.Vatsim()
