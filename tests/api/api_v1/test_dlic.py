@@ -8,6 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import re
+import secrets
 from datetime import datetime as dt, timezone as tz
 from unittest.mock import AsyncMock, patch
 
@@ -158,8 +159,6 @@ class TestAirlineLogon:
         # Create the database entry
         airline_a: AirlineApiKey = AirlineApiKeyFactory()
         airline_b: AirlineApiKey = AirlineApiKeyFactory()
-        print(f"AIRLINE A: {airline_a}")
-        print(f"AIRLINE B: {airline_b}")
 
         # Login
         response, _ = dlic_logon_request(
@@ -279,3 +278,65 @@ class TestAircraftLogon:
         assert response.status_code == 200
         assert response.json()["status"] == "logged off"
         assert response.json()["callsign"] == callsign["callsign"]
+
+    def test_dlic_aircraft_incorrect_logoff(self, client: TestClient):
+        """
+        Test that an incorrect logoff code is rejected.
+        """
+        # Create the database entry
+        aircraft: ApiKey = UserApiKeyFactory()
+        callsign = CallsignFactory()
+
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft.api_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
+
+        # Check the results
+        assert response.status_code == 200
+
+        # Logoff using the incorret logoff_code
+        logoff_data: dict = {
+            "logoff_code": secrets.token_hex(32)
+        }
+        client.headers.update({"x-key": aircraft.api_key})
+        response = client.post("/dlic/aircraft/logoff", json=logoff_data)
+        print(f"Logoff response: {response.json()}")
+        client.headers.pop("x-key")
+
+        assert response.status_code == 404
+
+    def test_dlic_aircraft_incorrect_station_type(self, client: TestClient):
+        """
+        Test that an incorrect station_type is rejected.
+        """
+        # Create the database entry
+        aircraft: ApiKey = UserApiKeyFactory()
+        callsign = CallsignFactory()
+
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft.api_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
+
+        # Check the results
+        assert response.status_code == 200
+
+        # Logoff using the incorret logoff_code
+        logoff_data: dict = {
+            "logoff_code": secrets.token_hex(32)
+        }
+        client.headers.update({"x-key": aircraft.api_key})
+        response = client.post("/dlic/wiffle/logoff", json=logoff_data)
+        print(f"Logoff response: {response.json()}")
+        client.headers.pop("x-key")
+
+        assert response.status_code == 404
