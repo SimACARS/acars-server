@@ -10,10 +10,10 @@ Chris Parkinson (@chssn)
 import ast
 import re
 import time
+from datetime import datetime as dt, timezone as tz
 from typing import Any, Dict
 
 # Third Party Libraries
-from datetime import datetime as dt, timezone as tz
 
 # Local Libraries
 from acars_server import common, databases
