@@ -50,3 +50,11 @@ class CallsignFactory(factory.Factory):
         """Meta"""
         model = dict
     callsign = factory.faker.Faker("full_callsign")
+
+
+class CidFactory(factory.Factory):
+    """Factory for creating CIDs"""
+    class Meta:
+        """Meta"""
+        model = dict
+    cid = factory.faker.Faker("network_cid")
