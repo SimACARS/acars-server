@@ -90,9 +90,14 @@ async def dlic_aircraft_logon(
     user_data = await api_authentication(session, api_key)
     callsign = str(await callsign_verification(user_data))
 
-    cs_logon = databases.DataLinkInitiationCapability.find(
-                (databases.DataLinkInitiationCapability.logon_from == callsign)
-            ).all()
+    cs_logon = None
+    try:
+        cs_logon = databases.DataLinkInitiationCapability.find(
+                    (databases.DataLinkInitiationCapability.logon_from == callsign)
+                ).first()
+    except NotFoundError:
+        pass
+
     if cs_logon:
         common.logger.warning(f"{callsign} is already logged on {cs_logon.model_dump()}")
         return JSONResponse(content={
