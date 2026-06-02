@@ -11,7 +11,7 @@ from datetime import datetime as dt, timezone as tz
 
 # Third Party Libraries
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data
@@ -81,4 +81,4 @@ async def auth_new_user_callback_vatsim(
     session.add(db_add)
     session.commit()
     session.refresh(db_add)
-    return db_add
+    return JSONResponse({"status": "user created", "api_key": db_add.api_key})
