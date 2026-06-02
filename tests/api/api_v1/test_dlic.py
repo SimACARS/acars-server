@@ -19,16 +19,16 @@ from acars_server.databases import AirlineApiKey, ApiKey, DataLinkInitiationCapa
 from tests.factories.airlines import AirlineApiKeyFactory
 from tests.factories.user import CallsignFactory, UserApiKeyFactory
 
-class TestAirlineLogon:
-    """Airline Logon"""
-    def test_dlic_airline_logon(self, client: TestClient):
-        """
-        Test that an aircraft can log on using the API key authentication.
-        """
-        airline: AirlineApiKey = AirlineApiKeyFactory()
-        login_data: dict = {
-            "logon_from": airline.airline_callsign,
-            "logon_to": "_SYSTEM_DLIC",
+def dlic_logon_request(
+    logon_from:str,
+    logon_to:str,
+    api_key:str,
+    endpoint:str,
+    client: TestClient):
+    """Generate a DLIC logon request"""
+    login_data: dict = {
+            "logon_from": logon_from,
+            "logon_to": logon_to,
             "network": "vatsim",
             "created": dt.now(tz.utc).timestamp(),
             "logoff_code": "",
@@ -36,13 +36,37 @@ class TestAirlineLogon:
             "atn_b1": False,
             "fans_1_a": False
         }
-        client.headers.update({"x-key": airline.api_key})
+    client.headers.update({"x-key": api_key})
+    with patch(
+        "acars_server.api.routes.dlic.callsign_verification",
+        new=AsyncMock(return_value=logon_from)
+    ):
+        response = client.post(endpoint, json=login_data)
+    print(response.json())
+    client.headers.pop("x-key")
 
-        response = client.post("/dlic/airline/logon", json=login_data)
-        print(response.json())
+    return response, login_data
 
-        client.headers.pop("x-key")
 
+class TestAirlineLogon:
+    """Airline Logon"""
+    def test_dlic_airline_logon(self, client: TestClient):
+        """
+        Test that an aircraft can log on using the API key authentication.
+        """
+        # Create the database entry
+        airline: AirlineApiKey = AirlineApiKeyFactory()
+
+        # Login
+        response, login_data = dlic_logon_request(
+            logon_from=airline.airline_callsign,
+            logon_to="_SYSTEM_DLIC",
+            api_key=airline.api_key,
+            endpoint="/dlic/airline/logon",
+            client=client
+        )
+
+        # Check the results
         assert response.status_code == 200
         assert response.json()["status"] == "logged on"
         obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
@@ -63,29 +87,20 @@ class TestAircraftLogon:
         """
         Test that an aircraft can log on using the API key authentication.
         """
-        callsign = CallsignFactory()
+        # Create the database entry
         aircraft: ApiKey = UserApiKeyFactory()
-        login_data: dict = {
-            "logon_from": callsign["callsign"],
-            "logon_to": "EGKK",
-            "network": "vatsim",
-            "created": dt.now(tz.utc).timestamp(),
-            "logoff_code": "",
-            "fans_1_a_atn_b1": False,
-            "atn_b1": False,
-            "fans_1_a": False
-        }
+        callsign = CallsignFactory()
 
-        client.headers.update({"x-key": aircraft.api_key})
+        # Login
+        response, login_data = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft.api_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
 
-        with patch(
-            "acars_server.api.routes.dlic.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
-        ):
-            response = client.post("/dlic/aircraft/logon", json=login_data)
-
-        client.headers.pop("x-key")
-
+        # Check the results
         assert response.status_code == 200
         assert response.json()["status"] == "logged on"
         obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
@@ -104,36 +119,32 @@ class TestAircraftLogon:
         """
         Test that an aircraft can log on using the API key authentication.
         """
-        callsign = CallsignFactory()
+        # Create the database entry
         aircraft: ApiKey = UserApiKeyFactory()
-        login_data: dict = {
-            "logon_from": callsign["callsign"],
-            "logon_to": "EGKK",
-            "network": "vatsim",
-            "created": dt.now(tz.utc).timestamp(),
-            "logoff_code": "",
-            "fans_1_a_atn_b1": False,
-            "atn_b1": False,
-            "fans_1_a": False
-        }
+        callsign = CallsignFactory()
 
-        client.headers.update({"x-key": aircraft.api_key})
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft.api_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
 
-        with patch(
-            "acars_server.api.routes.dlic.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
-        ):
-            response = client.post("/dlic/aircraft/logon", json=login_data)
-
+        # Check the results
         assert response.status_code == 200
 
-        with patch(
-            "acars_server.api.routes.dlic.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
-        ):
-            response = client.post("/dlic/aircraft/logon", json=login_data)
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft.api_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
 
-        client.headers.pop("x-key")
+        # Check the results
 
         assert response.status_code == 200
         assert response.json() == {
@@ -145,28 +156,20 @@ class TestAircraftLogon:
         """
         Test that an aircraft can log off using the logoff code from logon.
         """
-        callsign = CallsignFactory()
+        # Create the database entry
         aircraft: ApiKey = UserApiKeyFactory()
-        login_data: dict = {
-            "logon_from": callsign["callsign"],
-            "logon_to": "EGKK",
-            "network": "vatsim",
-            "created": dt.now(tz.utc).timestamp(),
-            "logoff_code": "",
-            "fans_1_a_atn_b1": False,
-            "atn_b1": False,
-            "fans_1_a": False
-        }
+        callsign = CallsignFactory()
 
-        client.headers.update({"x-key": aircraft.api_key})
+        # Login
+        response, _ = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft.api_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
 
-        # Logon first
-        with patch(
-            "acars_server.api.routes.dlic.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
-        ):
-            response = client.post("/dlic/aircraft/logon", json=login_data)
-
+        # Check the results
         assert response.status_code == 200
         obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
         logoff_code = obj.logoff_code
@@ -176,9 +179,9 @@ class TestAircraftLogon:
         logoff_data: dict = {
             "logoff_code": logoff_code
         }
+        client.headers.update({"x-key": aircraft.api_key})
         response = client.post("/dlic/logoff", json=logoff_data)
         print(f"Logoff response: {response.json()}")
-
         client.headers.pop("x-key")
 
         assert response.status_code == 200
