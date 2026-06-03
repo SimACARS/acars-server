@@ -41,7 +41,8 @@ async def poll_for_new_messages(
         }
         all_messages = databases.StoreAndForward.find(
                     (databases.StoreAndForward.msg_to == callsign)
-                    & (databases.StoreAndForward.relayed == "0")
+                    # needs this declaration (== False ! is False) for redis to work
+                    & (databases.StoreAndForward.relayed == False)
                 ).all()
         if len(all_messages) > 0:
             rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
