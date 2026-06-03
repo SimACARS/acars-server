@@ -97,7 +97,9 @@ async def hoppie_formated_url(
         "msg_from": msg_from,
         "msg_to": msg_to,
         "msg_type": msg_type,
-        "packet": packet
+        "packet": packet,
+        "created": dt.now(tz.utc).timestamp(),
+        "network": "vatsim"
     }
     sf_msg = databases.StoreAndForward.model_validate(msg)
     await transmit_a_message(
