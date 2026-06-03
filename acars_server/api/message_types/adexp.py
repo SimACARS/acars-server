@@ -14,7 +14,7 @@ Chris Parkinson (@chssn)
 from acars_server import databases
 
 
-class Adexp:
+class Adexp: # pragma: no cover
     """ADEXP messages"""
 
     def __init__(self, msg:databases.StoreAndForward) -> None:
