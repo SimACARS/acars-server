@@ -13,7 +13,6 @@ from typing import Annotated, Any, Dict
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
-from sqlmodel import select
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
