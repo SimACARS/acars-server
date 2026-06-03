@@ -80,27 +80,6 @@ async def poll_for_new_messages(
         status_code=403,
         detail=error)
 
-@router.post(
-        "/post/oooi",
-        status_code=201,
-        responses=static_data.COMMON_ERRORS)
-async def post_msg_progress(
-    session:databases.SessionDep,
-    api_key:str = Depends(common.header_api_key)
-    ):
-    """Post a message"""
-    # ------------------------------------------------------------------
-    # API Auth
-    # ------------------------------------------------------------------
-    db_select = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
-    api_user = session.exec(db_select).first()
-    if not api_user:
-        raise HTTPException(status_code=401, detail="Unauthorised")
-    # ------------------------------------------------------------------
-    # Function
-    # ------------------------------------------------------------------
-    pass
-
 @router.get("/connect.html", tags=["Legacy Messaging"], deprecated=True)
 async def hoppie_formated_url(
     api_key: Annotated[str, Query(alias="logon")],
