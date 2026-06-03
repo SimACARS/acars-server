@@ -130,7 +130,7 @@ class Vatsim:
             dfc = df.loc[df["callsign"].str.match(f"{remove_a_d[0]}_ATIS")]
             if not dfc.empty:
                 return str(df["text_atis"].iloc[0])
-        return "NO ATIS AVAILABLE"
+        return f"NO ATIS AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
     def get_metar(icao:str) -> str:
