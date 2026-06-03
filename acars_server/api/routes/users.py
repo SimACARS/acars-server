@@ -34,7 +34,7 @@ async def auth_new_user(network: str):
         error = f"{network} doesn't appear to exist although it really should..."
         common.logger.error(error)
         raise HTTPException(
-            status_code=501,
+            status_code=400,
             detail=error)
 
     error = (f"{network} is not a recognised network. Needs to be one of "
