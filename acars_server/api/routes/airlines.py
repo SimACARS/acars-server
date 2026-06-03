@@ -31,7 +31,6 @@ router = APIRouter()
 # ------------------------------------------------------------------
 @router.get(
         "/rx/{network}/{callsign}",
-        response_class=EventSourceResponse,
         tags=["Messaging"]
         )
 async def receive_message_stream(
@@ -54,13 +53,21 @@ async def receive_message_stream(
 
     https://developer.mozilla.org/en-US/docs/Web/API/EventSource
     """
-    airline_data = await airline_api_authentication(session, api_key)
+    try:
+        airline_data = await airline_api_authentication(session, api_key)
+    except HTTPException as exc:
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
-    if f"_COY_{callsign}" == airline_data.airline_callsign and network == airline_data.network:
-        stream_key = f"msg:coy:{airline_data.network}:{airline_data.airline_callsign}"
-        # default = start of stream
-        start_id = last_event_id or "0-0"
+    if f"_COY_{callsign}" != airline_data.airline_callsign or network != airline_data.network:
+        return JSONResponse(
+            status_code=403,
+            content={"detail": f"{callsign} is an unauthorised callsign for provided API key"}
+        )
 
+    stream_key = f"msg:coy:{airline_data.network}:{airline_data.airline_callsign}"
+    start_id = last_event_id or "0-0"
+
+    async def event_generator():
         # Replay any missed messages
         if start_id != "0-0":
             history = await databases.redis_db.xrange(stream_key, min=start_id)
@@ -83,10 +90,7 @@ async def receive_message_stream(
                 last_id = msg_id
                 yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
 
-    raise HTTPException(
-        status_code=403,
-        detail=f"{callsign} is an unauthorised callsign for provided API key"
-        )
+    return EventSourceResponse(event_generator())
 
 @router.post(
         "/tx",
@@ -102,7 +106,10 @@ async def transmit_a_message(
     api_key:str = Depends(common.header_api_key)):
     """Airline Send a Message"""
 
-    airline_data = await airline_api_authentication(session, api_key)
+    try:
+        airline_data = await airline_api_authentication(session, api_key)
+    except HTTPException as exc:
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
     sf_msg = databases.StoreAndForward.model_validate(msg)
 
