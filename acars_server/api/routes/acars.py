@@ -120,13 +120,7 @@ async def transmit_a_message(
     """Legacy message"""
 
     user_data = await api_authentication(session, api_key)
-    if msg.network == "testing":
-        common.logger.warning("Message received with network 'testing' - "
-                              "This is only for testing purposes and should not "
-                              "be used in production")
-        callsign = str(msg.msg_from)
-    else:
-        callsign = str(await callsign_verification(user_data))
+    callsign = str(await callsign_verification(user_data))
     sf_msg = databases.StoreAndForward.model_validate(msg)
 
     # If the callsign has been validated
