@@ -21,7 +21,7 @@ class Noaa:
     BASE_URL = "https://tgftp.nws.noaa.gov/data/"
 
     def __init__(self) -> None:
-        pass
+        pass # pragma: no cover
 
     @staticmethod
     def metar(icao:str) -> str:
