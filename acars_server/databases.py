@@ -244,7 +244,7 @@ class StoreAndForward(JsonModel, index=True): # type: ignore
     packet: Annotated[
         str, Query(
             min_length=4,
-            max_length=10,
+            max_length=500,
             pattern=r"[A-Z0-9\s\(\)\-\?\:\.\,\'\=\+\/\n\r]+")] = RedisField(
                 index=True, full_text_search=True)
     network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
