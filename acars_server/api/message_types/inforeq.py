@@ -137,6 +137,6 @@ class Vatsim:
         """Get METAR from VATSIM"""
         rsp = requests.get(
             f"https://metar.vatsim.net/{icao.upper()}", timeout=30)
-        if rsp.status_code == 200:
+        if rsp.status_code == 200 and rsp.text != "":
             return rsp.text
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
