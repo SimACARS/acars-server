@@ -83,20 +83,30 @@ class AirlineProvider(BaseProvider):
 class MessageProvider(BaseProvider):
     """Faker provider for messages"""
 
+    def __init__(self, generator):
+        super().__init__(generator)
+        messages = [
+            {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+            {"msg_type": "cpdlc", "network": "vatsim", "packet": "/data2/1/1/N/TEST1"}
+        ]
+        self.msg = self.random_element(messages)
+
     def message_from_atc(self):
         suffix = self.generator.bothify("????")
-        return f"_ATC_{suffix}"
+        return f"_ATC_{suffix}".upper()
 
     def message_from_airline(self):
         suffix = self.generator.bothify("???")
-        return f"_COY_{suffix}"
+        return f"_COY_{suffix}".upper()
 
-    def message_content(self):
-        messages = [
-            {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
-            {"msg_type": "cpdlc", "network": "vatsim", "packet": "/data2/1/1/TEST1"}
-        ]
-        return self.random_element(messages)
+    def message_type(self):
+        return self.msg["msg_type"]
+
+    def message_network(self):
+        return self.msg["network"]
+
+    def message_packet(self):
+        return self.msg["packet"]
 
 
 class NetworkProvider(BaseProvider):
