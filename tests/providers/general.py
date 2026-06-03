@@ -80,6 +80,25 @@ class AirlineProvider(BaseProvider):
         return f"{airline['icao']}{suffix}"
 
 
+class MessageProvider(BaseProvider):
+    """Faker provider for messages"""
+
+    def message_from_atc(self):
+        suffix = self.generator.bothify("????")
+        return f"_ATC_{suffix}"
+
+    def message_from_airline(self):
+        suffix = self.generator.bothify("???")
+        return f"_COY_{suffix}"
+
+    def message_content(self):
+        messages = [
+            {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+            {"msg_type": "cpdlc", "network": "vatsim", "packet": "/data2/1/1/TEST1"}
+        ]
+        return self.random_element(messages)
+
+
 class NetworkProvider(BaseProvider):
     """Faker provider for networks"""
     def network(self):
