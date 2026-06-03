@@ -1,4 +1,5 @@
-pytest==9.0.3
 httpx2==2.3.0
 factory-boy==3.3.3
+pytest==9.0.3
+pytest-asyncio==1.4.0
 pytest-cov==7.1.0
