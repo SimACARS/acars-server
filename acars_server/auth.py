@@ -124,7 +124,8 @@ class VatsimAuth:
 
         return (response.url, state)
 
-    def get_access_token(self, authorisation_code:str) -> Tuple[int, Dict[str,str]]:
+    def get_access_token(
+            self, authorisation_code:str) -> Tuple[int, Dict[str,str]]: # pragma: no cover
         """Gets an access token"""
         payload = {
             "grant_type": "authorization_code",
@@ -141,7 +142,8 @@ class VatsimAuth:
 
         return (response.status_code, response.json())
 
-    def get_user_details(self, bearer_token:str) -> Tuple[int, Dict[str, Dict[str,str]]]:
+    def get_user_details(
+            self, bearer_token:str) -> Tuple[int, Dict[str, Dict[str,str]]]: # pragma: no cover
         """Gets the user details"""
         headers = {
             "accept": "application/json",

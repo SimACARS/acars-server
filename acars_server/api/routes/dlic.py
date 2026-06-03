@@ -142,7 +142,7 @@ async def dlic_any_station_logoff(
         await api_authentication(session, api_key)
     elif station_type == "airline":
         await airline_api_authentication(session, api_key)
-    elif station_type == "atsu":
+    elif station_type == "atsu": # pragma: no cover
         pass
     else:
         raise HTTPException(
