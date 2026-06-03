@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.10.4](https://github.com/SimACARS/acars-server/compare/v1.10.3...v1.10.4) (2026-06-03)
+
+
+### Bug Fixes
+
+* airline authentication isn't correctly raising 401 errors ([5770f49](https://github.com/SimACARS/acars-server/commit/5770f493a419c0c6a38f730481f280175d625ea3))
+* failed StoreAndForward validation ([325b5b1](https://github.com/SimACARS/acars-server/commit/325b5b14d8a912d9f4e83028f08bd69bb0b53b29))
+* maximum length set too short ([1f422d7](https://github.com/SimACARS/acars-server/commit/1f422d7bc541c2454758d77e78e7b8d0fde44d63))
+* should be False NOT 0 ([ba40477](https://github.com/SimACARS/acars-server/commit/ba40477465c0602bfb4c8ddb0989b55d09886cab))
+* this shouldn't be a string, needs to validate the None ([a162d50](https://github.com/SimACARS/acars-server/commit/a162d50334921c6779df16678ce7e7effb40969d))
+
+
+### Performance Improvements
+
+* removed oooi endpoint as currently redundant ([6720bd0](https://github.com/SimACARS/acars-server/commit/6720bd0066c1082421be154ff54b439c663f523f))
+* removed redundant code ([44a615a](https://github.com/SimACARS/acars-server/commit/44a615a805be3013e7f01c68f07f31512edc706d))
+* removed redundant code ([e6e66bb](https://github.com/SimACARS/acars-server/commit/e6e66bb8f3b0159ad0e2076cc0bd6c6e3b99123a))
+* removed test code ([024a2ee](https://github.com/SimACARS/acars-server/commit/024a2eeba26eacbb839607c33564752c2270178f))
+* removed unused import ([c71e86a](https://github.com/SimACARS/acars-server/commit/c71e86a759f468b20729edea5b664104448b9ff1))
+
 ## [1.10.3](https://github.com/SimACARS/acars-server/compare/v1.10.2...v1.10.3) (2026-06-03)
 
 
