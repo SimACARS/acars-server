@@ -95,7 +95,7 @@ async def dlic_aircraft_logon(
     ):
     """DLIC Aircraft Logon"""
     user_data = await api_authentication(session, api_key)
-    callsign = str(await callsign_verification(user_data))
+    callsign = await callsign_verification(user_data)
 
     cs_logon = None
     try:

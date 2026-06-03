@@ -122,7 +122,7 @@ async def transmit_a_message(
     """Legacy message"""
 
     user_data = await api_authentication(session, api_key)
-    callsign = str(await callsign_verification(user_data))
+    callsign = await callsign_verification(user_data)
     sf_msg = databases.StoreAndForward.model_validate(msg)
 
     # If the callsign has been validated
