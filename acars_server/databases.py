@@ -195,9 +195,15 @@ def check_valid_legacy_msg_type(legacy_type: str):
 class DataLinkInitiationCapability(HashModel, index=True): # type: ignore
     """A table to hold all the messages"""
     logon_from: Annotated[
-        str, Query(min_length=3, max_length=15, pattern="^[_A-Z0-9]+$")] = RedisField(index=True)
+        str, Query(
+            min_length=3,
+            max_length=15,
+            pattern="(_COY_|_ATC_)?([A-Z0-9]+)")] = RedisField(index=True)
     logon_to: Annotated[
-        str, Query(min_length=3, max_length=15, pattern="^[_A-Z0-9]+$")] = RedisField(index=True)
+        str, Query(
+            min_length=3,
+            max_length=15,
+            pattern="(_COY_|_ATC_)?([A-Z0-9]+)")] = RedisField(index=True)
     created: float
     network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
     logoff_code: Optional[str] = RedisField(index=True, schema_type="tag")
@@ -227,12 +233,12 @@ class StoreAndForward(JsonModel, index=True): # type: ignore
         str, Query(
             min_length=4,
             max_length=10,
-            pattern="^(_COY_|_ATC_)?[A-Z0-9]+$")] = RedisField(index=True)
+            pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
     msg_to: Annotated[
         str, Query(
             min_length=4,
             max_length=10,
-            pattern="^(_COY_|_ATC_)?[A-Z0-9]+$")] = RedisField(index=True)
+            pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
     msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)] = RedisField(index=True)
     # EUROCONTROL-SPEC-107 - 5.1.1.4 - Allowed Characters
     packet: Annotated[
