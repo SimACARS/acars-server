@@ -9,8 +9,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import re
 import secrets
-from datetime import datetime as dt, timezone as tz
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse, parse_qs
 
 # Third Party Libraries
@@ -68,19 +67,19 @@ def test_callback(
         }
     )
 
-    response = client.get(f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
-    print(response.json())
-    assert response.status_code == 200
-    assert response.json()["status"] == "user created"
-    return
+    response_a = client.get(
+        f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
+
+    assert response_a.status_code == 200
+    assert response_a.json()["status"] == "user created"
 
     # Attempt to logon using the API key
-    response, _ = dlic_logon_request(
-        "RFI221B",
-        "EGKK",
-        response.json()["api_key"],
-        "/dlic/aircarft/logon",
-        client)
+    response_b, _ = dlic_logon_request(
+        logon_from="RFI221B",
+        logon_to="EGKK",
+        api_key=response_a.json()["api_key"],
+        endpoint="/dlic/aircraft/logon",
+        client=client)
 
-    assert response.status_code == 200
-    assert response.json()["status"] == "logged on"
+    assert response_b.status_code == 200
+    assert response_b.json()["status"] == "logged on"
