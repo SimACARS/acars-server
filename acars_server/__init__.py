@@ -5,4 +5,4 @@ Chris Parkinson (@chssn)
 
 #!/usr/bin/env python3
 
-__VERSION__ = "1.10.2"
+__VERSION__ = "1.10.3"

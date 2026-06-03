@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.10.3](https://github.com/SimACARS/acars-server/compare/v1.10.2...v1.10.3) (2026-06-03)
+
+
+### Bug Fixes
+
+* incorrect status code - should be 400 ([bc78e6b](https://github.com/SimACARS/acars-server/commit/bc78e6b291fbb8219fd7680ac29e88f8464ff5ce))
+* regex is too strict ([4550b90](https://github.com/SimACARS/acars-server/commit/4550b906c5f9963a9cf772eb58b7d3363e84b1fd))
+
 ## [1.10.2](https://github.com/SimACARS/acars-server/compare/v1.10.1...v1.10.2) (2026-06-02)
 
 
