@@ -37,6 +37,8 @@ def dlic_logon_request(
             "atn_b1": False,
             "fans_1_a": False
         }
+    if client.headers.get("x-key"):
+        client.headers.pop("x-key")
     client.headers.update({"x-key": api_key})
     with patch(
         "acars_server.api.routes.dlic.callsign_verification",
