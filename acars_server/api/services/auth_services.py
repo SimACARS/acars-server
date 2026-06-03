@@ -41,8 +41,6 @@ async def callsign_verification(user_data) -> str|None:
     if user_data["network"] == "vatsim":
         vc = networks.Vatsim()
         callsign = vc.get_callsign_from_cid(user_data["uid"])
-    elif user_data["network"] == "ivao":
-        pass
     else:
         common.logger.error(f"400: Network '{user_data['network']}' is not valid. "
                     f"Expected one of {', '.join(static_data.NETWORKS)}")
