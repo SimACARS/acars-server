@@ -41,6 +41,16 @@ def test_add_new_vatsim_user(client: TestClient):
     assert re.fullmatch(r"[a-f0-9]+", query["state"][0])
     assert query["prompt"][0] == "login"
 
+def test_add_new_user_invalid_network(client: TestClient):
+    """Test that an invalid network is rejected"""
+    response = client.get("/user/new/wiffle")
+    assert response.status_code == 400
+
+def test_add_new_user_valid_network_no_oauth(client: TestClient):
+    """Test that an invalid network is rejected"""
+    response = client.get("/user/new/poscon")
+    assert response.status_code == 400
+
 @patch("acars_server.api.routes.users.auth.VatsimAuth")
 def test_callback(
     mock_vatsim_auth_class,
@@ -83,3 +93,51 @@ def test_callback(
 
     assert response_b.status_code == 200
     assert response_b.json()["status"] == "logged on"
+
+@patch("acars_server.api.routes.users.auth.VatsimAuth")
+def test_callback_no_access_token(
+    mock_vatsim_auth_class,
+    client: TestClient
+    ):
+    """Test the callback with a login attempt"""
+    mock_vatsim_auth = MagicMock()
+    mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+    # ---- mock get_access_token ----
+    mock_vatsim_auth.get_access_token.return_value = (
+        400,
+        {"hint": "some hint from the oauth provider"}
+    )
+
+    response = client.get(
+        f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
+    print(response.json())
+    assert response.status_code == 400
+    assert response.json()["detail"] == "some hint from the oauth provider"
+
+@patch("acars_server.api.routes.users.auth.VatsimAuth")
+def test_callback_no_user_details(
+    mock_vatsim_auth_class,
+    client: TestClient
+    ):
+    """Test the callback with a login attempt"""
+    mock_vatsim_auth = MagicMock()
+    mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+    # ---- mock get_access_token ----
+    mock_vatsim_auth.get_access_token.return_value = (
+        200,
+        {"access_token": secrets.token_hex(32)}
+    )
+
+    # ---- mock get_user_details ----
+    mock_vatsim_auth.get_user_details.return_value = (
+        400,
+        {"hint": "some hint from the oauth provider"}
+    )
+
+    response = client.get(
+        f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
+    print(response.json())
+    assert response.status_code == 400
+    assert response.json()["detail"] == {"hint": "some hint from the oauth provider"}
