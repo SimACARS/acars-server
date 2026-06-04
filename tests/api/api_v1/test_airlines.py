@@ -9,7 +9,9 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import re
 import secrets
-from unittest.mock import patch
+import threading
+from time import sleep
+from unittest.mock import AsyncMock, patch
 
 # Third Party Libraries
 import pytest
@@ -18,7 +20,7 @@ from fastapi.testclient import TestClient
 # Local Libraries
 from acars_server.databases import AirlineApiKey, ApiKey, RequestNewAirline
 from tests.api.api_v1.test_dlic import dlic_logon_request
-from tests.factories.messages import MessageFactory
+from tests.factories.messages import MessageFactory, MessageFactoryNoCommit
 from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
 from tests.factories.user import CallsignFactory, UserApiKeyFactory
 
@@ -244,3 +246,62 @@ class TestNewAirline:
             assert response_b.json()["error"] == ("no matching TXT record was found")
         else:
             pytest.fail(f"Couldn't find verification token in {str(response.text)}")
+
+
+class TestAirlineRx:
+    """Test Airline Rx Path"""
+
+    @pytest.mark.asyncio
+    async def test_valid_auth(self, client: TestClient):
+        company: AirlineApiKey = AirlineApiKeyFactory()
+        aircraft: ApiKey = UserApiKeyFactory()
+        callsign = CallsignFactory()
+
+        url = f"/airline/rx/{company.network}/{company.airline_callsign[-3:]}"
+
+        def message():
+            # Login
+            dlic_logon_request(
+                logon_from=callsign["callsign"],
+                logon_to="EGKK",
+                api_key=aircraft.api_key,
+                endpoint="/dlic/aircraft/logon",
+                client=client
+            )
+    
+            message = MessageFactoryNoCommit(
+                msg_from=callsign["callsign"],
+                msg_to=company.airline_callsign)
+    
+            client.headers.update({"x-key": aircraft.api_key})
+            with patch(
+                "acars_server.api.routes.acars.callsign_verification",
+                new=AsyncMock(return_value=callsign["callsign"])
+            ):
+                while True:
+                    sleep(2)
+                    client.post("/acars/tx", json=message.model_dump())
+            client.headers.pop("x-key")
+        thread = threading.Thread(target=message, daemon=True)
+        thread.start()
+
+        client.headers.update({"x-key": company.api_key})
+
+        # 1. start SSE stream FIRST
+        async with client.stream("GET", url) as response:
+            assert response.status_code == 200
+            assert response.headers["content-type"].startswith("text/event-stream")
+
+            async for line in response.aiter_lines():
+                print(line)
+
+                if line.startswith("data:"):
+                    assert "expected_value" in line
+                    break
+
+
+    def test_invalid_auth(self, client: TestClient):
+        """Test an invalid api key"""
+        client.headers.update({"x-key": "NOT_A_KEY"})
+        response = client.get("/airline/rx/vatsim/wiffle")
+        assert response.status_code == 401

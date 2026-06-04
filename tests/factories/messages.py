@@ -44,3 +44,20 @@ class MessageFactory(factory.Factory):
         obj.save()
         logger.debug(obj)
         return obj
+
+
+class MessageFactoryNoCommit(factory.Factory):
+    """Factory for creating ApiKey instances for testing"""
+
+    class Meta:
+        """Meta class for ApiKeyFactory"""
+        model = databases.StoreAndForward
+
+    msg_from = factory.faker.Faker("message_from_atc")
+    msg_to = factory.faker.Faker("full_callsign")
+    msg_type = factory.faker.Faker("message_type")
+    packet = factory.faker.Faker("message_packet")
+    network = factory.faker.Faker("message_network")
+    created = factory.LazyFunction(lambda: dt.now(tz.utc).timestamp())
+    relayed = False
+    relayed_at = 0.0
