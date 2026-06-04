@@ -251,8 +251,7 @@ class TestNewAirline:
 class TestAirlineRx:
     """Test Airline Rx Path"""
 
-    @pytest.mark.asyncio
-    async def test_valid_auth(self, client: TestClient):
+    def test_valid_auth(self, client: TestClient):
         company: AirlineApiKey = AirlineApiKeyFactory()
         aircraft: ApiKey = UserApiKeyFactory()
         callsign = CallsignFactory()
@@ -260,7 +259,6 @@ class TestAirlineRx:
         url = f"/airline/rx/{company.network}/{company.airline_callsign[-3:]}"
 
         def message():
-            # Login
             dlic_logon_request(
                 logon_from=callsign["callsign"],
                 logon_to="EGKK",
@@ -269,18 +267,20 @@ class TestAirlineRx:
                 client=client
             )
     
-            message = MessageFactoryNoCommit(
+            msg = MessageFactoryNoCommit(
                 msg_from=callsign["callsign"],
                 msg_to=company.airline_callsign)
-    
+
             client.headers.update({"x-key": aircraft.api_key})
             with patch(
                 "acars_server.api.routes.acars.callsign_verification",
                 new=AsyncMock(return_value=callsign["callsign"])
             ):
-                while True:
+                x = 0
+                while x < 10:
                     sleep(2)
-                    client.post("/acars/tx", json=message.model_dump())
+                    client.post("/acars/tx", json=msg.model_dump())
+                    x += 1
             client.headers.pop("x-key")
         thread = threading.Thread(target=message, daemon=True)
         thread.start()
@@ -288,15 +288,15 @@ class TestAirlineRx:
         client.headers.update({"x-key": company.api_key})
 
         # 1. start SSE stream FIRST
-        async with client.stream("GET", url) as response:
+        with client.stream("GET", url) as response:
             assert response.status_code == 200
             assert response.headers["content-type"].startswith("text/event-stream")
 
-            async for line in response.aiter_lines():
+            for line in response.iter_lines():
                 print(line)
 
                 if line.startswith("data:"):
-                    assert "expected_value" in line
+                    assert callsign["callsign"] in line
                     break
 
 
