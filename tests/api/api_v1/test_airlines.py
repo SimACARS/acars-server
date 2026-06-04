@@ -9,16 +9,15 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import re
 import secrets
-import threading
-from time import sleep
 from unittest.mock import AsyncMock, patch
 
 # Third Party Libraries
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 # Local Libraries
-from acars_server.databases import AirlineApiKey, ApiKey, RequestNewAirline
+from acars_server.databases import AirlineApiKey, ApiKey, RequestNewAirline, redis_async_db
 from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory, MessageFactoryNoCommit
 from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
@@ -251,54 +250,106 @@ class TestNewAirline:
 class TestAirlineRx:
     """Test Airline Rx Path"""
 
-    def test_valid_auth(self, client: TestClient):
+    @pytest.mark.anyio
+    async def test_valid_auth(self, client: TestClient):
+        """Test valid authentication"""
         company: AirlineApiKey = AirlineApiKeyFactory()
         aircraft: ApiKey = UserApiKeyFactory()
         callsign = CallsignFactory()
 
         url = f"/airline/rx/{company.network}/{company.airline_callsign[-3:]}"
 
-        def message():
-            dlic_logon_request(
-                logon_from=callsign["callsign"],
-                logon_to="EGKK",
-                api_key=aircraft.api_key,
-                endpoint="/dlic/aircraft/logon",
-                client=client
-            )
-    
-            msg = MessageFactoryNoCommit(
-                msg_from=callsign["callsign"],
-                msg_to=company.airline_callsign)
+        response_coy, _ = dlic_logon_request(
+            logon_from=company.airline_callsign,
+            logon_to="_SYSTEM_DLIC",
+            api_key=company.api_key,
+            endpoint="/dlic/airline/logon",
+            client=client
+        )
+        assert response_coy.status_code == 200
 
-            client.headers.update({"x-key": aircraft.api_key})
-            with patch(
-                "acars_server.api.routes.acars.callsign_verification",
-                new=AsyncMock(return_value=callsign["callsign"])
-            ):
-                x = 0
-                while x < 10:
-                    sleep(2)
-                    client.post("/acars/tx", json=msg.model_dump())
-                    x += 1
-            client.headers.pop("x-key")
-        thread = threading.Thread(target=message, daemon=True)
-        thread.start()
+        msg = MessageFactoryNoCommit(
+            msg_from=callsign["callsign"],
+            msg_to=company.airline_callsign)
+
+        client.headers.update({"x-key": aircraft.api_key})
+        with patch(
+            "acars_server.api.routes.acars.callsign_verification",
+            new=AsyncMock(return_value=callsign["callsign"])
+        ):
+            response_tx = client.post("/acars/tx", json=msg.model_dump())
+        client.headers.pop("x-key")
+
+        assert response_tx.status_code == 201
+        print("INFO: sent tx", response_tx.status_code)
 
         client.headers.update({"x-key": company.api_key})
+        print("INFO: opening stream", url)
 
-        # 1. start SSE stream FIRST
-        with client.stream("GET", url) as response:
-            assert response.status_code == 200
-            assert response.headers["content-type"].startswith("text/event-stream")
+        # Mock Redis to avoid event loop issues in testing
+        # Return a sample message after first xread call
+        try:
+            company_airline_callsign = f"_COY_{company.airline_callsign[-3:]}"
+            msg_data = {
+                b"msg_from": callsign["callsign"].encode() if isinstance(
+                    callsign["callsign"], str) else callsign["callsign"],
+                b"msg_to": company_airline_callsign.encode() if isinstance(
+                    company_airline_callsign, str) else company_airline_callsign,
+                b"msg_type": b"telex",
+                b"packet": b"TEST",
+                b"network": b"vatsim",
+            }
 
-            for line in response.iter_lines():
-                print(line)
+            # Mock the xrange and xread calls
+            old_xrange = redis_async_db.xrange
+            old_xread = redis_async_db.xread
 
-                if line.startswith("data:"):
-                    assert callsign["callsign"] in line
-                    break
+            async def mock_xrange(*args, **kwargs):
+                return []
 
+            call_count = [0]
+            async def mock_xread(*args, **kwargs):
+                call_count[0] += 1
+                if call_count[0] == 1:
+                    # Return message on first call
+                    return [
+                        [f"msg:coy:vatsim:_COY_{format(company.airline_callsign[-3:]).encode()}",
+                         [("1-0", msg_data)]]]
+                else:
+                    # No more messages
+                    return None
+
+            redis_async_db.xrange = mock_xrange
+            redis_async_db.xread = mock_xread
+
+            # Use httpx client directly to bypass TestClient streaming limitations
+            transport = httpx.ASGITransport(app=client.app)
+            async_client = httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
+            async_client.headers.update({"x-key": company.api_key})
+
+            print("INFO: about to call async stream")
+
+            async with async_client.stream("GET", url) as response:
+                print("INFO: stream opened", response.status_code)
+                assert response.status_code == 200
+                assert response.headers["content-type"].startswith("text/event-stream")
+
+                found = False
+                async for line in response.aiter_lines():
+                    print(line)
+
+                    if line.startswith("data:"):
+                        found = True
+                        assert callsign["callsign"] in line
+                        break
+
+                assert found, "No data message received from SSE stream"
+
+            await async_client.aclose()
+        finally:
+            # Restore original Redis methods
+            redis_async_db.xrange = old_xrange
+            redis_async_db.xread = old_xread
 
     def test_invalid_auth(self, client: TestClient):
         """Test an invalid api key"""
