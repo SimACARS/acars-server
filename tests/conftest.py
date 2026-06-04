@@ -68,7 +68,7 @@ def setup_test_database():
 @pytest.fixture(scope="function", autouse=True)
 def clear_redis_cache():
     """Clears the redis cache"""
-    redis_db.flushall(asynchronous=True)
+    redis_db.flushall()
     Migrator().run()
     yield
 
