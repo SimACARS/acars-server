@@ -192,35 +192,38 @@ async def auth_new_airline(
 @router.get("/domain_auth/{verification_token}")
 async def domain_auth_check(verification_token:str, session: databases.SessionDep):
     """Checks to see if a verification code has been added to the domain"""
-    verifcation_request = databases.AirlineVerification.find(
-        (databases.AirlineVerification.verification_token == verification_token)
-    ).first()
-    if len(verification_token) == 1:
-        res = Resolver()
-        res.nameservers = ["8.8.8.8", "1.1.1.1"]
-        dns_answers = res.resolve(
-            f"_acars-verification.{verifcation_request.domain}",
-            "TXT"
-        )
-        for txt in dns_answers:
-            if txt == verifcation_request.verification_token:
-                new_record = {
-                    "api_key": secrets.token_hex(64),
-                    "network": verifcation_request.network,
-                    "airline_name": verifcation_request.airline_name,
-                    "airline_callsign": f"_COY_{verifcation_request.airline_callsign}",
-                    "domain": verifcation_request.domain,
-                    "verified": True,
-                    "created": dt.now(tz.utc).timestamp()
-                }
+    try:
+        verifcation_request = databases.AirlineVerification.find(
+            (databases.AirlineVerification.verification_token == verification_token)
+        ).first()
+    except NotFoundError:
+        return JSONResponse(status_code=404, content={"error": "verification token not recognised"})
 
-                # Validate and add record to database
-                validated_record = databases.AirlineApiKeyCreate.model_validate(new_record)
-                session.add(validated_record)
-                session.commit()
-                session.refresh(validated_record)
+    res = Resolver()
+    res.nameservers = ["8.8.8.8", "1.1.1.1"]
+    dns_answers = res.resolve(
+        f"_acars-verification.{verifcation_request.domain}",
+        "TXT"
+    )
+    for txt in dns_answers:
+        if txt == f"acars-verify-{verifcation_request.verification_token}":
+            new_record = {
+                "api_key": secrets.token_hex(64),
+                "network": verifcation_request.network,
+                "airline_name": verifcation_request.airline_name,
+                "airline_callsign": f"_COY_{verifcation_request.airline_callsign}",
+                "domain": verifcation_request.domain,
+                "verified": True,
+                "created": dt.now(tz.utc).timestamp()
+            }
 
-                # Remove record for Airline Verification
-                verifcation_request.delete(verifcation_request.pk)
+            # Validate and add record to database
+            validated_record = databases.AirlineApiKeyCreate.model_validate(new_record)
+            session.add(validated_record)
+            session.commit()
+            session.refresh(validated_record)
 
-                return JSONResponse(content={"api_key": validated_record.api_key})
+            # Remove record for Airline Verification
+            verifcation_request.delete(verifcation_request.pk)
+
+            return JSONResponse(content={"api_key": validated_record.api_key})
