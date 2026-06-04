@@ -133,15 +133,16 @@ async def transmit_a_message(
         responses=responses_user_new_network)
 async def auth_new_airline(
     request: Request,
-    msg:databases.AirlineApiKeyCreate,
+    msg:databases.RequestNewAirline,
     session: databases.SessionDep
     ):
     """Authenticate a new airline and generate an API key"""
     if msg.network in static_data.NETWORKS:
 
         # Check to see if verified callsign exists for this network already
+        temp_callsign = f"_COY_{msg.airline_callsign}"
         db_check = select(databases.AirlineApiKey).where(
-            (databases.AirlineApiKey.airline_callsign == msg.airline_callsign),
+            (databases.AirlineApiKey.airline_callsign == temp_callsign),
             (databases.AirlineApiKey.network == msg.network),)
         db_result = session.exec(db_check).first()
         if db_result:

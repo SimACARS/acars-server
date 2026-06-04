@@ -227,6 +227,20 @@ class LogoffRequest(HashModel):
         return getattr(self, key)
 
 
+class RequestNewAirline(HashModel):
+    """A DLIC logoff request"""
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    airline_callsign: Annotated[
+        str, Query(
+            min_length=3,
+            max_length=4,
+            pattern="[A-Z0-9]+")]
+    airline_name: str
+    domain: Annotated[str, AfterValidator(check_valid_domain)]
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
 class StoreAndForward(JsonModel, index=True): # type: ignore
     """A table to hold all the messages"""
     msg_from: Annotated[
