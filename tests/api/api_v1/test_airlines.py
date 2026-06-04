@@ -8,6 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import re
+import secrets
 from unittest.mock import patch
 
 # Third Party Libraries
@@ -210,5 +211,36 @@ class TestNewAirline:
             print(response_b.json())
             assert response_b.status_code == 200
             assert re.match(r"[a-zA-Z0-9]{64}", response_b.json()["api_key"])
+        else:
+            pytest.fail(f"Couldn't find verification token in {str(response.text)}")
+
+    def test_auth_bad_verification_token(self, client: TestClient):
+        """Passes a bad verification token"""
+        verification_token = secrets.token_urlsafe(32) 
+        response = client.get(f"/airline/domain_auth/{verification_token}")
+        assert response.status_code == 404
+        assert response.json()["error"] == ("verification token not recognised")
+
+    @patch("acars_server.api.routes.airlines.Resolver.resolve")
+    def test_auth_with_no_matching_txt_record(self, mock_resolve, client: TestClient):
+        """Create a new airline"""
+        airline: RequestNewAirline = NewAirlineRequestFactory(domain="NOT-A-DOMAIN.LOCAL")
+
+        response = client.post("/airline/new", json=airline.model_dump())
+        assert response.status_code == 200
+
+        html_search = re.search(r"\"acars-verify-([A-Za-z0-9\_\-]+)\"", str(response.text))
+        if html_search:
+            verification_token = html_search.group(1)
+            print(verification_token)
+
+            mock_resolve.return_value = [
+                f"this-is-wrong-{str(verification_token)}"
+            ]
+
+            response_b = client.get(f"/airline/domain_auth/{verification_token}")
+
+            assert response_b.status_code == 404
+            assert response_b.json()["error"] == ("no matching TXT record was found")
         else:
             pytest.fail(f"Couldn't find verification token in {str(response.text)}")
