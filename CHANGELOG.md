@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.10.6](https://github.com/SimACARS/acars-server/compare/v1.10.5...v1.10.6) (2026-06-04)
+
+
+### Bug Fixes
+
+* adding a record fails ([28d2a8a](https://github.com/SimACARS/acars-server/commit/28d2a8a06d8a92e7af1c273b28a11e0d74575e99))
+* airline callsign needs to accept the prefix _COY_ ([18c0430](https://github.com/SimACARS/acars-server/commit/18c043066aa848ff84a5fc9b4f8fbda561a940f5))
+* block is too long ([8eed57e](https://github.com/SimACARS/acars-server/commit/8eed57eb2b08a8ea9b313cc46ee9914576e53131))
+* continually adding the same group ([fc14a0c](https://github.com/SimACARS/acars-server/commit/fc14a0c6a614272417172cf59b1d502c01efc738))
+* doesn't need to be async ([1c141af](https://github.com/SimACARS/acars-server/commit/1c141af3ab5bc1e7c83465a9ef9abafc1ab2d71c))
+* fastapi EventSourceResponse and ServerSentEvent aren't playing nicely ([30a88ce](https://github.com/SimACARS/acars-server/commit/30a88ce3638d5604986ae0cbc4a7efee54a6c8aa))
+* flushall shouldn't be async ([ab464af](https://github.com/SimACARS/acars-server/commit/ab464af189e5285b075af8495392f682c77f0e89))
+* messy code needs tidying ([2c143aa](https://github.com/SimACARS/acars-server/commit/2c143aa7157e1187ebca20eb8d3bffa7e89a7112))
+* missing last_used from create ([de9ca42](https://github.com/SimACARS/acars-server/commit/de9ca424233dc7c0f71ff614f217f889c5670913))
+* race condition ([a614068](https://github.com/SimACARS/acars-server/commit/a61406847d198adf287d31fba4d1bafc9ccd2e27))
+* should be using the async db ([5ca3b57](https://github.com/SimACARS/acars-server/commit/5ca3b575ce261969b27434ab3d5c3066f4f49b79))
+* testing the length of the verification token is == 1 which is the wrong thing! ([89801b1](https://github.com/SimACARS/acars-server/commit/89801b1b2e70903cf6974283c25726864dad9864))
+* use new RequestNewAirline model ([24b8f62](https://github.com/SimACARS/acars-server/commit/24b8f624d1f21eb0dbfff8a02d52700b178fb552))
+
+
+### Performance Improvements
+
+* removed if statement which wasn't needed ([36d28a6](https://github.com/SimACARS/acars-server/commit/36d28a652a6496fcf8621c80c69e9057e9a6efca))
+
 ## [1.10.5](https://github.com/SimACARS/acars-server/compare/v1.10.4...v1.10.5) (2026-06-04)
 
 
