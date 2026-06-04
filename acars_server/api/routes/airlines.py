@@ -187,7 +187,7 @@ async def auth_new_airline(
                 )
         else:
             # If no domain provided, just generate temporary API key and return it
-            pass
+            pass # pragma: no cover
 
     error = (f"{msg.network} is not a recognised network. Needs to be one of "
              f"{', '.join(static_data.NETWORKS)}")
