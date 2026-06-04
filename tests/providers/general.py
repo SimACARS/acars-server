@@ -71,6 +71,9 @@ class AirlineProvider(BaseProvider):
     def airline_callsign(self):
         return self._choice()["callsign"]
 
+    def airline_coy_callsign(self):
+        return "_COY_" + self._choice()["icao"]
+
     def airline_country(self):
         return self._choice()["country"]
 

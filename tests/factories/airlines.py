@@ -43,19 +43,17 @@ class AirlineApiKeyFactory(factory.alchemy.SQLAlchemyModelFactory):
     api_key = factory.LazyFunction(lambda: secrets.token_hex(64))
     verified = True
     airline_name = factory.faker.Faker("airline_name")
-    airline_callsign = factory.faker.Faker("airline_icao")
+    airline_callsign = factory.faker.Faker("airline_coy_callsign")
     domain = factory.faker.Faker("domain")
 
 
-class AirlineICAOFactory(factory.Factory):
+class NewAirlineRequestFactory(factory.Factory):
     """Factory for creating Airline ICAO"""
     class Meta:
         """Meta"""
-        model = databases.AirlineApiKey
+        model = databases.RequestNewAirline
 
     network = factory.faker.Faker("network")
     airline_name = factory.faker.Faker("airline_name")
     airline_callsign = factory.faker.Faker("airline_icao")
     domain = factory.faker.Faker("domain")
-    api_key = "0"
-    created = factory.LazyFunction(lambda: dt.now(tz.utc).timestamp())

@@ -7,12 +7,15 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import re
+from unittest.mock import patch
 
 # Third Party Libraries
+import pytest
 from fastapi.testclient import TestClient
 
 # Local Libraries
-from acars_server.databases import AirlineApiKey, ApiKey
+from acars_server.databases import AirlineApiKey, ApiKey, RequestNewAirline
 from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory
 from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
@@ -58,7 +61,7 @@ class TestTransmitMessage:
         # Message validation during post to endpoint
         message = MessageFactory(
             msg_to = callsign["callsign"],
-            msg_from = f"_COY_{airline.airline_callsign}"
+            msg_from = airline.airline_callsign
             )
 
         client.headers.update({"x-key": airline.api_key})
@@ -93,7 +96,7 @@ class TestTransmitMessage:
         # Message validation during post to endpoint
         message = MessageFactory(
             msg_to = callsign["callsign"],
-            msg_from = f"_COY_{airline.airline_callsign}"
+            msg_from = airline.airline_callsign
             )
 
         client.headers.update({"x-key": airline.api_key})
@@ -129,7 +132,7 @@ class TestTransmitMessage:
         # Message validation during post to endpoint
         message = MessageFactory(
             msg_to = callsign["callsign"],
-            msg_from = f"_COY_{airline.airline_callsign}"
+            msg_from = airline.airline_callsign
             )
 
         client.headers.update({"x-key": airline.api_key})
@@ -154,11 +157,15 @@ class TestNewAirline:
 
     def test_new_already_exists(self, client: TestClient):
         """Attempt to a create a new airline that already exists"""
+        # This should create an airline
         airline_a: AirlineApiKey = AirlineApiKeyFactory()
-        airline_b = NewAirlineRequestFactory(
-            airline_callsign=airline_a.airline_callsign,
+
+        # This should create a request for the same airline
+        airline_b: RequestNewAirline = NewAirlineRequestFactory(
+            airline_callsign=airline_a.airline_callsign.split("_")[2],
             network=airline_a.network
             )
+
         response = client.post("/airline/new", json=airline_b.model_dump())
         assert response.status_code == 403
         assert response.json()["error"] == (f"{airline_b.airline_callsign} already "
@@ -166,7 +173,7 @@ class TestNewAirline:
 
     def test_new_request_already_made(self, client: TestClient):
         """Create a new airline"""
-        airline = NewAirlineRequestFactory()
+        airline: RequestNewAirline = NewAirlineRequestFactory()
 
         # First request to create an airline
         response_a = client.post("/airline/new", json=airline.model_dump())
@@ -180,3 +187,28 @@ class TestNewAirline:
         assert response_b.json()["data"]["airline_name"] == airline.airline_name
         assert response_b.json()["data"]["airline_callsign"] == airline.airline_callsign
         assert response_b.json()["data"]["domain"] == airline.domain
+
+    @patch("acars_server.api.routes.airlines.Resolver.resolve")
+    def test_new_with_domain_verification(self, mock_resolve, client: TestClient):
+        """Create a new airline"""
+        airline: RequestNewAirline = NewAirlineRequestFactory(domain="NOT-A-DOMAIN.LOCAL")
+
+        response = client.post("/airline/new", json=airline.model_dump())
+        assert response.status_code == 200
+
+        html_search = re.search(r"\"acars-verify-([A-Za-z0-9\_\-]+)\"", str(response.text))
+        if html_search:
+            verification_token = html_search.group(1)
+            print(verification_token)
+
+            mock_resolve.return_value = [
+                f"acars-verify-{str(verification_token)}"
+            ]
+
+            response_b = client.get(f"/airline/domain_auth/{verification_token}")
+            print(response_b.content)
+            print(response_b.json())
+            assert response_b.status_code == 200
+            assert re.match(r"[a-zA-Z0-9]{64}", response_b.json()["api_key"])
+        else:
+            pytest.fail(f"Couldn't find verification token in {str(response.text)}")
