@@ -15,7 +15,7 @@ from fastapi.testclient import TestClient
 from acars_server.databases import AirlineApiKey, ApiKey
 from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory
-from tests.factories.airlines import AirlineApiKeyFactory, AirlineICAOFactory
+from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
 from tests.factories.user import CallsignFactory, UserApiKeyFactory
 
 class TestTransmitMessage:
@@ -144,10 +144,10 @@ class TestNewAirline:
     """Test creating a new airline"""
     def test_new(self, client: TestClient):
         """Create a new airline"""
-        airline = AirlineICAOFactory()
+        airline = NewAirlineRequestFactory()
 
         response = client.post("/airline/new", json=airline.model_dump())
-        print(response.content)
+
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
         assert "/airline/domain_auth" in response.text
@@ -155,7 +155,7 @@ class TestNewAirline:
     def test_new_already_exists(self, client: TestClient):
         """Attempt to a create a new airline that already exists"""
         airline_a: AirlineApiKey = AirlineApiKeyFactory()
-        airline_b = AirlineICAOFactory(
+        airline_b = NewAirlineRequestFactory(
             airline_callsign=airline_a.airline_callsign,
             network=airline_a.network
             )
@@ -166,7 +166,7 @@ class TestNewAirline:
 
     def test_new_request_already_made(self, client: TestClient):
         """Create a new airline"""
-        airline = AirlineICAOFactory()
+        airline = NewAirlineRequestFactory()
 
         # First request to create an airline
         response_a = client.post("/airline/new", json=airline.model_dump())
