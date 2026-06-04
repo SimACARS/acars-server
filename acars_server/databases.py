@@ -44,7 +44,7 @@ redis_async_db = redis.Redis(
 )
 
 # ------------- DEV CODE -------------
-redis_db.flushall(asynchronous=True) # Clear Redis DB on startup
+redis_db.flushall() # Clear Redis DB on startup
 # ------------- DEV CODE -------------
 
 connect_args = {"check_same_thread": False}
