@@ -15,10 +15,11 @@ from dns.resolver import Resolver
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
-from fastapi.sse import EventSourceResponse, ServerSentEvent
 from fastapi.templating import Jinja2Templates
 from redis_om.model.model import NotFoundError
 from sqlmodel import select
+from sse_starlette.event import ServerSentEvent
+from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
@@ -69,6 +70,7 @@ async def receive_message_stream(
     start_id = last_event_id or "0-0"
 
     async def event_generator():
+        """Event Generator"""
         # Replay any missed messages
         if start_id != "0-0":
             history = await databases.redis_async_db.xrange(stream_key, min=start_id)
@@ -90,7 +92,6 @@ async def receive_message_stream(
             for msg_id, data in messages:
                 last_id = msg_id
                 yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
-
     return EventSourceResponse(event_generator())
 
 @router.post(
