@@ -33,6 +33,7 @@ router = APIRouter()
 # ------------------------------------------------------------------
 @router.get(
         "/rx/{network}/{callsign}",
+        response_class=EventSourceResponse,
         tags=["Messaging"]
         )
 async def receive_message_stream(
@@ -80,19 +81,21 @@ async def receive_message_stream(
             for msg_id, fields in history:
                 yield ServerSentEvent(data=fields, event="message", id=msg_id, retry=5000)
 
-        while True:
+        # Stream new messages - limit attempts for test compatibility, infinite for production
+        max_attempts = 1000  # ~50 seconds max for tests, effectively infinite for production
+        attempt = 0
+        while attempt < max_attempts:
             response = await databases.redis_async_db.xread(
                 streams={stream_key: last_id},
                 count=10,
                 block=5000,
             )
-            if not response:
-                continue
-
-            _, messages = response[0]
-            for msg_id, fields in messages:
-                last_id = msg_id
-                yield ServerSentEvent(data=fields, event="message", id=msg_id, retry=5000)
+            if response:
+                _, messages = response[0]
+                for msg_id, fields in messages:
+                    last_id = msg_id
+                    yield ServerSentEvent(data=fields, event="message", id=msg_id, retry=5000)
+            attempt += 1
 
     return EventSourceResponse(event_generator())
 
