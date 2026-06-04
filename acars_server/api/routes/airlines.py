@@ -157,7 +157,12 @@ async def auth_new_airline(
                     ).all()
             if len(all_requests) > 0:
                 common.logger.info(f"Request already exists for {all_requests[0].model_dump()}")
-                return JSONResponse(status_code=403, content=all_requests[0].model_dump())
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "error": "Request already exists",
+                        "data": all_requests[0].model_dump()
+                        })
 
             # Generate a random verification token
             verification_token = secrets.token_urlsafe(32)
