@@ -28,7 +28,7 @@ router = APIRouter()
 async def test_auth_new_user(
     cid:str,
     session: databases.SessionDep
-    ):
+    ): # pragma: no cover
     """Creates a test user for testing purposes. Not to be used in production"""
     # Generate the API key using the cid
     api_key = auth.Auth().api_key_generator(cid, "testing")
@@ -48,7 +48,7 @@ async def test_auth_new_user(
     return db_add
 
 @router.get("/poll/{callsign}")
-async def test_poll(callsign:str) -> Response:
+async def test_poll(callsign:str) -> Response: # pragma: no cover
     """Test POLL"""
     # If the callsign has been validated
     update_msg = {
@@ -95,7 +95,7 @@ async def test_inforeq(
     network:str,
     station:str,
     background_tasks: BackgroundTasks,
-    ):
+    ): # pragma: no cover
     """INFOREQ Test"""
     t_msg = {
         "created": dt.now(tz.utc).timestamp(),
@@ -114,7 +114,7 @@ async def test_inforeq(
 async def test_tx(
     msg:databases.StoreAndForward,
     background_tasks: BackgroundTasks,
-    ):
+    ): # pragma: no cover
     """INFOREQ Test"""
     sf_msg = databases.StoreAndForward.model_validate(msg)
     t_msg = {
@@ -138,7 +138,7 @@ async def receive_message_stream(
     callsign:str,
     network:str,
     last_event_id: str | None = Query(default=None),
-    ):
+    ): # pragma: no cover
     """
     Airline receive messages via HTTPX (Server-Sent Events)
 
