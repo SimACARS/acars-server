@@ -213,16 +213,19 @@ async def domain_auth_check(verification_token:str, session: databases.SessionDe
                 "airline_callsign": f"_COY_{verifcation_request.airline_callsign}",
                 "domain": verifcation_request.domain,
                 "verified": True,
-                "created": dt.now(tz.utc).timestamp()
+                "created": dt.now(tz.utc).timestamp(),
+                "last_used": dt.now(tz.utc).timestamp()
             }
 
             # Validate and add record to database
-            validated_record = databases.AirlineApiKeyCreate.model_validate(new_record)
-            session.add(validated_record)
+            validated = databases.AirlineApiKeyCreate.model_validate(new_record)
+            orm_obj = databases.AirlineApiKey(**validated.model_dump())
+            session.add(orm_obj)
             session.commit()
-            session.refresh(validated_record)
+            session.refresh(orm_obj)
 
             # Remove record for Airline Verification
             verifcation_request.delete(verifcation_request.pk)
 
-            return JSONResponse(content={"api_key": validated_record.api_key})
+            return JSONResponse(content={"api_key": validated.api_key})
+    return JSONResponse(status_code=404, content={"error": "no matching TXT record was found"})
