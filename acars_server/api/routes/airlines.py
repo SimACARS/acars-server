@@ -71,14 +71,14 @@ async def receive_message_stream(
     async def event_generator():
         # Replay any missed messages
         if start_id != "0-0":
-            history = await databases.redis_db.xrange(stream_key, min=start_id)
+            history = await databases.redis_async_db.xrange(stream_key, min=start_id)
             for msg_id, data in history:
                 yield ServerSentEvent(data=data, event="message", id=msg_id, retry=5000)
 
         # Then block while sending new SSE messages...
         last_id = start_id
         while True:
-            response = await databases.redis_db.xread(
+            response = await databases.redis_async_db.xread(
                 streams={stream_key: last_id},
                 block=30000,  # 30s long poll
                 count=100
