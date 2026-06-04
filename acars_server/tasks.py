@@ -9,14 +9,13 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import ast
 import re
-import time
 from datetime import datetime as dt, timezone as tz
 from typing import Any, Dict
 
 # Third Party Libraries
 
 # Local Libraries
-from acars_server import common, databases
+from acars_server import common, databases, functions
 from acars_server.api.message_types import adexp, inforeq
 
 
@@ -70,13 +69,10 @@ async def message_parse(msg:databases.StoreAndForward):
         stream = f"msg:atc:{sf_msg.network}:{sf_msg.msg_to}"
 
     if stream is not None:
+        group = f"sse:{sf_msg.network}:{sf_msg.msg_to}"
         common.logger.debug(f"Adding message to stream: {stream} {sf_msg.model_dump()}")
+        await functions.ensure_group_once(databases.redis_async_db, stream, group)
         await databases.redis_async_db.xadd(stream, sf_msg.model_dump())
-
-        # Expire any stream messages older than 24hrs
-        expire = int((time.time() - 86400) * 1000)
-        expire_id = f"{expire}-0"
-        await databases.redis_async_db.xtrim(stream, minid=expire_id)
 
 def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
     """Validates ADS-C messages"""
