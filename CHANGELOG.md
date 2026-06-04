@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.10.5](https://github.com/SimACARS/acars-server/compare/v1.10.4...v1.10.5) (2026-06-04)
+
+
+### Bug Fixes
+
+* icao no showing for no ATIS ([1da9caa](https://github.com/SimACARS/acars-server/commit/1da9caa3579e3f4751a9a08719a8b90a9147ce60))
+* not returning 403 errors ([a4c1fd0](https://github.com/SimACARS/acars-server/commit/a4c1fd0b496beb3e399ca8851106397e685e2f0b))
+* raises NotFoundError instead of returning 404 ([c5a789f](https://github.com/SimACARS/acars-server/commit/c5a789fff5fa839c05f97088dbd97e1c7db92dd1))
+* response content needs to be clearer ([39a0975](https://github.com/SimACARS/acars-server/commit/39a0975b21c9571793cc81b8daff43de6a18fd34))
+* scope is too wide, shouldn't include airline name ([952fda5](https://github.com/SimACARS/acars-server/commit/952fda5b3c9c5008a9f3c958e0148630bca43385))
+* vatsim metar returns a blank string if unknown icao ([a64cb2c](https://github.com/SimACARS/acars-server/commit/a64cb2cd968375b8b1e66c957495bafb6080bfa2))
+
+
+### Performance Improvements
+
+* check not required as already tested in model validation ([ebc119a](https://github.com/SimACARS/acars-server/commit/ebc119a9dc1c127e96c4a65da05b848a80a85d66))
+* removed uneccesary if blocks ([7d52748](https://github.com/SimACARS/acars-server/commit/7d527485a268253723ed6bff40721ec85a5ee15c))
+
 ## [1.10.4](https://github.com/SimACARS/acars-server/compare/v1.10.3...v1.10.4) (2026-06-03)
 
 
