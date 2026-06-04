@@ -153,8 +153,7 @@ async def auth_new_airline(
             # Check to see if request is already live
             all_requests = databases.AirlineVerification.find(
                         (databases.AirlineVerification.airline_callsign == msg.airline_callsign) &
-                        (databases.AirlineVerification.network == msg.network) &
-                        (databases.AirlineVerification.airline_name == msg.airline_name)
+                        (databases.AirlineVerification.network == msg.network)
                     ).all()
             if len(all_requests) > 0:
                 common.logger.info(f"Request already exists for {all_requests[0].model_dump()}")
