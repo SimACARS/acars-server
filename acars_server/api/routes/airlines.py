@@ -189,13 +189,6 @@ async def auth_new_airline(
             # If no domain provided, just generate temporary API key and return it
             pass # pragma: no cover
 
-    error = (f"{msg.network} is not a recognised network. Needs to be one of "
-             f"{', '.join(static_data.NETWORKS)}")
-    common.logger.error(error)
-    raise HTTPException(
-        status_code=400,
-        detail=error)
-
 @router.get("/domain_auth/{verification_token}")
 async def domain_auth_check(verification_token:str, session: databases.SessionDep):
     """Checks to see if a verification code has been added to the domain"""
