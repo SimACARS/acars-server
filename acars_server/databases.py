@@ -124,7 +124,7 @@ class AirlineApiKeyBase(SQLModel):
     network: Annotated[str, AfterValidator(check_valid_network)]
     airline_name: str
     airline_callsign: Annotated[
-        str, Query(min_length=3, max_length=4, pattern="^[A-Z]+$")]
+        str, Query(min_length=8, max_length=9, pattern="^_COY_[A-Z]+$")]
     domain: Annotated[str, AfterValidator(check_valid_domain)] | None = None
 
     def __getitem__(self, key):
