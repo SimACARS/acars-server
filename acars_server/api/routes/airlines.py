@@ -17,6 +17,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from fastapi.responses import JSONResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from fastapi.templating import Jinja2Templates
+from redis_om.model.model import NotFoundError
 from sqlmodel import select
 
 # Local Libraries
@@ -116,13 +117,17 @@ async def transmit_a_message(
     # If airline has been authenticated via API key
     if airline_data:
         # An airline should only be able to send a message to an online station
-        cs_logon = databases.DataLinkInitiationCapability.find(
-                (databases.DataLinkInitiationCapability.logon_from == msg.msg_to)
-            ).first()
+        try:
+            cs_logon = databases.DataLinkInitiationCapability.find(
+                    (databases.DataLinkInitiationCapability.logon_from == msg.msg_to)
+                ).first()
+        except NotFoundError:
+            return JSONResponse(
+                status_code=404,
+                content={"error": f"{msg.msg_to} is not active on the network"})
         if cs_logon:
             background_tasks.add_task(tasks.message_parse, sf_msg)
             return sf_msg
-        return JSONResponse(content={"error": f"{msg.msg_to} is not active on the network"})
 
     error = f"No airline data identified for {msg.msg_from}"
     common.logger.error(error)
