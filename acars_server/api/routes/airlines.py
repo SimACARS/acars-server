@@ -108,33 +108,24 @@ async def transmit_a_message(
     """Airline Send a Message"""
 
     try:
-        airline_data = await airline_api_authentication(session, api_key)
+        await airline_api_authentication(session, api_key)
     except HTTPException as exc:
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
     sf_msg = databases.StoreAndForward.model_validate(msg)
 
-    # If airline has been authenticated via API key
-    if airline_data:
-        # An airline should only be able to send a message to an online station
-        try:
-            cs_logon = databases.DataLinkInitiationCapability.find(
-                    (databases.DataLinkInitiationCapability.logon_from == msg.msg_to)
-                ).first()
-        except NotFoundError:
-            return JSONResponse(
-                status_code=404,
-                content={"error": f"{msg.msg_to} is not active on the network"})
-        if cs_logon:
-            background_tasks.add_task(tasks.message_parse, sf_msg)
-            return sf_msg
+    # An airline should only be able to send a message to an online station
+    try:
+        databases.DataLinkInitiationCapability.find(
+                (databases.DataLinkInitiationCapability.logon_from == msg.msg_to)
+            ).first()
+    except NotFoundError:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"{msg.msg_to} is not active on the network"})
 
-    error = f"No airline data identified for {msg.msg_from}"
-    common.logger.error(error)
-    raise HTTPException(
-        status_code=403,
-        detail=error
-        )
+    background_tasks.add_task(tasks.message_parse, sf_msg)
+    return sf_msg
 
 @router.post(
         "/new",
