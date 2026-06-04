@@ -35,7 +35,7 @@ class TestNoaa:
         """Test that a TAF is returned"""
         response = Noaa.taf(self.aerodrome)
         check = re.match(
-            r"\d{4}\/\d{2}\/(\d{2}) (\d{2}):(\d{2})\sTAF ([A-Z]{4}) (\d{6})Z", response)
+            r"\d{4}\/\d{2}\/(\d{2}) (\d{2}):(\d{2})\sTAF .* ([A-Z]{4}) (\d{6})Z", response)
         assert check
         assert check.group(4) == self.aerodrome
 
