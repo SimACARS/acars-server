@@ -148,6 +148,7 @@ class AirlineApiKeyCreate(AirlineApiKeyBase):
     api_key: str
     verified: bool = False
     created: float
+    last_used: float
 
 
 class AirlineApiKeyPublic(AirlineApiKeyBase):
