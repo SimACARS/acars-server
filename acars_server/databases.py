@@ -228,14 +228,17 @@ class LogoffRequest(HashModel):
         return getattr(self, key)
 
 
-class OAuthStateStore(HashModel):
+class OAuthStateStore(HashModel, index=True): # type: ignore
     """A store for OAuth states"""
     oauth_state: Annotated[
         str, Query(
             min_length=64,
             max_length=64,
-            pattern="^[a-f0-9]+$")]  = RedisField(index=True)
+            pattern="^[a-f0-9]+$")] = RedisField(index=True, schema_type="tag")
 
+    class Meta:
+        """MetaData"""
+        database = redis_db
 
 class RequestNewAirline(HashModel):
     """A DLIC logoff request"""
