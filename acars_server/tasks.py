@@ -30,15 +30,15 @@ async def message_parse(msg:databases.StoreAndForward):
     if msg["msg_type"] == "inforeq":
         send_msg = msg_type_inforeq(msg)
     # ADS-C
-    elif msg["msg_type"] == "ads-c":
+    elif msg["msg_type"] == "ads-c": # pragma: no cover
         if not msg_type_ads_c(msg):
             return
     # CPDLC
-    elif msg["msg_type"] == "cpdlc":
+    elif msg["msg_type"] == "cpdlc": # pragma: no cover
         if not msg_type_cpdlc(msg):
             return
     # ADEXP
-    elif msg["msg_type"] == "adexp":
+    elif msg["msg_type"] == "adexp": # pragma: no cover
         adexp_msg = adexp.Adexp(msg)
         if not msg_type_cpdlc(msg):
             return

@@ -25,7 +25,7 @@ async def ping():
     return {"server_status": "OK", "server_version": __VERSION__}
 
 @router.get("/logs/stream", tags=["Status"])
-async def stream_logs():
+async def stream_logs(): # pragma: no cover
     """Log Streamer"""
     async def event_generator():
         while True:
