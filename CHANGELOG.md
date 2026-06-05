@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.11](https://github.com/SimACARS/acars-server/compare/v1.10.10...v1.10.11) (2026-06-05)
+
+
+### Performance Improvements
+
+* removed unused class ([24ac364](https://github.com/SimACARS/acars-server/commit/24ac36482c7ed8784932cea34f4441d204ec27e9))
+
 ## [1.10.10](https://github.com/SimACARS/acars-server/compare/v1.10.9...v1.10.10) (2026-06-05)
 
 
