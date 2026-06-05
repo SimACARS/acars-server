@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 
 # Local Libraries
 from tests.api.api_v1.test_dlic import dlic_logon_request
-from tests.factories.user import CidFactory
+from tests.factories.user import CidFactory, OAuthStateFactory
 
 def test_add_new_vatsim_user(client: TestClient):
     """Test to add a new user"""
@@ -61,10 +61,15 @@ def test_callback(
     mock_vatsim_auth = MagicMock()
     mock_vatsim_auth_class.return_value = mock_vatsim_auth
 
+    state = OAuthStateFactory()
+
     # ---- mock get_access_token ----
     mock_vatsim_auth.get_access_token.return_value = (
         200,
-        {"access_token": secrets.token_hex(32)}
+        {
+            "access_token": secrets.token_hex(32),
+            "state": state.oauth_state
+        }
     )
 
     # ---- mock get_user_details ----
@@ -78,7 +83,7 @@ def test_callback(
     )
 
     response_a = client.get(
-        f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
 
     assert response_a.status_code == 200
     assert response_a.json()["status"] == "user created"
@@ -103,6 +108,8 @@ def test_callback_no_access_token(
     mock_vatsim_auth = MagicMock()
     mock_vatsim_auth_class.return_value = mock_vatsim_auth
 
+    state = OAuthStateFactory()
+
     # ---- mock get_access_token ----
     mock_vatsim_auth.get_access_token.return_value = (
         400,
@@ -110,10 +117,10 @@ def test_callback_no_access_token(
     )
 
     response = client.get(
-        f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
     print(response.json())
     assert response.status_code == 400
-    assert response.json()["detail"] == "some hint from the oauth provider"
+    assert response.json()["error"] == "some hint from the oauth provider"
 
 @patch("acars_server.api.routes.users.auth.VatsimAuth")
 def test_callback_no_user_details(
@@ -123,6 +130,8 @@ def test_callback_no_user_details(
     """Test the callback with a login attempt"""
     mock_vatsim_auth = MagicMock()
     mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+    state = OAuthStateFactory()
 
     # ---- mock get_access_token ----
     mock_vatsim_auth.get_access_token.return_value = (
@@ -137,7 +146,57 @@ def test_callback_no_user_details(
     )
 
     response = client.get(
-        f"/callback/oauth/vatsim/{secrets.token_hex(16)}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
     print(response.json())
     assert response.status_code == 400
-    assert response.json()["detail"] == {"hint": "some hint from the oauth provider"}
+    assert response.json()["error"] == {"hint": "some hint from the oauth provider"}
+
+def test_callback_no_state_code(client: TestClient):
+    """Tests a callback with no or invalid state code"""
+    response = client.get(
+        f"/callback/oauth/vatsim/{secrets.token_hex(32)}/{secrets.token_hex(32)}")
+    assert response.status_code == 404
+    assert response.json()["error"] == "State code not found"
+
+@patch("acars_server.api.routes.users.auth.VatsimAuth")
+def test_callback_duplicate_state_code(
+    mock_vatsim_auth_class,
+    client: TestClient
+    ):
+    """Tests a callback with duplicate state code"""
+    cid = CidFactory()
+    mock_vatsim_auth = MagicMock()
+    mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+    state = OAuthStateFactory()
+
+    # ---- mock get_access_token ----
+    mock_vatsim_auth.get_access_token.return_value = (
+        200,
+        {
+            "access_token": secrets.token_hex(32),
+            "state": state.oauth_state
+        }
+    )
+
+    # ---- mock get_user_details ----
+    mock_vatsim_auth.get_user_details.return_value = (
+        200,
+        {
+            "data": {
+                "cid": cid["cid"]
+            }
+        }
+    )
+
+    response_a = client.get(
+        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+
+    assert response_a.status_code == 200
+    assert response_a.json()["status"] == "user created"
+
+    response_b = client.get(
+        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+
+    assert response_b.status_code == 404
+    assert response_b.json()["error"] == "State code not found"

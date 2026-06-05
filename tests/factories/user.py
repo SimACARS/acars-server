@@ -7,6 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import secrets
 from datetime import datetime as dt, timezone as tz
 
 # Third Party Libraries
@@ -58,3 +59,19 @@ class CidFactory(factory.Factory):
         """Meta"""
         model = dict
     cid = factory.faker.Faker("network_cid")
+
+
+class OAuthStateFactory(factory.Factory):
+    """Factory for creating ApiKey instances for testing"""
+
+    class Meta:
+        """Meta class for OAuthStateStore"""
+        model = databases.OAuthStateStore
+
+    oauth_state = secrets.token_hex(32)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        obj = model_class(**kwargs)
+        obj.save()
+        return obj
