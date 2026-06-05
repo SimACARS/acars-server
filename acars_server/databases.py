@@ -223,7 +223,7 @@ class DataLinkInitiationCapability(HashModel, index=True): # type: ignore
 class LogoffRequest(HashModel):
     """A DLIC logoff request"""
     logoff_code: Annotated[
-        str, Query(min_length=64, max_length=64, pattern="^[a-f0-9]+$")]
+        str, Query(min_length=64, max_length=64, pattern="[a-f0-9]+")]
     def __getitem__(self, key):
         return getattr(self, key)
 
@@ -234,7 +234,7 @@ class OAuthStateStore(HashModel, index=True): # type: ignore
         str, Query(
             min_length=64,
             max_length=64,
-            pattern="^[a-f0-9]+$")] = RedisField(index=True, schema_type="tag")
+            pattern="[a-f0-9]+")] = RedisField(index=True, schema_type="tag")
 
     class Meta:
         """MetaData"""
