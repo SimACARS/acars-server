@@ -42,36 +42,35 @@ AUTHENTICATED_END_POINTS = [
     ("/dlic/aircraft/logoff", "post", {"logoff_code": secrets.token_hex(32)}),
     ("/dlic/airline/logoff", "post", {"logoff_code": secrets.token_hex(32)}),
 ]
-def test_auth_endpoint_no_api_key(client: TestClient):
+@pytest.mark.parametrize("end_point,method,_data", AUTHENTICATED_END_POINTS)
+def test_auth_endpoint_no_api_key(client: TestClient, end_point, method, _data):
     """Tests an auth endpoint with no API key"""
-    for end_point, method, _ in AUTHENTICATED_END_POINTS:
-        if method == "get":
-            request = client.get(end_point)
-        else:
-            request = client.post(end_point)
+    if method == "get":
+        request = client.get(end_point)
+    else:
+        request = client.post(end_point)
 
-        assert request.status_code == 401, f"{end_point} returned {request.status_code}"
+    assert request.status_code == 401, f"{end_point} returned {request.status_code}"
 
-def test_auth_endpoint_false_api_key(client: TestClient):
+@pytest.mark.parametrize("end_point,method,data", AUTHENTICATED_END_POINTS)
+def test_auth_endpoint_false_api_key(client: TestClient, end_point, method, data):
     """Tests an auth endpoint with no API key"""
     message: StoreAndForward = MessageFactory()
     api_key = secrets.token_hex(32)
     print(message)
     client.headers.update({"x-key": api_key})
-    for end_point, method, data in AUTHENTICATED_END_POINTS:
-        print(end_point)
-        if method == "get":
-            request = client.get(end_point)
+    if method == "get":
+        request = client.get(end_point)
+    else:
+        if data is not None:
+            try:
+                request = client.post(end_point, json=data.model_dump())
+            except AttributeError:
+                request = client.post(end_point, json=data)
         else:
-            if data is not None:
-                try:
-                    request = client.post(end_point, json=data.model_dump())
-                except AttributeError:
-                    request = client.post(end_point, json=data)
-            else:
-                request = client.post(end_point)
-        print(request.json())
-        assert request.status_code == 401
+            request = client.post(end_point)
+    print(request.json())
+    assert request.status_code == 401
     client.headers.pop("x-key")
 
 @pytest.mark.asyncio
@@ -79,7 +78,8 @@ async def test_get_callsign_from_vatsim_cid():
     """Tests getting a callsign from a CID"""
     v = Vatsim()
     rqt = requests.get(v.vatsim_urls['all'], timeout=10)
-    assert rqt.status_code == 200
+    if rqt.status_code != 200:
+        pytest.skip(f"Response {rqt.status_code} received from {rqt.url}")
 
     # Pick a random(ish) CID from live VATSIM data
     cid = rqt.json()["pilots"][0]["cid"]
@@ -94,7 +94,8 @@ async def test_give_wrong_callsign_from_vatsim_cid():
     """Tests what happens when a CID doesn't correlate to the given callsign"""
     v = Vatsim()
     rqt = requests.get(v.vatsim_urls['all'], timeout=10)
-    assert rqt.status_code == 200
+    if rqt.status_code != 200:
+        pytest.skip(f"Response {rqt.status_code} received from {rqt.url}")
 
     # Pick a random(ish) CID from live VATSIM data
     cid = rqt.json()["pilots"][0]["cid"]
