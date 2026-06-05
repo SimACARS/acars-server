@@ -68,7 +68,7 @@ async def auth_new_user_callback_vatsim(
     # Verify that the state code exists
     try:
         state_code = databases.OAuthStateStore.find(
-                    (databases.OAuthStateStore.logoff_code == state)
+                    (databases.OAuthStateStore.oauth_state == state)
                 ).first()
     except NotFoundError:
         return JSONResponse(status_code=404, content={"error": "State code not found"})
