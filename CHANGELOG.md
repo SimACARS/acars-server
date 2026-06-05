@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.10.8](https://github.com/SimACARS/acars-server/compare/v1.10.7...v1.10.8) (2026-06-05)
+
+
+### Bug Fixes
+
+* missing meta class for redis model ([560b731](https://github.com/SimACARS/acars-server/commit/560b731c10431bad9ad9ba9b51246cd71ab936e1))
+* Pydantic serializer warnings ([5d167b1](https://github.com/SimACARS/acars-server/commit/5d167b1b67a09e6d3dc55f9dd8898465f6980e21))
+* regex too restrictive ([ad1deba](https://github.com/SimACARS/acars-server/commit/ad1deba8ecacd1c1060ab848c27ebaafcbde4491))
+* should look for oauth_state not logoff_code ([fa3be97](https://github.com/SimACARS/acars-server/commit/fa3be97d82aad0f16706b3cc3f5d5c732e972f44))
+
 ## [1.10.7](https://github.com/SimACARS/acars-server/compare/v1.10.6...v1.10.7) (2026-06-05)
 
 
