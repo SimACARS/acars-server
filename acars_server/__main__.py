@@ -15,33 +15,15 @@ from time import sleep
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from redis_om import Migrator # type: ignore
 
 # Local Libraries
-from acars_server import __VERSION__, auth, common, databases, static_data
-from acars_server.config import Settings
+from acars_server import __VERSION__, auth, common, config, databases, static_data
 from acars_server.api.routes import acars, airlines, dlic, status, tests, users
 
 load_dotenv()
-settings = Settings()
-
-# Initialize OpenTelemetry
-resource = Resource(attributes={"service.name": "fastapi-service"})
-tracer_provider = TracerProvider(resource=resource)
-trace.set_tracer_provider(tracer_provider)
-
-# Set up OTLP exporter for traces
-otlp_exporter = OTLPSpanExporter(
-    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}",
-    insecure=True)
-span_processor = BatchSpanProcessor(otlp_exporter)
-tracer_provider.add_span_processor(span_processor)
+settings = config.Settings()
 
 def run_startup_tasks():
     """Startup Tasks"""
