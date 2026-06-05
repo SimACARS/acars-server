@@ -8,7 +8,7 @@ Your network user ID is used to verify that the callsign you have logged on with
 
 Your user ID is verified using your network's OAuth2 protocol. We ONLY store your encrypted user ID and flight simulation network and no other personal data.
 
-With SimACARS, there is no longer a need to poll the server. Subscribe to [Server-Sent Events]([https://developer.mozilla.org/en-US/docs/Web/API/EventSource). This can easily be implemented in [TypeScript](https://docs.servicestack.net/typescript-server-events-client) as well!
+With SimACARS, there is no longer a need to poll the server. Subscribe to [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/EventSource). This can easily be implemented in [TypeScript](https://docs.servicestack.net/typescript-server-events-client) as well!
 
 # Running Locally
 ### Dependencies
