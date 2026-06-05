@@ -11,7 +11,7 @@ from datetime import datetime as dt, timezone as tz
 from hashlib import blake2b
 
 # Third Party Libraries
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from redis_om.model.model import NotFoundError # type: ignore
 
@@ -51,9 +51,9 @@ async def dlic_airline_logon(
 
     if airline_data.airline_callsign != msg.logon_from:
         common.logger.error("401: API Key doesn't match stored airline code")
-        raise HTTPException(
+        return JSONResponse(
             status_code=401,
-            detail="Unauthorised: API Key doesn't match stored airline code")
+            content={"error": "Unauthorised: API Key doesn't match stored airline code"})
 
     cs_logon = None
     try:
@@ -145,9 +145,10 @@ async def dlic_any_station_logoff(
     elif station_type == "atsu": # pragma: no cover
         pass
     else:
-        raise HTTPException(
+        return JSONResponse(
             status_code=404,
-            detail="Incorrect station type. Needs to be one of aircraft, airline or atsu")
+            content={
+                "error": "Incorrect station type. Needs to be one of aircraft, airline or atsu"})
 
 
     databases.LogoffRequest.model_validate(msg)
@@ -157,9 +158,9 @@ async def dlic_any_station_logoff(
                     (databases.DataLinkInitiationCapability.logoff_code == msg.logoff_code)
                 ).first()
         common.logger.debug(sf2_msg)
-    except NotFoundError as err:
+    except NotFoundError:
         common.logger.error(f"Logoff code {msg.logoff_code} not found")
-        raise HTTPException(status_code=404, detail="Logoff code not found") from err
+        return JSONResponse(status_code=404, content={"error": "Logoff code not found"})
 
     sf2_msg.delete(sf2_msg.pk)
     common.logger.success(f"Logoff successful for {sf2_msg.logon_from}")

@@ -11,7 +11,7 @@ from datetime import datetime as dt, timezone as tz
 from typing import Annotated, Any, Dict
 
 # Third Party Libraries
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
 from fastapi.responses import JSONResponse
 
 # Local Libraries
@@ -75,9 +75,7 @@ async def poll_for_new_messages(
     error = ("Unable to retrieve callsign for user - Network: "
                 f"{user_data['network']}, User ID: {user_data['uid']}")
     common.logger.error(error)
-    raise HTTPException(
-        status_code=403,
-        detail=error)
+    return JSONResponse(status_code=403, content = {"error": error})
 
 @router.get("/connect.html", tags=["Legacy Messaging"], deprecated=True)
 async def hoppie_formated_url(
@@ -133,7 +131,4 @@ async def transmit_a_message(
     error = (f"Callsign validation failed - Network: {user_data['network']}, "
              f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")
     common.logger.error(error)
-    raise HTTPException(
-        status_code=403,
-        detail=error
-        )
+    return JSONResponse(status_code=403, content={"error": error})

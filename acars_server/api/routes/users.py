@@ -10,7 +10,7 @@ Chris Parkinson (@chssn)
 from datetime import datetime as dt, timezone as tz
 
 # Third Party Libraries
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse, RedirectResponse
 
 # Local Libraries
@@ -33,16 +33,12 @@ async def auth_new_user(network: str):
 
         error = f"{network} doesn't appear to exist although it really should..."
         common.logger.error(error)
-        raise HTTPException(
-            status_code=400,
-            detail=error)
+        return JSONResponse(status_code=400, content={"error": error})
 
     error = (f"{network} is not a recognised network. Needs to be one of "
              f"{', '.join(static_data.NETWORKS)}")
     common.logger.error(error)
-    raise HTTPException(
-        status_code=400,
-        detail=error)
+    return JSONResponse(status_code=400, content={"error": error})
 
 @router.get(
         "/callback/oauth/vatsim/{state}/{code}",
@@ -58,12 +54,13 @@ async def auth_new_user_callback_vatsim(
     v_auth = auth.VatsimAuth()
     v_token = v_auth.get_access_token(code)
     if v_token[0] != 200:
-        raise HTTPException(status_code=v_token[0], detail=v_token[1]["hint"])
+        return JSONResponse(
+            status_code=v_token[0], content={"error": v_token[1]["hint"]})
 
     # Get the user details using the access token
     v_user = v_auth.get_user_details(v_token[1]["access_token"])
     if v_user[0] != 200:
-        raise HTTPException(status_code=v_user[0], detail=v_user[1])
+        return JSONResponse(status_code=v_user[0], content={"error": v_user[1]})
 
     # Generate the API key using the cid
     v_cid = v_user[1]["data"]["cid"]
