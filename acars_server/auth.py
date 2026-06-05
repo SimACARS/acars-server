@@ -115,7 +115,7 @@ class VatsimAuth:
         state = secrets.token_hex(32)
         payload = {
             "response_type": "code",
-            "client_id": os.environ["VATSIM_OAUTH_CLIENT_ID"],
+            "client_id": os.getenv("VATSIM_OAUTH_CLIENT_ID"),
             "redirect_uri": self.REDIRECT_URI,
             "state": state,
             "prompt": "login"
@@ -129,8 +129,8 @@ class VatsimAuth:
         """Gets an access token"""
         payload = {
             "grant_type": "authorization_code",
-            "client_id": os.environ["VATSIM_OAUTH_CLIENT_ID"],
-            "client_secret": os.environ["VATSIM_OAUTH_CLIENT_SECRET"],
+            "client_id": os.getenv("VATSIM_OAUTH_CLIENT_ID"),
+            "client_secret": os.getenv("VATSIM_OAUTH_CLIENT_SECRET"),
             "redirect_uri": self.REDIRECT_URI,
             "code": authorisation_code
         }

@@ -33,17 +33,17 @@ SQLITE_FILE_PATH = os.path.join(PWD.parent, SQLITE_FILE_NAME)
 SQLITE_URL = f"sqlite:///{SQLITE_FILE_PATH}"
 
 redis_db = get_redis_connection(
-    host=os.environ["REDIS_HOST"],
-    port=int(os.environ["REDIS_PORT"]),
-    password=os.environ["REDIS_PASSWORD"],
+    host=os.getenv("REDIS_HOST"),
+    port=int(os.getenv("REDIS_PORT")),
+    password=os.getenv("REDIS_PASSWORD"),
     username="default",
     decode_responses=True
 )
 
 redis_async_db = redis.Redis(
-    host=os.environ["REDIS_HOST"],
-    port=int(os.environ["REDIS_PORT"]),
-    password=os.environ["REDIS_PASSWORD"],
+    host=os.getenv("REDIS_HOST"),
+    port=int(os.getenv("REDIS_PORT")),
+    password=os.getenv("REDIS_PASSWORD"),
     username="default",
     decode_responses=True
 )
