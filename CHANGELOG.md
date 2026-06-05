@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.9](https://github.com/SimACARS/acars-server/compare/v1.10.8...v1.10.9) (2026-06-05)
+
+
+### Bug Fixes
+
+* testing network nerf'd itself ([b979773](https://github.com/SimACARS/acars-server/commit/b979773b165f04d8d8759b609a4b5c4dc23bc40d))
+
 ## [1.10.8](https://github.com/SimACARS/acars-server/compare/v1.10.7...v1.10.8) (2026-06-05)
 
 
