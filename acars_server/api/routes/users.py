@@ -12,6 +12,7 @@ from datetime import datetime as dt, timezone as tz
 # Third Party Libraries
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, RedirectResponse
+from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data
@@ -28,6 +29,20 @@ async def auth_new_user(network: str):
         if network == "vatsim":
             v_auth = auth.VatsimAuth()
             v_url = v_auth.authorise()
+
+            # Add state key to redis
+            state_model = {
+                "oauth_state": v_url[1]
+            }
+            state_key = databases.OAuthStateStore.model_validate(state_model)
+
+            # Expire state key in 10 minutes
+            state_key.save()
+            databases.redis_db.expire(
+                state_key.key(),
+                600,
+            )
+
             common.logger.success("Client redirected to VATSIM OAuth")
             return RedirectResponse(v_url[0])
 
@@ -50,6 +65,15 @@ async def auth_new_user_callback_vatsim(
     session: databases.SessionDep
     ):
     """A callback point for VATSIM"""
+    # Verify that the state code exists
+    try:
+        state_code = databases.OAuthStateStore.find(
+                    (databases.OAuthStateStore.logoff_code == state)
+                ).first()
+    except NotFoundError:
+        return JSONResponse(status_code=404, content={"error": "State code not found"})
+    state_code.delete(state_code.pk)
+
     # Get the access token from VATSIM
     v_auth = auth.VatsimAuth()
     v_token = v_auth.get_access_token(code)
