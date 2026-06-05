@@ -74,7 +74,6 @@ class Vatsim:
         common.logger.debug(vatsim_servers)
 
         self.member_stat_data = {}
-        self.msd_rate_limit = functions.RateLimiter(1, 10)
 
         # json output from status.vatsim.net/status.json is sub-divided by data, user and metar.
         # only data has further sub-divisions.
