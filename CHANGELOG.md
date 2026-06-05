@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.10](https://github.com/SimACARS/acars-server/compare/v1.10.9...v1.10.10) (2026-06-05)
+
+
+### Bug Fixes
+
+* internal server error when no messages to collect after poll ([1c047a0](https://github.com/SimACARS/acars-server/commit/1c047a0c1b82685d44e40a689e349d403c3e042e))
+
 ## [1.10.9](https://github.com/SimACARS/acars-server/compare/v1.10.8...v1.10.9) (2026-06-05)
 
 
