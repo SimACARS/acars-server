@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.10.7](https://github.com/SimACARS/acars-server/compare/v1.10.6...v1.10.7) (2026-06-05)
+
+
+### Bug Fixes
+
+* endpoints should always return json ([f4bef40](https://github.com/SimACARS/acars-server/commit/f4bef40cfcd8d213eba34ea45899129994ee0e52))
+* oauth state code not accessed ([ef56b29](https://github.com/SimACARS/acars-server/commit/ef56b29acc4cfba970b6117f4e32dae36d547056))
+
 ## [1.10.6](https://github.com/SimACARS/acars-server/compare/v1.10.5...v1.10.6) (2026-06-04)
 
 
