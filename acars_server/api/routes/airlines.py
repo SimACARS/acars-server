@@ -44,7 +44,9 @@ async def receive_message_stream(
     api_key:str = Depends(common.header_api_key)
     ):
     """
-    Airline receive messages via HTTPX (Server-Sent Events)
+    Airline receive messages via Server-Sent Events
+
+    Example for TypeScript: https://docs.servicestack.net/typescript-server-events-client
 
     Example client side JavaScript:
 
