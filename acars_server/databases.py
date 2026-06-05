@@ -15,7 +15,7 @@ from typing import Annotated, Optional
 import redis.asyncio as redis
 from dotenv import load_dotenv
 from fastapi import Depends, Query
-from pydantic import AfterValidator
+from pydantic import AfterValidator, SerializeAsAny
 from redis_om import get_redis_connection, Field as RedisField, HashModel, JsonModel
 from sqlmodel import Field, Session, SQLModel, create_engine
 
@@ -276,7 +276,7 @@ class StoreAndForward(JsonModel, index=True): # type: ignore
                 index=True, full_text_search=True)
     network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
     created: float
-    relayed: Optional[bool] = RedisField(index=True, default=False)
+    relayed: Optional[SerializeAsAny[bool]] = RedisField(index=True, default=False)
     relayed_at: Optional[float] = 0.0
 
     def __getitem__(self, key):
