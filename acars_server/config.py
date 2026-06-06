@@ -17,9 +17,13 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
 # Local Libraries
+from acars_server import __VERSION__
 
 # Initialize OpenTelemetry
-resource = Resource(attributes={"service.name": "acars.api"})
+resource = Resource(attributes={
+    "service.name": "acars.api",
+    "service.version": __VERSION__
+    })
 tracer_provider = TracerProvider(resource=resource)
 trace.set_tracer_provider(tracer_provider)
 
