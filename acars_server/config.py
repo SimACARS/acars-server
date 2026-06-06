@@ -21,7 +21,8 @@ from acars_server import __VERSION__
 
 # Initialize OpenTelemetry
 resource = Resource(attributes={
-    "service.name": "acars.api",
+    "service.namespace": "acars",
+    "service.name": "api",
     "service.version": __VERSION__
     })
 tracer_provider = TracerProvider(resource=resource)
