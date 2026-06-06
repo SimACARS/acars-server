@@ -18,7 +18,7 @@ from acars_server import common, functions
 
 class Noaa:
     """Class for various NOAA functions"""
-    BASE_URL = "https://tgftp.nws.noaa.gov/data/"
+    BASE_URL = "https://tgftp.nws.noaa.gov/data"
 
     def __init__(self) -> None:
         pass # pragma: no cover
