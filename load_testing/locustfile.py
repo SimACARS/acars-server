@@ -36,7 +36,7 @@ trace.set_tracer_provider(tracer_provider)
 
 # Set up OTLP exporter for traces
 otlp_exporter = OTLPSpanExporter(
-    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}"
+    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}",
     insecure=True)
 span_processor = BatchSpanProcessor(otlp_exporter)
 tracer_provider.add_span_processor(span_processor)
