@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.12](https://github.com/SimACARS/acars-server/compare/v1.10.11...v1.10.12) (2026-06-06)
+
+
+### Bug Fixes
+
+* syntax error ([bd0b4c1](https://github.com/SimACARS/acars-server/commit/bd0b4c12c5a3653d576f15999b3c943a945ffdf7))
+
 ## [1.10.11](https://github.com/SimACARS/acars-server/compare/v1.10.10...v1.10.11) (2026-06-05)
 
 
