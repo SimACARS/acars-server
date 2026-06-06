@@ -55,6 +55,7 @@ async def lifespan(app: FastAPI):
     # ------------------------------------------------------------------
     # Post App Finish
     # ------------------------------------------------------------------
+    config.otel.shutdown()
 
 app = FastAPI(
     lifespan=lifespan,
