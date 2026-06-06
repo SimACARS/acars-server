@@ -6,18 +6,15 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
-import os
+from random import randint
+from time import sleep
 
 # Third Party Libraries
 import pandas as pd
 from locust import HttpUser, task, between
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
 
 # Local Libraries
@@ -29,17 +26,15 @@ CSV_FILE = os.path.join(PWD.parent, ".secret", "messages.csv")
 
 load_dotenv(os.path.join(PWD.parent, "acars_server", ".env"))
 
-# Initialize OpenTelemetry
-resource = Resource(attributes={"service.name": "locust"})
-tracer_provider = TracerProvider(resource=resource)
-trace.set_tracer_provider(tracer_provider)
+for name in [
+    "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+    "OTEL_METRICS_EXPORTER",
+]:
+    print(name, "=", os.getenv(name))
 
-# Set up OTLP exporter for traces
-otlp_exporter = OTLPSpanExporter(
-    endpoint=f"http://{os.getenv('OTLPS_ENDPOINT')}:{os.getenv('OTLPS_PORT')}",
-    insecure=True)
-span_processor = BatchSpanProcessor(otlp_exporter)
-tracer_provider.add_span_processor(span_processor)
+
 
 # Hoppie gets around 21k messages per day, so we can set a reasonable wait
 # time to simulate real-world traffic. This will allow us to test the server's
@@ -63,18 +58,35 @@ CALLSIGNS = list(set(callsigns))
 
 class Poller(HttpUser):
     """Poller"""
-    def on_start(self):
-        self.callsigns = list(CALLSIGNS)
-        self.headers = {
-            "x-key": os.getenv("TEST_API_KEY"),
-            "accept": "application/json"
-            }
     wait_time = between(1, 5)
+    callsigns = list(CALLSIGNS)
+    headers = {}
+    user_api_key = ""
+    user_cid = randint(10000, 99999999)
+
+    def on_start(self):
+        # Register a new user
+        user_registration = self.client.get(
+            f"/test/auth/new_user/{self.user_cid}",
+            name="/test/auth/new_user")
+        if user_registration.status_code == 200:
+            self.user_api_key = user_registration.json()["api_key"]
+            self.headers = {
+                    "x-key": self.user_api_key,
+                    "accept": "application/json"
+                }
+            sleep(randint(1,20))
+
+            # Log the user on
+            self.client.post(
+                "/dlic/aircraft/logon",
+                name="/acars/poll",
+                headers=self.headers)
 
     @task(3)
     def poll(self):
         """Poll"""
-        self.client.post(f"/acars/poll", name="/acars/poll", headers=self.headers)
+        self.client.post("/acars/poll", name="/acars/poll", headers=self.headers)
 
     @task
     def tx_data(self):
