@@ -103,7 +103,7 @@ class JWTAuth:
             "loc": logoff_code,
             "uid": uid,
             "sub": f"{network}:{uid}",
-            "jti": str(uuid4)
+            "jti": str(uuid4())
         }
         token = jwt.encode(payload, str(self.JWT_SECRET), algorithm=self.JWT_ALGORITHM)
 
