@@ -133,7 +133,7 @@ class JWTAuth:
                         "jti"
                     ]
                     },
-                algorithm=self.JWT_ALGORITHM
+                algorithms=[str(self.JWT_ALGORITHM)]
                 )
         except jwt.ExpiredSignatureError as err:
             raise HTTPException(status_code=401, detail="JWT expired signature") from err
