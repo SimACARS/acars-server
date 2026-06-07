@@ -23,7 +23,7 @@ from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
-from acars_server.api.services.auth_services import airline_api_authentication
+from acars_server.api.services.auth_services import airline_api_authentication, get_api_key_hash
 from acars_server.api.services.user_services import responses_user_new_network
 
 templates = Jinja2Templates(directory=os.path.join(common.PWD, "api", "templates"))
@@ -214,8 +214,9 @@ async def domain_auth_check(verification_token:str, session: databases.SessionDe
     )
     for txt in dns_answers:
         if txt == f"acars-verify-{verifcation_request.verification_token}":
+            api_key = secrets.token_hex(64)
             new_record = {
-                "api_key": secrets.token_hex(64),
+                "api_key": get_api_key_hash(api_key),
                 "network": verifcation_request.network,
                 "airline_name": verifcation_request.airline_name,
                 "airline_callsign": f"_COY_{verifcation_request.airline_callsign}",
@@ -235,5 +236,5 @@ async def domain_auth_check(verification_token:str, session: databases.SessionDe
             # Remove record for Airline Verification
             verifcation_request.delete(verifcation_request.pk)
 
-            return JSONResponse(content={"api_key": validated.api_key})
+            return JSONResponse(content={"api_key": api_key})
     return JSONResponse(status_code=404, content={"error": "no matching TXT record was found"})

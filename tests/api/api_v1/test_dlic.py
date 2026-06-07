@@ -7,18 +7,30 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
 import re
 import secrets
+from base64 import urlsafe_b64encode
 from datetime import datetime as dt, timezone as tz
 from unittest.mock import AsyncMock, patch
 
 # Third Party Libraries
+import jwt
+import pytest
+from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
 
 # Local Libraries
-from acars_server.databases import AirlineApiKey, ApiKey, DataLinkInitiationCapability
+from acars_server.api.services.auth_services import JWTAuth
+from acars_server.databases import AirlineApiKey, DataLinkInitiationCapability
 from tests.factories.airlines import AirlineApiKeyFactory
-from tests.factories.user import CallsignFactory, UserApiKeyFactory
+from tests.factories.user import CallsignFactory
+from tests.fixtures.airline_authorisation import create_airline_api_key
+from tests.fixtures.user_authorisation import create_api_key
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
+jwt_auth = JWTAuth()
 
 def dlic_logon_request(
     logon_from:str,
@@ -57,13 +69,13 @@ class TestAirlineLogon:
         Test that an aircraft can log on using the API key authentication.
         """
         # Create the database entry
-        airline: AirlineApiKey = AirlineApiKeyFactory()
+        airline, airline_key = create_airline_api_key()
 
         # Login
         response, login_data = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -88,13 +100,13 @@ class TestAirlineLogon:
         Test that a duplicate airline cannot log on using the API key authentication.
         """
         # Create the database entry
-        airline: AirlineApiKey = AirlineApiKeyFactory()
+        airline, airline_key = create_airline_api_key()
 
         # Login
         response, _ = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -106,7 +118,7 @@ class TestAirlineLogon:
         response, _ = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -124,13 +136,13 @@ class TestAirlineLogon:
         Test that an airline can log off using the logoff code from logon.
         """
         # Create the database entry
-        airline: AirlineApiKey = AirlineApiKeyFactory()
+        airline, airline_key = create_airline_api_key()
 
         # Login
         response, _ = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -145,7 +157,7 @@ class TestAirlineLogon:
         logoff_data: dict = {
             "logoff_code": logoff_code
         }
-        client.headers.update({"x-key": airline.api_key})
+        client.headers.update({"x-key": airline_key})
         response = client.post("/dlic/airline/logoff", json=logoff_data)
         print(f"Logoff response: {response.json()}")
         client.headers.pop("x-key")
@@ -174,6 +186,7 @@ class TestAirlineLogon:
         # Check the results
         assert response.status_code == 401
 
+
 class TestAircraftLogon:
     """Aircraft Logon"""
     def test_dlic_aircraft_logon(self, client: TestClient):
@@ -181,46 +194,56 @@ class TestAircraftLogon:
         Test that an aircraft can log on using the API key authentication.
         """
         # Create the database entry
-        aircraft: ApiKey = UserApiKeyFactory()
+        _, key = create_api_key()
         callsign = CallsignFactory()
 
         # Login
-        response, login_data = dlic_logon_request(
+        response, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=key,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
 
         # Check the results
         assert response.status_code == 200
-        assert response.json()["status"] == "logged on"
-        obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
-        assert obj
-        assert re.fullmatch(r"\d+\.\d+", str(obj.created))
-        assert obj.logon_from == callsign["callsign"]
-        assert obj.logon_to == "EGKK"
-        assert obj.network == "vatsim"
-        assert obj.fans_1_a_atn_b1 is False
-        assert obj.atn_b1 is False
-        assert obj.fans_1_a is False
-        assert re.fullmatch(r"[a-f0-9]{64}", obj.logoff_code)
-        assert obj.logoff_code != login_data["logoff_code"]
+        assert jwt.decode(
+                jwt=response.json()["access_token"],
+                key=str(JWT_SECRET),
+                audience=["acars:aircraft"],
+                options={
+                    "require": [
+                        "exp",
+                        "nbf",
+                        "iat",
+                        "iss",
+                        "aud",
+                        "network",
+                        "loc",
+                        "uid",
+                        "sub",
+                        "jti"
+                    ]
+                    },
+                algorithms=[str(JWT_ALGORITHM)]
+                )
+        assert response.json()["token_type"] == "bearer"
 
     def test_dlic_aircraft_logon_duplicate(self, client: TestClient):
         """
         Test that a duplicate callsign cannot log on using the API key authentication.
         """
         # Create the database entry
-        aircraft: ApiKey = UserApiKeyFactory()
+        _, key_a = create_api_key()
+        _, key_b = create_api_key()
         callsign = CallsignFactory()
 
         # Login
         response, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=key_a,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
@@ -232,7 +255,7 @@ class TestAircraftLogon:
         response, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=key_b,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
@@ -250,81 +273,87 @@ class TestAircraftLogon:
         Test that an aircraft can log off using the logoff code from logon.
         """
         # Create the database entry
-        aircraft: ApiKey = UserApiKeyFactory()
+        _, key = create_api_key()
         callsign = CallsignFactory()
 
         # Login
         response, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=key,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
 
         # Check the results
         assert response.status_code == 200
-        obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
-        logoff_code = obj.logoff_code
-        print(f"Logoff code: {obj}")
+        jwtt = response.json()["access_token"]
+
+        client.headers.update({"Authorization": f"Bearer {jwtt}"})
 
         # Logoff using the returned logoff_code
-        logoff_data: dict = {
-            "logoff_code": logoff_code
-        }
-        client.headers.update({"x-key": aircraft.api_key})
-        response = client.post("/dlic/aircraft/logoff", json=logoff_data)
+        response = client.post("/dlic/aircraft/logoff")
         print(f"Logoff response: {response.json()}")
-        client.headers.pop("x-key")
+        client.headers.pop("Authorization")
 
         assert response.status_code == 200
         assert response.json()["status"] == "logged off"
         assert response.json()["callsign"] == callsign["callsign"]
 
-    def test_dlic_aircraft_incorrect_logoff(self, client: TestClient):
+    @pytest.mark.anyio
+    async def test_dlic_aircraft_incorrect_logoff(self, client: TestClient):
         """
         Test that an incorrect logoff code is rejected.
         """
         # Create the database entry
-        aircraft: ApiKey = UserApiKeyFactory()
+        _, key = create_api_key()
         callsign = CallsignFactory()
 
         # Login
         response, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=key,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
 
         # Check the results
         assert response.status_code == 200
-
-        # Logoff using the incorret logoff_code
-        logoff_data: dict = {
-            "logoff_code": secrets.token_hex(32)
+        jwtt = response.json()["access_token"]
+        signature = str(jwtt).split(".")
+        jwt_a = {
+            "scheme": "bearer",
+            "credentials": jwtt
         }
-        client.headers.update({"x-key": aircraft.api_key})
-        response = client.post("/dlic/aircraft/logoff", json=logoff_data)
-        print(f"Logoff response: {response.json()}")
-        client.headers.pop("x-key")
+        jwt_b = HTTPAuthorizationCredentials.model_validate(jwt_a)
 
-        assert response.status_code == 404
+        # Adjust JWT contents
+        jwtd = await jwt_auth.decode_jwt(jwt_b, ["acars:aircraft"])
+        jwtd["loc"] = secrets.token_hex(32)
+        data_block = urlsafe_b64encode(str(jwtd).encode()).decode()
+        jwt_encoded = str(f"{signature[0]}.{data_block}.{signature[2]}")
+
+        client.headers.update({"Authorization": f"Bearer {jwt_encoded}"})
+
+        response = client.post("/dlic/aircraft/logoff")
+        client.headers.pop("Authorization")
+
+        assert response.status_code == 401
 
     def test_dlic_aircraft_incorrect_station_type(self, client: TestClient):
         """
         Test that an incorrect station_type is rejected.
         """
         # Create the database entry
-        aircraft: ApiKey = UserApiKeyFactory()
+        _, key = create_api_key()
         callsign = CallsignFactory()
 
         # Login
         response, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=key,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
@@ -336,7 +365,7 @@ class TestAircraftLogon:
         logoff_data: dict = {
             "logoff_code": secrets.token_hex(32)
         }
-        client.headers.update({"x-key": aircraft.api_key})
+        client.headers.update({"x-key": key})
         response = client.post("/dlic/wiffle/logoff", json=logoff_data)
         print(f"Logoff response: {response.json()}")
         client.headers.pop("x-key")

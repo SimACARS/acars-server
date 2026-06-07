@@ -16,6 +16,7 @@ from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data
+from acars_server.api.services.auth_services import get_api_key_hash
 from acars_server.api.services.user_services import responses_user_new_network
 
 router = APIRouter()
@@ -90,10 +91,10 @@ async def auth_new_user_callback_vatsim(
     v_cid = v_user[1]["data"]["cid"]
     api_key = auth.Auth().api_key_generator(v_cid, "vatsim")
 
-    # Add the API key to the DB
+    # Add the hashed API key to the DB
     dtnow = dt.now(tz.utc).timestamp()
     db_data = {
-        "api_key": api_key,
+        "api_key": get_api_key_hash(api_key),
         "network": "vatsim",
         "created": dtnow,
         "last_used": dtnow
@@ -102,4 +103,4 @@ async def auth_new_user_callback_vatsim(
     session.add(db_add)
     session.commit()
     session.refresh(db_add)
-    return JSONResponse({"status": "user created", "api_key": db_add.api_key})
+    return JSONResponse({"status": "user created", "api_key": api_key})
