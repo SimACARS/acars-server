@@ -23,10 +23,11 @@ from sqlmodel import select
 from acars_server import auth, common, databases, static_data, networks
 
 password_hash = PasswordHash.recommended()
+PWDLIB_SALT = str(os.getenv("PWDLIB_SALT"))
 
 def get_api_key_hash(api_key: str) -> str:
     """Returns a hash of the given API key"""
-    return password_hash.hash(api_key)
+    return password_hash.hash(password=api_key, salt=PWDLIB_SALT.encode())
 
 async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[str,str]:
     """Authenticates an API Key"""
