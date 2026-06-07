@@ -13,6 +13,7 @@ from typing import Annotated, Any, Dict
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials
 from redis import ResponseError
 
 # Local Libraries
@@ -28,7 +29,7 @@ router = APIRouter()
 # ------------------------------------------------------------------
 @router.post("/poll", responses=static_data.COMMON_ERRORS)
 async def poll_for_new_messages(
-    jwt:str = Depends(common.header_bearer)
+    jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)
     ) -> Response:
     """
     Poll for new messages
@@ -94,7 +95,7 @@ async def hoppie_formated_url(
     msg_type: Annotated[str, Query(alias="type")],
     packet: Annotated[str, Query(alias="packet")],
     background_tasks: BackgroundTasks,
-    jwt:str = Depends(common.header_bearer)):
+    jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
     Provides a psudo html endpoint for legacy clients.
     Connects directly to the <b>/msg/legacy/tx</b> endpoint
@@ -123,7 +124,7 @@ async def hoppie_formated_url(
 async def transmit_a_message(
     msg:databases.StoreAndForward,
     background_tasks: BackgroundTasks,
-    jwt:str = Depends(common.header_bearer)):
+    jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
     Legacy message
     \nJWT Audience: ["acars:aircraft"]

@@ -15,6 +15,7 @@ from uuid import uuid4
 # Third Party Libraries
 import jwt
 from fastapi import HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 from pwdlib import PasswordHash
 from sqlmodel import select
 
@@ -108,12 +109,15 @@ class JWTAuth:
 
         return self.token_response(token)
 
-    async def decode_jwt(self, token:str, audience:List[str]) -> Dict[str, str]:
+    async def decode_jwt(
+            self,
+            token:HTTPAuthorizationCredentials,
+            audience:List[str]) -> Dict[str, str]:
         """Decode a JWT"""
         try:
             decoded_token = jwt.decode(
-                token,
-                str(self.JWT_SECRET),
+                jwt=token.credentials,
+                key=str(self.JWT_SECRET),
                 audience=audience,
                 options={
                     "require": [
