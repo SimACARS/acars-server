@@ -115,10 +115,10 @@ class TestVatsim:
     def test_response_atis(self):
         """Test getting an ATIS"""
         response = self.vatsim.get_atis(self.aerodrome)
-
-        assert "ATIS" in response
         if self.aerodrome not in response:
             pytest.skip(f"{self.aerodrome} not in {response}")
+
+        assert "ATIS" in response
 
     def test_response_metar(self):
         """Test that a metar is returned"""
