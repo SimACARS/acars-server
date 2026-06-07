@@ -13,6 +13,7 @@ from hashlib import blake2b
 # Third Party Libraries
 from fastapi import APIRouter, Security
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
@@ -150,7 +151,7 @@ async def dlic_airline_logoff(
 
 @router.post("/airline/logoff")
 async def dlic_aircraft_logoff(
-    jwt:str = Security(common.header_bearer)
+    jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
     ):
     """DLIC Aircraft Logoff"""
     user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
@@ -159,7 +160,7 @@ async def dlic_aircraft_logoff(
 
 @router.post("/airline/logoff")
 async def dlic_atsu_logoff(
-    jwt:str = Security(common.header_bearer)
+    jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
     ):
     """DLIC Aircraft Logoff"""
     user_data = await jwt_auth.decode_jwt(jwt, ["acars:atsu"])
