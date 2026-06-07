@@ -91,7 +91,7 @@ async def auth_new_user_callback_vatsim(
     v_cid = v_user[1]["data"]["cid"]
     api_key = auth.Auth().api_key_generator(v_cid, "vatsim")
 
-    # Add the API key to the DB
+    # Add the hashed API key to the DB
     dtnow = dt.now(tz.utc).timestamp()
     db_data = {
         "api_key": get_api_key_hash(api_key),
