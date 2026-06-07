@@ -6,6 +6,8 @@ loguru==0.7.3
 pandas==3.0.3
 pydantic==2.13.4
 pydantic_settings==2.14.1
+pyjwt==2.13.0
+python-decouple==3.8
 python-dotenv==1.2.2
 redis[otel]==7.4.1
 redis_om==1.1.0
