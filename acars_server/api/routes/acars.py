@@ -17,7 +17,10 @@ from redis import ResponseError
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
-from acars_server.api.services.auth_services import api_authentication, callsign_verification
+from acars_server.api.services.auth_services import (
+    callsign_verification,
+    jwt_auth
+    )
 
 router = APIRouter()
 # ------------------------------------------------------------------
@@ -25,12 +28,14 @@ router = APIRouter()
 # ------------------------------------------------------------------
 @router.post("/poll", responses=static_data.COMMON_ERRORS)
 async def poll_for_new_messages(
-    session:databases.SessionDep,
-    api_key:str = Depends(common.header_api_key)
+    jwt:str = Depends(common.header_bearer)
     ) -> Response:
-    """Poll for new messages"""
+    """
+    Poll for new messages
+    \nJWT Audience: ["acars:aircraft"]
+    """
 
-    user_data = await api_authentication(session, api_key)
+    user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
     callsign = await callsign_verification(user_data)
 
     # If the callsign has been validated
@@ -89,11 +94,11 @@ async def hoppie_formated_url(
     msg_type: Annotated[str, Query(alias="type")],
     packet: Annotated[str, Query(alias="packet")],
     background_tasks: BackgroundTasks,
-    session:databases.SessionDep,
-    ):
+    jwt:str = Depends(common.header_bearer)):
     """
     Provides a psudo html endpoint for legacy clients.
     Connects directly to the <b>/msg/legacy/tx</b> endpoint
+    \nJWT Audience: ["acars:aircraft"]
     """
     msg = {
         "msg_from": msg_from,
@@ -106,9 +111,8 @@ async def hoppie_formated_url(
     sf_msg = databases.StoreAndForward.model_validate(msg)
     await transmit_a_message(
         msg=sf_msg,
-        api_key=api_key,
         background_tasks=background_tasks,
-        session=session)
+        jwt=jwt)
 
 @router.post(
         "/tx",
@@ -118,12 +122,14 @@ async def hoppie_formated_url(
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
-    session:databases.SessionDep,
     background_tasks: BackgroundTasks,
-    api_key:str = Depends(common.header_api_key)):
-    """Legacy message"""
+    jwt:str = Depends(common.header_bearer)):
+    """
+    Legacy message
+    \nJWT Audience: ["acars:aircraft"]
+    """
 
-    user_data = await api_authentication(session, api_key)
+    user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
     callsign = await callsign_verification(user_data)
     sf_msg = databases.StoreAndForward.model_validate(msg)
 

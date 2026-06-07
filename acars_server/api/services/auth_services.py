@@ -7,9 +7,13 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from typing import Dict
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List
+from uuid import uuid4
 
 # Third Party Libraries
+import jwt
 from fastapi import HTTPException
 from pwdlib import PasswordHash
 from sqlmodel import select
@@ -62,3 +66,77 @@ async def callsign_verification(user_data) -> str|None:
             detail=(f"Network '{user_data['network']}' is not valid. "
                     f"Expected one of {', '.join(static_data.NETWORKS)}"))
     return callsign
+
+
+class JWTAuth:
+    """JWT Authentication Class"""
+    JWT_SECRET = os.getenv("JWT_SECRET")
+    JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
+    strict_jwt = jwt.PyJWT(options={"enforce_minimum_key_length": True})
+
+    @staticmethod
+    def token_response(token: str):
+        """Returns a JWT token"""
+        return {
+            "access_token": token,
+            "token_type": "bearer"
+        }
+
+    async def sign_jwt(
+            self,
+            network: str,
+            uid: str,
+            logoff_code: str,
+            audience:List[str]) -> Dict[str, str]:
+        """Signs a JWT"""
+        now = datetime.now(tz=timezone.utc)
+        expiry = now + timedelta(hours=3)
+
+        payload = {
+            "exp": expiry,
+            "nbf": now,
+            "iat": now,
+            "iss": "urn:simacars",
+            "aud": audience,
+            "network": network,
+            "loc": logoff_code,
+            "uid": uid,
+            "sub": f"{network}:{uid}",
+            "jti": str(uuid4)
+        }
+        token = jwt.encode(payload, str(self.JWT_SECRET), algorithm=self.JWT_ALGORITHM)
+
+        return self.token_response(token)
+
+    async def decode_jwt(self, token:str, audience:List[str]) -> Dict[str, str]:
+        """Decode a JWT"""
+        try:
+            decoded_token = jwt.decode(
+                token,
+                str(self.JWT_SECRET),
+                audience=audience,
+                options={
+                    "require": [
+                        "exp",
+                        "nbf",
+                        "iat",
+                        "iss",
+                        "aud",
+                        "network",
+                        "loc",
+                        "uid",
+                        "sub",
+                        "jti"
+                    ]
+                    },
+                algorithm=self.JWT_ALGORITHM
+                )
+        except jwt.ExpiredSignatureError as err:
+            raise HTTPException(status_code=401, detail="JWT expired signature") from err
+        except jwt.InvalidAudienceError as err:
+            raise HTTPException(status_code=401, detail="JWT invalid audience") from err
+        except jwt.MissingRequiredClaimError as err:
+            raise HTTPException(status_code=401, detail="JWT missing claim") from err
+        return decoded_token
+
+jwt_auth = JWTAuth()
