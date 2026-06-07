@@ -135,7 +135,7 @@ async def dlic_aircraft_logon(
         sf_msg["network"],
         user_data["uid"],
         logoff_code,
-        ["acars.aircraft"])
+        ["acars:aircraft"])
     return JSONResponse(content=jwt_response)
 
 @router.post("/airline/logoff")
