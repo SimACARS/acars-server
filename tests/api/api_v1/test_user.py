@@ -96,8 +96,9 @@ def test_callback(
         endpoint="/dlic/aircraft/logon",
         client=client)
 
+    # Check the results
     assert response_b.status_code == 200
-    assert response_b.json()["status"] == "logged on"
+    assert response_b.json()["token_type"] == "bearer"
 
 @patch("acars_server.api.routes.users.auth.VatsimAuth")
 def test_callback_no_access_token(
