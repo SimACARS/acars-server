@@ -11,14 +11,23 @@ from typing import Dict
 
 # Third Party Libraries
 from fastapi import HTTPException
+from pwdlib import PasswordHash
 from sqlmodel import select
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data, networks
 
+password_hash = PasswordHash.recommended()
+
+def get_api_key_hash(api_key: str) -> str:
+    """Returns a hash of the given API key"""
+    return password_hash.hash(api_key)
+
 async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[str,str]:
     """Authenticates an API Key"""
-    db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == api_key)
+    hashed_api = get_api_key_hash(api_key)
+
+    db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == hashed_api)
     api_user = session.exec(db_auth).first()
     if not api_user:
         common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint.")
@@ -28,7 +37,9 @@ async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[
 async def airline_api_authentication(
         session:databases.SessionDep, api_key:str) -> databases.AirlineApiKey:
     """Authenticates an API Key"""
-    db_auth = select(databases.AirlineApiKey).where(databases.AirlineApiKey.api_key == api_key)
+    hashed_api = get_api_key_hash(api_key)
+
+    db_auth = select(databases.AirlineApiKey).where(databases.AirlineApiKey.api_key == hashed_api)
     api_airline = session.exec(db_auth).first()
     if not api_airline:
         common.logger.error("401: API key not recognised. This is an AIRLINE endpoint.")
