@@ -149,7 +149,7 @@ async def dlic_airline_logoff(
     await airline_api_authentication(session, api_key)
     return await dlic_logoff(msg)
 
-@router.post("/airline/logoff")
+@router.post("/aircraft/logoff")
 async def dlic_aircraft_logoff(
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
     ):
@@ -158,7 +158,7 @@ async def dlic_aircraft_logoff(
     msg = databases.LogoffRequest.model_validate({"logoff_code": user_data["loc"]})
     return await dlic_logoff(msg)
 
-@router.post("/airline/logoff")
+@router.post("/atsu/logoff")
 async def dlic_atsu_logoff(
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
     ):
