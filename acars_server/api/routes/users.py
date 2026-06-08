@@ -7,16 +7,13 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from datetime import datetime as dt, timezone as tz
 
 # Third Party Libraries
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, RedirectResponse
-from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data
-from acars_server.api.services.auth_services import get_api_key_hash
 from acars_server.api.services.user_services import responses_user_new_network
 
 router = APIRouter()
