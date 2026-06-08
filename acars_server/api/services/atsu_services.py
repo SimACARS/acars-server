@@ -60,7 +60,9 @@ async def complete_vatsim_atsu_logon(
                     (databases.DataLinkInitiationCapability.logon_from == atsu_callsign)
                 ).first()
     except NotFoundError:
-        pass
+        # NotFoundError is expected behaviour and indicates the requested callsign
+        # is available
+        cs_logon = None
 
     if cs_logon:
         common.logger.warning(f"{atsu_callsign} is already logged on {cs_logon.model_dump()}")
