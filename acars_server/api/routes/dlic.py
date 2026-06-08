@@ -139,7 +139,7 @@ async def dlic_aircraft_logon(
         ["acars:aircraft"])
     return JSONResponse(content=jwt_response)
 
-@router.get("/atsu/logon")
+@router.post("/atsu/logon")
 async def dlic_atsu_logon(
     msg:databases.DataLinkInitiationCapability):
     """
