@@ -121,6 +121,7 @@ class JWTAuth:
                 jwt=token.credentials,
                 key=str(self.JWT_SECRET),
                 audience=audience,
+                issuer="urn:simacars",
                 options={
                     "require": [
                         "exp",
