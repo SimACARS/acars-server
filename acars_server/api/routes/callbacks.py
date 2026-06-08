@@ -79,7 +79,10 @@ async def auth_new_user_callback_vatsim(
         "/oauth/vatsim/atsu/{state}/{code}",
         response_model=databases.ApiKeyPublic,
         tags=["Air Traffic Surveillance Unit"])
-async def atsu_callback_vatsim(state:str, code:str):
+async def atsu_callback_vatsim(
+    state:str,
+    code:str,
+    session: databases.SessionDep):
     """A callback point for VATSIM"""
     # Verify that the state code exists
     try:
@@ -102,7 +105,7 @@ async def atsu_callback_vatsim(state:str, code:str):
     if v_user[0] != 200:
         return JSONResponse(status_code=v_user[0], content={"error": v_user[1]})
 
-    return await complete_vatsim_atsu_logon(v_user[1]["data"])
+    return await complete_vatsim_atsu_logon(v_user[1]["data"], session)
 
 @router.post("/atsu/refresh")
 async def refresh_atsu_jwt(
