@@ -77,7 +77,6 @@ async def auth_new_user_callback_vatsim(
 
 @router.get(
         "/oauth/vatsim/atsu/{state}/{code}",
-        response_model=databases.ApiKeyPublic,
         tags=["Air Traffic Surveillance Unit"])
 async def atsu_callback_vatsim(
     state:str,
