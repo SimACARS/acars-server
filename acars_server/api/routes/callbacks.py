@@ -7,17 +7,20 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from datetime import datetime as dt, timezone as tz
+import os
+from datetime import datetime as dt, timedelta, timezone as tz
 
 # Third Party Libraries
-from fastapi import APIRouter
+import jwt
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
-from acars_server import auth, databases
+from acars_server import auth, common, databases
 from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
-from acars_server.api.services.auth_services import get_api_key_hash
+from acars_server.api.services.auth_services import get_api_key_hash, jwt_auth
 
 router = APIRouter()
 # ------------------------------------------------------------------
@@ -26,7 +29,7 @@ router = APIRouter()
 @router.get(
         "/oauth/vatsim/aircraft/{state}/{code}",
         response_model=databases.ApiKeyPublic,
-        tags=["Callbacks", "User Management"])
+        tags=["User Management"])
 async def auth_new_user_callback_vatsim(
     state:str,
     code:str,
@@ -75,7 +78,7 @@ async def auth_new_user_callback_vatsim(
 @router.get(
         "/oauth/vatsim/atsu/{state}/{code}",
         response_model=databases.ApiKeyPublic,
-        tags=["Callbacks", "Air Traffic Surveillance Unit"])
+        tags=["Air Traffic Surveillance Unit"])
 async def atsu_callback_vatsim(state:str, code:str):
     """A callback point for VATSIM"""
     # Verify that the state code exists
@@ -100,3 +103,55 @@ async def atsu_callback_vatsim(state:str, code:str):
         return JSONResponse(status_code=v_user[0], content={"error": v_user[1]})
 
     return await complete_vatsim_atsu_logon(v_user[1]["data"])
+
+@router.post("/atsu/refresh")
+async def refresh_atsu_jwt(
+    token:HTTPAuthorizationCredentials = Security(common.header_bearer)):
+    """
+    Call this endpoint to refresh an ATSU JWT
+
+    This endpoint allows leeway on the JWT expiry and will call
+    callsign_verification to check if the user is still online
+    before issuing an updated JWT
+    """
+
+    try:
+        decoded_token = jwt.decode(
+            jwt=token.credentials,
+            key=str(os.getenv("JWT_SECRET")),
+            audience=["acars:atsu"],
+            issuer="urn:simacars",
+            leeway=timedelta(minutes=10),
+            options={
+                "require": [
+                    "exp",
+                    "nbf",
+                    "iat",
+                    "iss",
+                    "aud",
+                    "network",
+                    "loc",
+                    "uid",
+                    "sub",
+                    "jti"
+                ]
+                },
+            algorithms=[str(os.getenv("JWT_ALGORITHM"))]
+            )
+    except jwt.ExpiredSignatureError as err:
+        raise HTTPException(status_code=401, detail="JWT expired signature") from err
+    except jwt.InvalidAudienceError as err:
+        raise HTTPException(status_code=401, detail="JWT invalid audience") from err
+    except jwt.MissingRequiredClaimError as err:
+        raise HTTPException(status_code=401, detail="JWT missing claim") from err
+    except jwt.InvalidSignatureError as err:
+        raise HTTPException(status_code=401, detail="JWT invalid signature") from err
+
+    updated_jwt = await jwt_auth.sign_jwt(
+        decoded_token["network"],
+        decoded_token["uid"],
+        decoded_token["logoff"],
+        ["acars:atsu"],
+        timedelta(minutes=10)
+        )
+    return JSONResponse(content=updated_jwt)
