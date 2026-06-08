@@ -17,15 +17,23 @@ from dotenv import load_dotenv
 from fastapi import Depends, Query
 from pydantic import AfterValidator, SerializeAsAny
 from redis_om import get_redis_connection, Field as RedisField, HashModel, JsonModel
-from sqlmodel import Field, Session, SQLModel, create_engine
+from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 
 # Local Libraries
 from acars_server import static_data
 
 load_dotenv()
 
-SQLITE_FILE_NAME = "database.db"
-SQLITE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
+DATABASE_HOST = os.getenv("MYSQL_HOST", "localhost")
+DATABASE_PORT = int(os.getenv("MYSQL_PORT", "3306"))
+DATABASE_NAME = os.getenv("MYSQL_DB", "acars")
+DATABASE_USER = os.getenv("MYSQL_USER", "acars")
+DATABASE_PASSWORD = os.getenv("MYSQL_PASSWORD")
+
+DATABASE_URL = (
+    f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}"
+    f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+)
 
 redis_db = get_redis_connection(
     host=os.getenv("REDIS_HOST"),
@@ -47,8 +55,7 @@ redis_async_db = redis.Redis(
 redis_db.flushall() # Clear Redis DB on startup
 # ------------- DEV CODE -------------
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(SQLITE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 def create_db_and_tables():
     """Create DB and Tables"""
@@ -181,7 +188,85 @@ class AirlineVerification(JsonModel, index=True): # type: ignore
         """MetaData"""
         database = redis_db
 
+# ------------------------------------------------------------------
+# ATSU Authorised Callsigns
+# ------------------------------------------------------------------
+class ATSUCallsignOwner(SQLModel, table=True):
+    """
+    Owner of one or more ATSU callsigns.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    owner: str = Field(index=True)
+    api_key: str | None = Field(default=None, index=True)
+    created: float
+    last_used: float
+    atsu_callsigns: list["ATSUCallsign"] = Relationship(
+        back_populates="owner"
+    )
+    authorised_callsigns: list["ATSUAuthorisedCallsign"] = Relationship(
+        back_populates="owner"
+    )
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
+class ATSUCallsign(SQLModel, table=True):
+    """
+    ATSU callsign such as _ATC_EGKK or _ATC_LONS.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    atsu_callsign: str = Field(
+        index=True,
+        min_length=9,
+        max_length=9,
+        regex=r"^_ATC_[A-Z]+$",
+    )
+    owner_id: int = Field(
+        foreign_key="atsucallsignowner.id",
+        index=True,
+    )
+    owner: ATSUCallsignOwner = Relationship(
+        back_populates="atsu_callsigns"
+    )
+    authorised_callsigns: list["ATSUAuthorisedCallsign"] = Relationship(
+        back_populates="atsu_callsign"
+    )
+    created: float
+    last_used: float
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
+class ATSUAuthorisedCallsign(SQLModel, table=True):
+    """
+    Network callsigns authorised to use an ATSU callsign.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    callsign: str = Field(index=True)
+    owner_id: int = Field(
+        foreign_key="atsucallsignowner.id",
+        index=True,
+    )
+    atsu_callsign_id: int = Field(
+        foreign_key="atsucallsign.id",
+        index=True,
+    )
+    owner: ATSUCallsignOwner = Relationship(
+        back_populates="authorised_callsigns"
+    )
+    atsu_callsign: ATSUCallsign = Relationship(
+        back_populates="authorised_callsigns"
+    )
+    created: float
+    last_used: float
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 # ------------------------------------------------------------------
 # Store and Forward Model
 # ------------------------------------------------------------------

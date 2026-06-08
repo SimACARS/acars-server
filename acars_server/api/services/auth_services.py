@@ -77,7 +77,7 @@ class JWTAuth:
     strict_jwt = jwt.PyJWT(options={"enforce_minimum_key_length": True})
 
     @staticmethod
-    def token_response(token: str):
+    def _token_response(token: str):
         """Returns a JWT token"""
         return {
             "access_token": token,
@@ -89,10 +89,11 @@ class JWTAuth:
             network: str,
             uid: str,
             logoff_code: str,
-            audience:List[str]) -> Dict[str, str]:
+            audience:List[str],
+            duration: timedelta=timedelta(hours=3)) -> Dict[str, str]:
         """Signs a JWT"""
         now = datetime.now(tz=timezone.utc)
-        expiry = now + timedelta(hours=3)
+        expiry = now + duration
 
         payload = {
             "exp": expiry,
@@ -108,7 +109,7 @@ class JWTAuth:
         }
         token = jwt.encode(payload, str(self.JWT_SECRET), algorithm=self.JWT_ALGORITHM)
 
-        return self.token_response(token)
+        return self._token_response(token)
 
     async def decode_jwt(
             self,
@@ -120,6 +121,7 @@ class JWTAuth:
                 jwt=token.credentials,
                 key=str(self.JWT_SECRET),
                 audience=audience,
+                issuer="urn:simacars",
                 options={
                     "require": [
                         "exp",

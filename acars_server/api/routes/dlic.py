@@ -12,12 +12,12 @@ from hashlib import blake2b
 
 # Third Party Libraries
 from fastapi import APIRouter, Security
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
-from acars_server import common, databases
+from acars_server import auth, common, databases, static_data
 from acars_server.api.services.auth_services import (
     airline_api_authentication,
     api_authentication,
@@ -138,6 +138,42 @@ async def dlic_aircraft_logon(
         logoff_code,
         ["acars:aircraft"])
     return JSONResponse(content=jwt_response)
+
+@router.post("/atsu/logon")
+async def dlic_atsu_logon(
+    msg:databases.DataLinkInitiationCapability):
+    """
+    ATSU authentication is handled by the relevant network (eg VATSIM)
+    """
+    if msg.network in static_data.NETWORKS:
+        if msg.network == "vatsim":
+            v_auth = auth.VatsimAuth(redirect_type="atsu")
+            v_url = v_auth.authorise()
+
+            # Add state key to redis
+            state_model = {
+                "oauth_state": v_url[1]
+            }
+            state_key = databases.OAuthStateStore.model_validate(state_model)
+
+            # Expire state key in 10 minutes
+            state_key.save()
+            databases.redis_db.expire(
+                state_key.key(),
+                600,
+            )
+
+            common.logger.success("Client redirected to VATSIM OAuth")
+            return RedirectResponse(v_url[0])
+
+        error = f"{msg.network} doesn't appear to exist although it really should..."
+        common.logger.error(error)
+        return JSONResponse(status_code=400, content={"error": error})
+
+    error = (f"{msg.network} is not a recognised network. Needs to be one of "
+             f"{', '.join(static_data.NETWORKS)}")
+    common.logger.error(error)
+    return JSONResponse(status_code=400, content={"error": error})
 
 @router.post("/airline/logoff")
 async def dlic_airline_logoff(
