@@ -188,7 +188,85 @@ class AirlineVerification(JsonModel, index=True): # type: ignore
         """MetaData"""
         database = redis_db
 
+# ------------------------------------------------------------------
+# ATSU Authorised Callsigns
+# ------------------------------------------------------------------
+class ATSUCallsignOwner(SQLModel, table=True):
+    """
+    Owner of one or more ATSU callsigns.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    owner: str = Field(index=True)
+    api_key: str | None = Field(default=None, index=True)
+    created: float
+    last_used: float
+    atsu_callsigns: list["ATSUCallsign"] = Relationship(
+        back_populates="owner"
+    )
+    authorised_callsigns: list["ATSUAuthorisedCallsign"] = Relationship(
+        back_populates="owner"
+    )
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
+class ATSUCallsign(SQLModel, table=True):
+    """
+    ATSU callsign such as _ATC_EGKK or _ATC_LONS.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    atsu_callsign: str = Field(
+        index=True,
+        min_length=9,
+        max_length=9,
+        regex=r"^_ATC_[A-Z]+$",
+    )
+    owner_id: int = Field(
+        foreign_key="atsucallsignowner.id",
+        index=True,
+    )
+    owner: ATSUCallsignOwner = Relationship(
+        back_populates="atsu_callsigns"
+    )
+    authorised_callsigns: list["ATSUAuthorisedCallsign"] = Relationship(
+        back_populates="atsu_callsign"
+    )
+    created: float
+    last_used: float
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
+class ATSUAuthorisedCallsign(SQLModel, table=True):
+    """
+    Network callsigns authorised to use an ATSU callsign.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    network: Annotated[str, AfterValidator(check_valid_network)]
+    callsign: str = Field(index=True)
+    owner_id: int = Field(
+        foreign_key="atsucallsignowner.id",
+        index=True,
+    )
+    atsu_callsign_id: int = Field(
+        foreign_key="atsucallsign.id",
+        index=True,
+    )
+    owner: ATSUCallsignOwner = Relationship(
+        back_populates="authorised_callsigns"
+    )
+    atsu_callsign: ATSUCallsign = Relationship(
+        back_populates="authorised_callsigns"
+    )
+    created: float
+    last_used: float
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 # ------------------------------------------------------------------
 # Store and Forward Model
 # ------------------------------------------------------------------
