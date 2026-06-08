@@ -7,7 +7,7 @@ pandas==3.0.3
 pydantic==2.13.4
 pydantic_settings==2.14.1
 python-dotenv==1.2.2
-redis[otel]==7.4.1
+redis[otel]==8.0.0
 redis_om==1.1.0
 Requests==2.34.2
 sqlmodel==0.0.38
