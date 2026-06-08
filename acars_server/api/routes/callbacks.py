@@ -16,6 +16,7 @@ from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
 from acars_server import auth, databases
+from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
 from acars_server.api.services.auth_services import get_api_key_hash
 
 router = APIRouter()
@@ -70,3 +71,32 @@ async def auth_new_user_callback_vatsim(
     session.commit()
     session.refresh(db_add)
     return JSONResponse({"status": "user created", "api_key": api_key})
+
+@router.get(
+        "/oauth/vatsim/atsu/{state}/{code}",
+        response_model=databases.ApiKeyPublic,
+        tags=["Callbacks", "Air Traffic Surveillance Unit"])
+async def atsu_callback_vatsim(state:str, code:str):
+    """A callback point for VATSIM"""
+    # Verify that the state code exists
+    try:
+        state_code = databases.OAuthStateStore.find(
+                    (databases.OAuthStateStore.oauth_state == state)
+                ).first()
+    except NotFoundError:
+        return JSONResponse(status_code=404, content={"error": "State code not found"})
+    state_code.delete(state_code.pk)
+
+    # Get the access token from VATSIM
+    v_auth = auth.VatsimAuth(redirect_type="atsu")
+    v_token = v_auth.get_access_token(code)
+    if v_token[0] != 200:
+        return JSONResponse(
+            status_code=v_token[0], content={"error": v_token[1]["hint"]})
+
+    # Get the user details using the access token
+    v_user = v_auth.get_user_details(v_token[1]["access_token"])
+    if v_user[0] != 200:
+        return JSONResponse(status_code=v_user[0], content={"error": v_user[1]})
+
+    return await complete_vatsim_atsu_logon(v_user[1]["data"])

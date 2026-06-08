@@ -112,6 +112,7 @@ class VatsimAuth:
             raise ValueError(
                 ("Unexpected redirect type. Expected one "
                  f"of aircraft, atsu. Received {redirect_type}"))
+        self.redirect_type = redirect_type
 
     def authorise(self) -> Tuple[str, str]:
         """
@@ -126,6 +127,10 @@ class VatsimAuth:
             "state": state,
             "prompt": "login"
         }
+        # If logging on as an ATSU, we need vatsim details to verify ATC rating
+        if self.redirect_type == "atsu":
+            payload["scope"] = "vatsim_details"
+            payload["prompt"] = "none"
         response = requests.head(self.OAUTH2_AUTH, params=payload, timeout=10)
 
         return (response.url, state)
