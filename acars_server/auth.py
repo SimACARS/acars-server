@@ -102,10 +102,16 @@ class VatsimAuth:
     OAUTH2_AUTH = "https://auth.vatsim.net/oauth/authorize"
     OAUTH2_TOKEN = "https://auth.vatsim.net/oauth/token"
     AUTH_USER_DETAILS = "https://auth.vatsim.net/api/user"
-    REDIRECT_URI = "https://efps.vnpas.uk/oauth/token/"
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, redirect_type:str="aircraft") -> None:
+        if redirect_type == "aircraft":
+            self.redirect_uri = os.getenv("VATSIM_OAUTH_REDIRECT_URI_AIRCRAFT")
+        elif redirect_type == "atsu":
+            self.redirect_uri = os.getenv("VATSIM_OAUTH_REDIRECT_URI_ATSU")
+        else:
+            raise ValueError(
+                ("Unexpected redirect type. Expected one "
+                 f"of aircraft, atsu. Received {redirect_type}"))
 
     def authorise(self) -> Tuple[str, str]:
         """
@@ -116,7 +122,7 @@ class VatsimAuth:
         payload = {
             "response_type": "code",
             "client_id": os.getenv("VATSIM_OAUTH_CLIENT_ID"),
-            "redirect_uri": self.REDIRECT_URI,
+            "redirect_uri": self.redirect_uri,
             "state": state,
             "prompt": "login"
         }
@@ -131,7 +137,7 @@ class VatsimAuth:
             "grant_type": "authorization_code",
             "client_id": os.getenv("VATSIM_OAUTH_CLIENT_ID"),
             "client_secret": os.getenv("VATSIM_OAUTH_CLIENT_SECRET"),
-            "redirect_uri": self.REDIRECT_URI,
+            "redirect_uri": self.redirect_uri,
             "code": authorisation_code
         }
         headers = {
