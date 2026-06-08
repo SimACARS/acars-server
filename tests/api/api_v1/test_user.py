@@ -83,7 +83,7 @@ def test_callback(
     )
 
     response_a = client.get(
-        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/aircraft/{state.oauth_state}/{secrets.token_hex(32)}")
 
     assert response_a.status_code == 200
     assert response_a.json()["status"] == "user created"
@@ -118,7 +118,7 @@ def test_callback_no_access_token(
     )
 
     response = client.get(
-        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/aircraft/{state.oauth_state}/{secrets.token_hex(32)}")
     print(response.json())
     assert response.status_code == 400
     assert response.json()["error"] == "some hint from the oauth provider"
@@ -147,7 +147,7 @@ def test_callback_no_user_details(
     )
 
     response = client.get(
-        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/aircraft/{state.oauth_state}/{secrets.token_hex(32)}")
     print(response.json())
     assert response.status_code == 400
     assert response.json()["error"] == {"hint": "some hint from the oauth provider"}
@@ -155,7 +155,7 @@ def test_callback_no_user_details(
 def test_callback_no_state_code(client: TestClient):
     """Tests a callback with no or invalid state code"""
     response = client.get(
-        f"/callback/oauth/vatsim/{secrets.token_hex(32)}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/aircraft/{secrets.token_hex(32)}/{secrets.token_hex(32)}")
     assert response.status_code == 404
     assert response.json()["error"] == "State code not found"
 
@@ -191,13 +191,13 @@ def test_callback_duplicate_state_code(
     )
 
     response_a = client.get(
-        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/aircraft/{state.oauth_state}/{secrets.token_hex(32)}")
 
     assert response_a.status_code == 200
     assert response_a.json()["status"] == "user created"
 
     response_b = client.get(
-        f"/callback/oauth/vatsim/{state.oauth_state}/{secrets.token_hex(32)}")
+        f"/callback/oauth/vatsim/aircraft/{state.oauth_state}/{secrets.token_hex(32)}")
 
     assert response_b.status_code == 404
     assert response_b.json()["error"] == "State code not found"
