@@ -8,25 +8,20 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import os
-import secrets
-from datetime import datetime as dt, timezone as tz
-from dns.resolver import Resolver
 
 # Third Party Libraries
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 from redis_om.model.model import NotFoundError
-from sqlmodel import select
 from sse_starlette.event import ServerSentEvent
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
 from acars_server.api.services.auth_services import (
-    airline_api_authentication, callsign_verification, get_api_key_hash, jwt_auth)
-from acars_server.api.services.user_services import responses_user_new_network
+    callsign_verification, jwt_auth)
 
 templates = Jinja2Templates(directory=os.path.join(common.PWD, "api", "templates"))
 router = APIRouter()
