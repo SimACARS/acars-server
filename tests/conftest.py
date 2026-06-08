@@ -28,9 +28,16 @@ from tests.factories.user import UserApiKeyFactory
 load_dotenv()
 
 PWD = Path(os.path.dirname(__file__))
-SQLITE_FILE_NAME = "test_database.db"
-SQLITE_FILE_PATH = os.path.join(PWD.parent, SQLITE_FILE_NAME)
-SQLITE_URL = f"sqlite:///{SQLITE_FILE_PATH}"
+DATABASE_HOST = os.getenv("MYSQL_HOST", "localhost")
+DATABASE_PORT = int(os.getenv("MYSQL_PORT", "3306"))
+DATABASE_NAME = os.getenv("MYSQL_DB", "acars")
+DATABASE_USER = os.getenv("MYSQL_USER", "acars")
+DATABASE_PASSWORD = os.getenv("MYSQL_PASSWORD")
+
+DATABASE_URL = (
+    f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}"
+    f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}_test"
+)
 
 redis_db = get_redis_connection(
     host=os.getenv("REDIS_HOST"),
@@ -48,8 +55,7 @@ redis_async_db = redis.Redis(
     decode_responses=True
 )
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(SQLITE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
@@ -57,10 +63,7 @@ def setup_test_database():
     Create the test database schema before any tests run,
     and drop it after all tests are done.
     """
-    if os.path.exists(SQLITE_FILE_PATH):
-        os.remove(SQLITE_FILE_PATH)
-        print(f"INFO: Removed existing test database at {SQLITE_FILE_PATH}")
-
+    SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)  # Ensure the test database is created
     Migrator().run()
     yield

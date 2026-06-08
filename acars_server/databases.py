@@ -17,15 +17,23 @@ from dotenv import load_dotenv
 from fastapi import Depends, Query
 from pydantic import AfterValidator, SerializeAsAny
 from redis_om import get_redis_connection, Field as RedisField, HashModel, JsonModel
-from sqlmodel import Field, Session, SQLModel, create_engine
+from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 
 # Local Libraries
 from acars_server import static_data
 
 load_dotenv()
 
-SQLITE_FILE_NAME = "database.db"
-SQLITE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
+DATABASE_HOST = os.getenv("MYSQL_HOST", "localhost")
+DATABASE_PORT = int(os.getenv("MYSQL_PORT", "3306"))
+DATABASE_NAME = os.getenv("MYSQL_DB", "acars")
+DATABASE_USER = os.getenv("MYSQL_USER", "acars")
+DATABASE_PASSWORD = os.getenv("MYSQL_PASSWORD")
+
+DATABASE_URL = (
+    f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}"
+    f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+)
 
 redis_db = get_redis_connection(
     host=os.getenv("REDIS_HOST"),
@@ -47,8 +55,7 @@ redis_async_db = redis.Redis(
 redis_db.flushall() # Clear Redis DB on startup
 # ------------- DEV CODE -------------
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(SQLITE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 def create_db_and_tables():
     """Create DB and Tables"""
