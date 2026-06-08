@@ -22,6 +22,10 @@ from sqlmodel import Session, SQLModel, create_engine
 # Local Libraries
 from acars_server.__main__ import app, settings
 from acars_server.databases import get_session
+from tests.factories.atsu import (
+    ATSUAuthorisedCallsignFactory,
+    ATSUCallsignFactory,
+    ATSUOwnerFactory)
 from tests.factories.airlines import AirlineApiKeyFactory
 from tests.factories.user import UserApiKeyFactory
 
@@ -105,6 +109,9 @@ def set_session_for_factories(db: Session):
     print("INFO: Setting the database session for factories")
     AirlineApiKeyFactory._meta.sqlalchemy_session = db
     UserApiKeyFactory._meta.sqlalchemy_session = db
+    ATSUOwnerFactory._meta.sqlalchemy_session = db
+    ATSUCallsignFactory._meta.sqlalchemy_session = db
+    ATSUAuthorisedCallsignFactory._meta.sqlalchemy_session = db
 
 @pytest.fixture(scope="function")
 def client(db: Session) -> Generator[testclient.TestClient, None, None]:

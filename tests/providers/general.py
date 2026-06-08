@@ -9,6 +9,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import os
 from pathlib import Path
+from typing import Any
 
 # Third Party Libraries
 from faker.providers import BaseProvider
@@ -110,6 +111,28 @@ class MessageProvider(BaseProvider):
 
     def message_packet(self):
         return self.msg["packet"]
+
+
+class ATSUCallsignProvider(BaseProvider):
+    """Faker for ATSU Callsigns"""
+    def __init__(self, generator: Any) -> None:
+        super().__init__(generator)
+        self.suffix = self.generator.bothify("????")
+
+    def atsu_callsign(self):
+        """Returns an ATSU callsign"""
+        return f"_ATC_{self.suffix}".upper()
+
+    def authorised_callsigns(self):
+        """Returns authourised callsigns"""
+        output = []
+        for s in ["_DEL", "_GND", "_TWR", "_APP"]:
+            output.append(f"{self.suffix}{s}".upper())
+        return output[2]
+
+    def owner(self):
+        """Returns an owner"""
+        return self.generator.bothify("?????????????????")
 
 
 class NetworkProvider(BaseProvider):
