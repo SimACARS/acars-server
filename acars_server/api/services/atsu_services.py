@@ -7,7 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from datetime import datetime as dt, timezone as tz
+from datetime import datetime as dt, timedelta, timezone as tz
 from typing import Any, Dict
 
 # Third Party Libraries
@@ -24,8 +24,8 @@ from acars_server.api.services.auth_services import (
 
 async def complete_vatsim_atsu_logon(user_data:Dict[str,Any]) -> JSONResponse:
     """
-    DLIC Aircraft Logon
-    Returns a JWT for persistant login
+    DLIC ATSU Logon
+    Returns a short expiry JWT for persistant login
     """
     if int(user_data["vatsim"]["rating"]["id"]) < 1:
         return JSONResponse(status_code=403, content={"error": "No ATC rating found"})
@@ -73,5 +73,6 @@ async def complete_vatsim_atsu_logon(user_data:Dict[str,Any]) -> JSONResponse:
         "vatsim",
         user_data["cid"],
         logoff_code,
-        ["acars:atsu"])
+        ["acars:atsu"],
+        timedelta(minutes=10))
     return JSONResponse(content=jwt_response)
