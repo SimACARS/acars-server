@@ -27,7 +27,7 @@ async def complete_vatsim_atsu_logon(user_data:Dict[str,Any]) -> JSONResponse:
     DLIC ATSU Logon
     Returns a short expiry JWT for persistant login
     """
-    if int(user_data["vatsim"]["rating"]["id"]) < 1:
+    if int(user_data["vatsim"]["rating"]["id"]) <= 1:
         return JSONResponse(status_code=403, content={"error": "No ATC rating found"})
 
     cvd = {
