@@ -7,6 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import json
 import os
 import re
 import secrets
@@ -17,10 +18,13 @@ from urllib.parse import urlparse, parse_qs
 # Third Party Libraries
 import pytest
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
 
 # Local Libraries
-from acars_server.databases import ATSUAuthorisedCallsign
+from acars_server import databases
+from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
+from acars_server.api.services.auth_services import jwt_auth
 from tests.factories.atsu import ATSUAuthorisedCallsignFactory
 from tests.factories.user import CidFactory, OAuthStateFactory
 
@@ -43,12 +47,27 @@ def atsu_dlic_logon_request(
 
     return response, logon_data
 
+@pytest.fixture
+def vatsim_oauth_response():
+    """VATSIM OAuth Response"""
+    cid = CidFactory()
+    return {
+        "data": {
+            "cid": cid["cid"],
+            "vatsim": {
+                "rating": {
+                    "id": 4
+                }
+            }
+        }
+    }
+
 
 class TestATSULogon:
     """ATSU Logon"""
     def test_atsu_logon(self, client: TestClient):
         """Test to add a new user"""
-        atsu_data: ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
+        atsu_data: databases.ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
         response, _ = atsu_dlic_logon_request(
             logon_from=atsu_data.callsign,
             endpoint="/dlic/atsu/logon",
@@ -246,3 +265,89 @@ class TestATSUCallback:
 
         assert response_b.status_code == 404
         assert response_b.json()["error"] == "State code not found"
+
+
+class TestATSUCompleteLogon:
+    """ATSU Complete Logon"""
+
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+           new_callable=AsyncMock)
+    async def test_complete_vatsim_atsu_logon(
+        self,
+        mock_callsign_verification_func,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+
+        atsu_data: databases.ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
+
+        mock_callsign_verification_func.return_value = atsu_data.callsign
+
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response, db)
+        rdata = {
+            "scheme": "Bearer",
+            "credentials": json.loads(response.body)["access_token"]
+        }
+        vdata = HTTPAuthorizationCredentials.model_validate(rdata)
+
+        assert await jwt_auth.decode_jwt(vdata, ["acars:atsu"])
+
+    @pytest.mark.asyncio
+    async def test_complete_vatsim_atsu_logon_incorrect_rating(self, db, vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon with incorrect rating"""
+        vor = vatsim_oauth_response
+        vor["data"]["vatsim"]["rating"]["id"] = 1
+
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response, db)
+
+        assert response.status_code == 403
+        assert json.loads(response.body)["error"] == "No ATC rating found"
+
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+           new_callable=AsyncMock)
+    async def test_complete_vatsim_atsu_logon_unlinked_callsign(
+        self,
+        mock_callsign_verification_func,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+
+        ATSUAuthorisedCallsignFactory()
+
+        mock_callsign_verification_func.return_value = "NOT_A_CALLSIGN"
+
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response, db)
+
+        assert response.status_code == 404
+        assert json.loads(
+            response.body)["error"] == "NOT_A_CALLSIGN is not linked to an ATSU callsign"
+
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+           new_callable=AsyncMock)
+    async def test_complete_vatsim_atsu_logon_duplicate_callsign(
+        self,
+        mock_callsign_verification_func,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+
+        atsu_data: databases.ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
+
+        mock_callsign_verification_func.return_value = atsu_data.callsign
+
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response, db)
+        rdata = {
+            "scheme": "Bearer",
+            "credentials": json.loads(response.body)["access_token"]
+        }
+        vdata = HTTPAuthorizationCredentials.model_validate(rdata)
+
+        assert await jwt_auth.decode_jwt(vdata, ["acars:atsu"])
+
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response, db)
+        data = json.loads(response.body)
+        assert response.status_code == 200
+        assert data["status"] == "already logged on"

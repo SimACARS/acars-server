@@ -32,6 +32,7 @@ class ATSUOwnerFactory(factory.alchemy.SQLAlchemyModelFactory):
         """Meta class for ApiKeyFactory"""
         model = databases.ATSUCallsignOwner
         sqlalchemy_session = databases.Session
+        sqlalchemy_session_persistence = "flush"
 
     network = factory.faker.Faker("network")
     owner = factory.faker.Faker("owner")
@@ -47,6 +48,7 @@ class ATSUCallsignFactory(factory.alchemy.SQLAlchemyModelFactory):
         """Meta class for ApiKeyFactory"""
         model = databases.ATSUCallsign
         sqlalchemy_session = databases.Session
+        sqlalchemy_session_persistence = "flush"
 
     network = factory.faker.Faker("network")
     atsu_callsign = factory.faker.Faker("atsu_callsign")
@@ -62,6 +64,7 @@ class ATSUAuthorisedCallsignFactory(
         """Meta"""
         model = databases.ATSUAuthorisedCallsign
         sqlalchemy_session = databases.Session
+        sqlalchemy_session_persistence = "flush"
 
     network = factory.Faker("network")
     callsign = factory.Faker("authorised_callsigns")

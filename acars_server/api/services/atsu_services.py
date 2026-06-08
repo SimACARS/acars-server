@@ -31,12 +31,12 @@ async def complete_vatsim_atsu_logon(
     Returns a short expiry JWT for persistant login
     """
     # Does the user hold an ATC rating?
-    if int(user_data["vatsim"]["rating"]["id"]) <= 1:
+    if int(user_data["data"]["vatsim"]["rating"]["id"]) <= 1:
         return JSONResponse(status_code=403, content={"error": "No ATC rating found"})
 
     cvd = {
         "network": "vatsim",
-        "uid": user_data["cid"]
+        "uid": user_data["data"]["cid"]
     }
     # What callsign is the user logged on as?
     callsign = await callsign_verification(cvd)
@@ -46,7 +46,7 @@ async def complete_vatsim_atsu_logon(
             (databases.ATSUAuthorisedCallsign.callsign == callsign))
     db_result = session.exec(db_check).first()
     if db_result:
-        atsu_callsign = db_result.atsu_callsign
+        atsu_callsign = db_result.atsu_callsign.atsu_callsign
     else:
         return JSONResponse(
             status_code=404,
@@ -89,7 +89,7 @@ async def complete_vatsim_atsu_logon(
     sf2_msg.save()
     jwt_response = await jwt_auth.sign_jwt(
         "vatsim",
-        user_data["cid"],
+        user_data["data"]["cid"],
         logoff_code,
         ["acars:atsu"],
         timedelta(minutes=10))
