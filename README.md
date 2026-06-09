@@ -16,6 +16,7 @@ With SimACARS, there is no longer a need to poll the server. Subscribe to [Serve
  - Python pip >= 26.1.1
  - Git >= 2.54.0 (windows)
  - Redis >= 8.0.0
+ - MySQL >= 8.4.7
  - OpenObserve >= 0.11.0 (windows)
  - OpenTelemetry Collector >= 0.107.0
 
