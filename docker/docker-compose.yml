@@ -1,0 +1,65 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: 9Bo9pcHwoW0xsqWFB34sVL
+      MYSQL_DATABASE: acars_test
+      MYSQL_USER: acars
+      MYSQL_PASSWORD: tC1Pu9oQ5TFpZttQ6D97Hqw7L71
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_ARGS=--requirepass vx7uvDDcPpbjDGuvuiZOlzt4Fhpbo5BJ34e4rnBqntG9qxVM9EbRm255DgUGHIR
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  otel:
+    image: otel/opentelemetry-collector:0.153.0
+    volumes:
+      - ../otel.yml:/etc/otelcol/config.yaml:ro
+
+  tests:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: acars
+      MYSQL_PASSWORD: tC1Pu9oQ5TFpZttQ6D97Hqw7L71
+      MYSQL_DB: acars
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: vx7uvDDcPpbjDGuvuiZOlzt4Fhpbo5BJ34e4rnBqntG9qxVM9EbRm255DgUGHIR
+
+      VATSIM_OAUTH_CLIENT_ID: 0
+      VATSIM_OAUTH_CLIENT_SECRET: supersecret
+      VATSIM_OAUTH_REDIRECT_URI_AIRCRAFT: https://efps.vnpas.uk/oauth/token/
+      VATSIM_OAUTH_REDIRECT_URI_ATSU: https://efps.vnpas.uk/oauth/token/
+      OTLPS_ENDPOINT: otel
+      OTLPS_PORT: 4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: otlp
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: otel
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: otel
+      JWT_SECRET: KuRgN89vGrBHMaBY8oPxBv4EXkm9WlHaQaWyp6expqchdQpMyf8xhYzuBoCPzhu
+      JWT_ALGORITHM: HS256
+      PWDLIB_SALT: ilF5QxKce3b9Sb6NpDw465clBeXrrLXkM2gZROvqRGDUIkh7433ymPhbIVKh5aI
+
+      PYTHONPATH: /app
+
+    command: pytest tests/ -v
