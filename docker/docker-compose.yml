@@ -25,7 +25,7 @@ services:
   otel:
     image: otel/opentelemetry-collector:0.153.0
     volumes:
-      - ../otel.yml:/etc/otelcol/config.yaml:ro
+      - ./otel.yml:/etc/otelcol/config.yaml:ro
 
   tests:
     build:
