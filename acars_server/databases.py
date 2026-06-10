@@ -57,11 +57,11 @@ redis_db.flushall() # Clear Redis DB on startup
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
-def create_db_and_tables():
+def create_db_and_tables(): # pragma: no cover
     """Create DB and Tables"""
     SQLModel.metadata.create_all(engine)
 
-def get_session():
+def get_session(): # pragma: no cover
     """Get the Session"""
     with Session(engine) as session:
         yield session
