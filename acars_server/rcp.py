@@ -8,14 +8,14 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from typing import Dict
+from typing import Dict # pragma: no cover
 
 # Third Party Libraries
 
 # Local Libraries
 
 
-class RcpBase:
+class RcpBase: # pragma: no cover
     """
     RCP Base Class
     """
@@ -36,7 +36,7 @@ class RcpBase:
     integrity: int # max errors per hour
 
 
-class Rcp180(RcpBase):
+class Rcp180(RcpBase): # pragma: no cover
     """RCP Class"""
     expiration_time = 180
     target_time = 90
@@ -50,7 +50,7 @@ class Rcp180(RcpBase):
     integrity = 10
 
 
-class Rcp240(RcpBase):
+class Rcp240(RcpBase): # pragma: no cover
     """RCP Class"""
     expiration_time = 240
     target_time = 210
@@ -64,7 +64,7 @@ class Rcp240(RcpBase):
     integrity = 10
 
 
-class Rcp400(RcpBase):
+class Rcp400(RcpBase): # pragma: no cover
     """RCP Class"""
     expiration_time = 400
     target_time = 350
@@ -78,7 +78,7 @@ class Rcp400(RcpBase):
     integrity = 10
 
 
-RCP_SLA: Dict[str, RcpBase] = {
+RCP_SLA: Dict[str, RcpBase] = { # pragma: no cover
     "progress": Rcp400(),
     "cpdlc": Rcp240(),
     "telex": Rcp240(),

@@ -57,11 +57,11 @@ redis_db.flushall() # Clear Redis DB on startup
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
-def create_db_and_tables():
+def create_db_and_tables(): # pragma: no cover
     """Create DB and Tables"""
     SQLModel.metadata.create_all(engine)
 
-def get_session():
+def get_session(): # pragma: no cover
     """Get the Session"""
     with Session(engine) as session:
         yield session
@@ -82,11 +82,8 @@ def check_valid_domain(domain: str):
     domain = domain.strip().lower().rstrip(".")
     if not DOMAIN_RE.fullmatch(domain):
         raise ValueError(f"Invalid domain: {domain} is not a valid domain name")
-    try:
-        domain.encode("idna")
-        return domain
-    except UnicodeError as err:
-        raise ValueError(f"Invalid domain: {domain} is not a valid domain name") from err
+    domain.encode("idna")
+    return domain
 
 # ------------------------------------------------------------------
 # API Key Models
@@ -134,9 +131,6 @@ class AirlineApiKeyBase(SQLModel):
         str, Query(min_length=8, max_length=9, pattern="^_COY_[A-Z]+$")]
     domain: Annotated[str, AfterValidator(check_valid_domain)] | None = None
 
-    def __getitem__(self, key):
-        return getattr(self, key)
-
 
 class AirlineApiKey(AirlineApiKeyBase, table=True):
     """A table to hold all API keys"""
@@ -145,9 +139,6 @@ class AirlineApiKey(AirlineApiKeyBase, table=True):
     verified: Optional[bool] = False
     created: float
     last_used: float
-
-    def __getitem__(self, key):
-        return getattr(self, key)
 
 
 class AirlineApiKeyCreate(AirlineApiKeyBase):
@@ -208,9 +199,6 @@ class ATSUCallsignOwner(SQLModel, table=True):
         back_populates="owner"
     )
 
-    def __getitem__(self, key):
-        return getattr(self, key)
-
 
 class ATSUCallsign(SQLModel, table=True):
     """
@@ -237,9 +225,6 @@ class ATSUCallsign(SQLModel, table=True):
     created: float
     last_used: float
 
-    def __getitem__(self, key):
-        return getattr(self, key)
-
 
 class ATSUAuthorisedCallsign(SQLModel, table=True):
     """
@@ -265,8 +250,6 @@ class ATSUAuthorisedCallsign(SQLModel, table=True):
     created: float
     last_used: float
 
-    def __getitem__(self, key):
-        return getattr(self, key)
 # ------------------------------------------------------------------
 # Store and Forward Model
 # ------------------------------------------------------------------
@@ -309,8 +292,6 @@ class LogoffRequest(HashModel):
     """A DLIC logoff request"""
     logoff_code: Annotated[
         str, Query(min_length=64, max_length=64, pattern="[a-f0-9]+")]
-    def __getitem__(self, key):
-        return getattr(self, key)
 
 
 class OAuthStateStore(HashModel, index=True): # type: ignore
@@ -335,8 +316,6 @@ class RequestNewAirline(HashModel):
             pattern="[A-Z0-9]+")]
     airline_name: str
     domain: Annotated[str, AfterValidator(check_valid_domain)]
-    def __getitem__(self, key):
-        return getattr(self, key)
 
 
 class StoreAndForward(JsonModel, index=True): # type: ignore

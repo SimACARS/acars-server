@@ -17,4 +17,4 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
-CMD ["pytest", "tests/", "-v"]
+CMD ["pytest", "tests/", "-v", "--cov=acars_server", "--cov-report=html", "--cov-report=term-missing"]
