@@ -20,7 +20,7 @@ from redis_om import Migrator # type: ignore
 
 # Local Libraries
 from acars_server import __VERSION__, auth, common, config, databases, static_data
-from acars_server.api.routes import acars, airlines, dlic, status, tests, users
+from acars_server.api.routes import acars, airlines, atsu, callbacks, dlic, status, tests, users
 
 load_dotenv()
 settings = config.Settings()
@@ -86,6 +86,10 @@ app.include_router(status.router)
 app.include_router(users.router)
 # Airline Endpoints
 app.include_router(airlines.router, prefix="/airline", tags=["Airline Management"])
+# ATSU Endpoints
+app.include_router(atsu.router, prefix="/atsu", tags=["Air Traffic Surveillance Unit"])
+# Callback Endpoints
+app.include_router(callbacks.router, prefix="/callback", tags=["Callback"])
 # Test Endpoints
 app.include_router(tests.router, prefix="/test", tags=["Testing"])
 # DLIC (Data Link Initiation and Capability) Endpoints

@@ -17,11 +17,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Local Libraries
-from acars_server.databases import AirlineApiKey, ApiKey, RequestNewAirline, redis_async_db
+from acars_server.databases import AirlineApiKey, RequestNewAirline, redis_async_db
 from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory, MessageFactoryNoCommit
 from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
-from tests.factories.user import CallsignFactory, UserApiKeyFactory
+from tests.factories.user import CallsignFactory
+from tests.fixtures.airline_authorisation import create_airline_api_key
+from tests.fixtures.user_authorisation import create_api_key
 
 class TestTransmitMessage:
     """Airline Transmit Message"""
@@ -30,15 +32,15 @@ class TestTransmitMessage:
         Test that an airline can send a message to online aircraft
         """
         # Create the database entry
-        airline: AirlineApiKey = AirlineApiKeyFactory()
-        aircraft: ApiKey = UserApiKeyFactory()
+        airline, airline_key = create_airline_api_key()
+        _, aircraft_key = create_api_key()
         callsign = CallsignFactory()
 
         # Logon Aircraft
         response_ac, _ = dlic_logon_request(
             logon_from=callsign["callsign"],
             logon_to="EGKK",
-            api_key=aircraft.api_key,
+            api_key=aircraft_key,
             endpoint="/dlic/aircraft/logon",
             client=client
         )
@@ -50,7 +52,7 @@ class TestTransmitMessage:
         response_coy, _ = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -66,7 +68,7 @@ class TestTransmitMessage:
             msg_from = airline.airline_callsign
             )
 
-        client.headers.update({"x-key": airline.api_key})
+        client.headers.update({"x-key": airline_key})
         response = client.post("/airline/tx", json=message.model_dump())
         client.headers.pop("x-key")
         print(response.json())
@@ -78,14 +80,14 @@ class TestTransmitMessage:
         airline is rejected
         """
         # Create the database entry
-        airline: AirlineApiKey = AirlineApiKeyFactory()
+        airline, airline_key = create_airline_api_key()
         callsign = CallsignFactory()
 
         # Logon Airline
         response_coy, _ = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -101,7 +103,7 @@ class TestTransmitMessage:
             msg_from = airline.airline_callsign
             )
 
-        client.headers.update({"x-key": airline.api_key})
+        client.headers.update({"x-key": airline_key})
         response = client.post("/airline/tx", json=message.model_dump())
         client.headers.pop("x-key")
         print(response.json())
@@ -114,14 +116,14 @@ class TestTransmitMessage:
         airline is rejected
         """
         # Create the database entry
-        airline: AirlineApiKey = AirlineApiKeyFactory()
+        airline, airline_key = create_airline_api_key()
         callsign = CallsignFactory()
 
         # Logon Airline
         response_coy, _ = dlic_logon_request(
             logon_from=airline.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=airline.api_key,
+            api_key=airline_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -137,7 +139,7 @@ class TestTransmitMessage:
             msg_from = airline.airline_callsign
             )
 
-        client.headers.update({"x-key": airline.api_key})
+        client.headers.update({"x-key": airline_key})
         response = client.post("/airline/tx", json=message.model_dump())
         client.headers.pop("x-key")
         print(response.json())
@@ -253,8 +255,8 @@ class TestAirlineRx:
     @pytest.mark.anyio
     async def test_valid_auth(self, client: TestClient):
         """Test valid authentication"""
-        company: AirlineApiKey = AirlineApiKeyFactory()
-        aircraft: ApiKey = UserApiKeyFactory()
+        company, company_key = create_airline_api_key()
+        _, aircraft_key = create_api_key()
         callsign = CallsignFactory()
 
         url = f"/airline/rx/{company.network}/{company.airline_callsign[-3:]}"
@@ -262,7 +264,7 @@ class TestAirlineRx:
         response_coy, _ = dlic_logon_request(
             logon_from=company.airline_callsign,
             logon_to="_SYSTEM_DLIC",
-            api_key=company.api_key,
+            api_key=company_key,
             endpoint="/dlic/airline/logon",
             client=client
         )
@@ -272,18 +274,31 @@ class TestAirlineRx:
             msg_from=callsign["callsign"],
             msg_to=company.airline_callsign)
 
-        client.headers.update({"x-key": aircraft.api_key})
+        # Aircraft Login
+        response, _ = dlic_logon_request(
+            logon_from=callsign["callsign"],
+            logon_to="EGKK",
+            api_key=aircraft_key,
+            endpoint="/dlic/aircraft/logon",
+            client=client
+        )
+
+        # Check the results
+        assert response.status_code == 200
+        jwt = response.json()["access_token"]
+
+        client.headers.update({"Authorization": f"Bearer {jwt}"})
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=callsign["callsign"])
         ):
             response_tx = client.post("/acars/tx", json=msg.model_dump())
-        client.headers.pop("x-key")
+        client.headers.pop("Authorization")
 
         assert response_tx.status_code == 201
         print("INFO: sent tx", response_tx.status_code)
 
-        client.headers.update({"x-key": company.api_key})
+        client.headers.update({"x-key": company_key})
         print("INFO: opening stream", url)
 
         # Mock Redis to avoid event loop issues in testing
@@ -325,7 +340,7 @@ class TestAirlineRx:
             # Use httpx client directly to bypass TestClient streaming limitations
             transport = httpx.ASGITransport(app=client.app)
             async_client = httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
-            async_client.headers.update({"x-key": company.api_key})
+            async_client.headers.update({"x-key": company_key})
 
             print("INFO: about to call async stream")
 

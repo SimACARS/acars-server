@@ -7,7 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from random import randint
+import secrets
 from typing import Tuple
 
 # Third Party Libraries
@@ -15,21 +15,16 @@ from typing import Tuple
 # Local Libraries
 from acars_server.auth import Auth
 from acars_server.api.services.auth_services import get_api_key_hash
-from acars_server.databases import ApiKey
-from tests.factories.user import UserApiKeyFactory
+from acars_server.databases import AirlineApiKey
+from tests.factories.airlines import AirlineApiKeyFactory
 
 auth = Auth()
 
-def create_api_key() -> Tuple[ApiKey,str]:
+def create_airline_api_key() -> Tuple[AirlineApiKey,str]:
     """Create an API key"""
-    cid = randint(100000, 999999)
-    raw_key = auth.api_key_generator(
-        uid=str(cid),
-        network="vatsim",
-    )
+    raw_key = secrets.token_hex(64)
 
-    api_key: ApiKey = UserApiKeyFactory(
-        network_cid=str(cid),
+    api_key: AirlineApiKey = AirlineApiKeyFactory(
         api_key=get_api_key_hash(raw_key)
     )
 

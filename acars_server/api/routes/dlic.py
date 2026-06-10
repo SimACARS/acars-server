@@ -11,16 +11,18 @@ from datetime import datetime as dt, timezone as tz
 from hashlib import blake2b
 
 # Third Party Libraries
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Security
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import HTTPAuthorizationCredentials
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
-from acars_server import common, databases
+from acars_server import auth, common, databases, static_data
 from acars_server.api.services.auth_services import (
     airline_api_authentication,
     api_authentication,
-    callsign_verification
+    callsign_verification,
+    jwt_auth
     )
 
 router = APIRouter()
@@ -44,8 +46,7 @@ async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
 async def dlic_airline_logon(
     msg:databases.DataLinkInitiationCapability,
     session:databases.SessionDep,
-    api_key:str = Depends(common.header_api_key)
-):
+    api_key:str = Security(common.header_api_key)):
     """DLIC Airline Logon"""
     airline_data = await airline_api_authentication(session, api_key)
 
@@ -91,9 +92,12 @@ async def dlic_airline_logon(
 async def dlic_aircraft_logon(
     msg:databases.DataLinkInitiationCapability,
     session:databases.SessionDep,
-    api_key:str = Depends(common.header_api_key)
+    api_key:str = Security(common.header_api_key)
     ):
-    """DLIC Aircraft Logon"""
+    """
+    DLIC Aircraft Logon
+    Returns a JWT for persistant login
+    """
     user_data = await api_authentication(session, api_key)
     callsign = await callsign_verification(user_data)
 
@@ -128,31 +132,80 @@ async def dlic_aircraft_logon(
     sf2_msg = databases.DataLinkInitiationCapability.model_validate(t_msg)
     common.logger.success(sf2_msg)
     sf2_msg.save()
-    return JSONResponse(content={"status": "logged on", "data": sf2_msg.model_dump()})
+    jwt_response = await jwt_auth.sign_jwt(
+        sf_msg["network"],
+        user_data["uid"],
+        logoff_code,
+        ["acars:aircraft"])
+    return JSONResponse(content=jwt_response)
 
-@router.post("/{station_type}/logoff")
-async def dlic_any_station_logoff(
+@router.post("/atsu/logon")
+async def dlic_atsu_logon(
+    msg:databases.DataLinkInitiationCapability):
+    """
+    ATSU authentication is handled by the relevant network (eg VATSIM)
+    """
+    if msg.network in static_data.NETWORKS:
+        if msg.network == "vatsim":
+            v_auth = auth.VatsimAuth(redirect_type="atsu")
+            v_url = v_auth.authorise()
+
+            # Add state key to redis
+            state_model = {
+                "oauth_state": v_url[1]
+            }
+            state_key = databases.OAuthStateStore.model_validate(state_model)
+
+            # Expire state key in 10 minutes
+            state_key.save()
+            databases.redis_db.expire(
+                state_key.key(),
+                600,
+            )
+
+            common.logger.success("Client redirected to VATSIM OAuth")
+            return RedirectResponse(v_url[0])
+
+        error = f"{msg.network} doesn't appear to exist although it really should..."
+        common.logger.error(error)
+        return JSONResponse(status_code=400, content={"error": error})
+
+    error = (f"{msg.network} is not a recognised network. Needs to be one of "
+             f"{', '.join(static_data.NETWORKS)}")
+    common.logger.error(error)
+    return JSONResponse(status_code=400, content={"error": error})
+
+@router.post("/airline/logoff")
+async def dlic_airline_logoff(
     msg: databases.LogoffRequest,
     session:databases.SessionDep,
-    station_type: str | None = None,
-    api_key:str = Depends(common.header_api_key)
+    api_key:str = Security(common.header_api_key)
     ):
-    """DLIC Any Station Logoff"""
-    if station_type == "aircraft" or station_type is None:
-        await api_authentication(session, api_key)
-    elif station_type == "airline":
-        await airline_api_authentication(session, api_key)
-    elif station_type == "atsu": # pragma: no cover
-        pass
-    else:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": "Incorrect station type. Needs to be one of aircraft, airline or atsu"})
+    """DLIC Airline Logoff"""
+    await airline_api_authentication(session, api_key)
+    return await dlic_logoff(msg)
 
+@router.post("/aircraft/logoff")
+async def dlic_aircraft_logoff(
+    jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
+    ):
+    """DLIC Aircraft Logoff"""
+    user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
+    msg = databases.LogoffRequest.model_validate({"logoff_code": user_data["loc"]})
+    return await dlic_logoff(msg)
 
+@router.post("/atsu/logoff")
+async def dlic_atsu_logoff(
+    jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
+    ):
+    """DLIC Aircraft Logoff"""
+    user_data = await jwt_auth.decode_jwt(jwt, ["acars:atsu"])
+    msg = databases.LogoffRequest.model_validate({"logoff_code": user_data["loc"]})
+    return await dlic_logoff(msg)
+
+async def dlic_logoff(msg: databases.LogoffRequest):
+    """Process the logoff request"""
     databases.LogoffRequest.model_validate(msg)
-
     try:
         sf2_msg = databases.DataLinkInitiationCapability.find(
                     (databases.DataLinkInitiationCapability.logoff_code == msg.logoff_code)

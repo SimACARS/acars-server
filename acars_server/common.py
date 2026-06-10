@@ -11,11 +11,12 @@ import os
 from pathlib import Path
 
 # Third Party Libraries
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, HTTPBearer
 from loguru import logger
 
-# Add the API Key header
+# Add the API Key header and JWT bearer header
 header_api_key = APIKeyHeader(name="x-key")
+header_bearer = HTTPBearer(scheme_name="bearer")
 
 # Init a message queue for web consumer
 stream:asyncio.Queue = asyncio.Queue()

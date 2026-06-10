@@ -16,6 +16,7 @@ With SimACARS, there is no longer a need to poll the server. Subscribe to [Serve
  - Python pip >= 26.1.1
  - Git >= 2.54.0 (windows)
  - Redis >= 8.0.0
+ - MySQL >= 8.4.7
  - OpenObserve >= 0.11.0 (windows)
  - OpenTelemetry Collector >= 0.107.0
 
@@ -51,16 +52,26 @@ F --> H@{ shape: lin-cyl, label: "Store API Key" }
 ### Existing User (Message Store on VATSIM)
 ```mermaid
 graph LR
-A((Existing User)) --> B@{ shape: sl-rect, label: "API Key set via x-key header" }
-B --> C@{ shape: lean-r, label: "/msg/tx" }
-C --> E
-E@{ shape: bow-rect, label: "API Key Lookup" } --> D@{ shape: diamond, label: "Does API Key Exist?" }
-D -- Yes --> DA@{ shape: bow-rect, label: "Callsign Lookup" }
-DA --> DB@{ shape: diamond, label: "Does provided callsign match CID and Sluper?" }
-DB -- Yes --> F@{ shape: datastore, label: "Store Message" }
-F --> G@{ shape: dbl-circ, label: "Return 201" }
-DB -- No --> DC@{ shape: dbl-circ, label: "Return 403" }
-D -- No --> H@{ shape: dbl-circ, label: "Return 401" }
+A((Existing User)) --> AA@{ shape: diamond, label: "Does user have a valid JWT?" }
+
+AA -- No --> BA@{ shape: sl-rect, label: "API Key set via x-key header" }
+
+BA --> BB@{ shape: lean-r, label: "/dlic/aircraft/logon" }
+BB --> BC@{ shape: bow-rect, label: "API Key Lookup" }
+BC --> BD@{ shape: diamond, label: "Does API Key Exist?" }
+HA --> BE@{ shape: bow-rect, label: "Callsign Lookup" }
+BE --> BF@{ shape: diamond, label: "Does provided callsign match CID and Sluper?" }
+BF -- Yes --> BG@{ shape: lin-cyl, label: "Store Message" }
+BF -- No --> EA@{ shape: dbl-circ, label: "Return 400" }
+BG --> BH@{ shape: dbl-circ, label: "Return 201" }
+
+BD -- Yes --> FA@{ shape: bow-rect, label: "Generate JWT" }
+FA -- Pass JWT to User --> GA
+
+BD -- No --> DA@{ shape: dbl-circ, label: "Return 401" }
+
+AA -- Yes --> GA@{ shape: sl-rect, label: "JWT set via Authorize Bearer header" }
+GA --> HA@{ shape: lean-r, label: "/msg/tx" }
 ```
 
 ### Existing User (Message Forward on VATSIM)
