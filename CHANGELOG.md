@@ -1,6 +1,6 @@
 # Changelog
 
-# [1.11.0](https://github.com/SimACARS/acars-server/compare/v1.10.13...v1.11.0) (2026-06-10)
+# [2.0.0](https://github.com/SimACARS/acars-server/compare/v1.10.13...v2.0.0) (2026-06-10)
 
 
 ### Bug Fixes
