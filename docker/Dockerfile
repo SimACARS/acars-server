@@ -11,7 +11,9 @@ RUN pip install --upgrade pip && \
     pip install -r requirements-dev.txt && \
     pip install opentelemetry-distro && \
     opentelemetry-bootstrap -a install && \
-    pip install opentelemetry-exporter-otlp
+    pip install opentelemetry-exporter-otlp && \
+    python -c "from cryptography.fernet import Fernet; open('master.key', 'wb').write(Fernet.generate_key())" && \
+    python -c "from cryptography.fernet import Fernet; open('auth.key', 'wb').write(Fernet.generate_key())"
 
 COPY . .
 

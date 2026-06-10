@@ -7,15 +7,13 @@ services:
       MYSQL_USER: acars
       MYSQL_PASSWORD: tC1Pu9oQ5TFpZttQ6D97Hqw7L71
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p9Bo9pcHwoW0xsqWFB34sVL"]
       interval: 5s
       timeout: 5s
       retries: 20
 
   redis:
     image: redis:latest
-    environment:
-      - REDIS_ARGS=--requirepass vx7uvDDcPpbjDGuvuiZOlzt4Fhpbo5BJ34e4rnBqntG9qxVM9EbRm255DgUGHIR
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -23,9 +21,9 @@ services:
       retries: 20
 
   otel:
-    image: otel/opentelemetry-collector:0.153.0
-    volumes:
-      - ./otel.yml:/etc/otelcol/config.yaml:ro
+    build:
+      context: ..
+      dockerfile: docker/otel.Dockerfile
 
   tests:
     build:
@@ -36,6 +34,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      otel:
+        condition: service_started
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
@@ -45,7 +45,6 @@ services:
 
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: vx7uvDDcPpbjDGuvuiZOlzt4Fhpbo5BJ34e4rnBqntG9qxVM9EbRm255DgUGHIR
 
       VATSIM_OAUTH_CLIENT_ID: 0
       VATSIM_OAUTH_CLIENT_SECRET: supersecret
