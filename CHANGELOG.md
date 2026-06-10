@@ -1,5 +1,44 @@
 # Changelog
 
+# [1.11.0](https://github.com/SimACARS/acars-server/compare/v1.10.13...v1.11.0) (2026-06-10)
+
+
+### Bug Fixes
+
+* **api:** duplicate endpoint names ([c75e536](https://github.com/SimACARS/acars-server/commit/c75e53627f10ec7064fd74c41b47bb4fdca6ff31))
+* **atsu:** incorrect response model ([5f1d3ee](https://github.com/SimACARS/acars-server/commit/5f1d3ee77d066cb18d444c91b32f05c8fdfc1ff1))
+* **auth:** algorithm depreciated in favour of algorithms ([22d4740](https://github.com/SimACARS/acars-server/commit/22d474091b0ffe87d6c66f07da87e2b70aacbd30))
+* **auth:** allow setting of token duration ([765c0c8](https://github.com/SimACARS/acars-server/commit/765c0c8c448ff2a1fcfd32b943b897d4140b2aa7))
+* **auth:** missing paranthes ([878e174](https://github.com/SimACARS/acars-server/commit/878e1741d149d22c8ce727fd388874ec7f9749fb))
+* **auth:** not catching invalid jwt signature ([7acf525](https://github.com/SimACARS/acars-server/commit/7acf52546fec5a8cb7f172e5cae888daafa3dfc8))
+* **auth:** set type correctly for jwt ([36a747b](https://github.com/SimACARS/acars-server/commit/36a747b77427e3dbcbb39ec10737b727e11141f9))
+* **auth:** should be a colon not a stop ([4f84483](https://github.com/SimACARS/acars-server/commit/4f84483faa58e8a13d1067cfa7fc0e28a6dda28b))
+* **auth:** this should be <= 1 as OBS id == 1 ([3b6e8b3](https://github.com/SimACARS/acars-server/commit/3b6e8b3e1f1bcdefa3f64966d838cde1210a579b))
+* **auth:** this should be salted ([f2e12c0](https://github.com/SimACARS/acars-server/commit/f2e12c04ff9c9c9f4272a060f1f6141e95ea1c0c))
+* **auth:** token iss isn't verified ([0a97f9a](https://github.com/SimACARS/acars-server/commit/0a97f9a38b2eb6c325e24a081b2f6354660d37b5))
+* **dlic:** this method should be post ([228615a](https://github.com/SimACARS/acars-server/commit/228615abebb6527067b737bd6e2cb746b8920459))
+
+
+### Features
+
+* **atsu:** added ability for ATSU to send and receive messages ([5df8788](https://github.com/SimACARS/acars-server/commit/5df8788afcedd577b535c8b3d69dcb8bdd7eaaad))
+* **atsu:** added tables for ATSU callsigns ([d1da4ef](https://github.com/SimACARS/acars-server/commit/d1da4ef383cfeb16df965cb9674406983becdca1))
+* **atsu:** correct ATSU logon code validation ([0b317ce](https://github.com/SimACARS/acars-server/commit/0b317ce0a0b2ad1612e5207a1388f4e6fee86c42))
+* **auth:** added api key hash lookup ([5f68a89](https://github.com/SimACARS/acars-server/commit/5f68a89360e7a669327ef6d839e5b4ec61fe8325))
+* **auth:** added redirect uri for atsu and moved to env ([3b1914e](https://github.com/SimACARS/acars-server/commit/3b1914e2baa35fff931849511f1ee5243bebcf73))
+* **auth:** added token refresh endpoint for ATSU JWT ([18eaf47](https://github.com/SimACARS/acars-server/commit/18eaf47f50b8b034461934b1853069b6e39214c4))
+* **auth:** atsu oauth logon ([20623e3](https://github.com/SimACARS/acars-server/commit/20623e3908a77a2e2c05e9593fe8dce9f32b7d32))
+* **auth:** hash newly generated api keys ([fa34a4a](https://github.com/SimACARS/acars-server/commit/fa34a4ac26b2653624592e3be61192fdc3c738b8))
+* **auth:** set 10 minute expiry for ATSU JWT ([f6aedef](https://github.com/SimACARS/acars-server/commit/f6aedefc78705e98215b7ef5ec9cfba13f4f4708))
+* **auth:** switch to jwt for user persistance ([4120edb](https://github.com/SimACARS/acars-server/commit/4120edb64c7b9eaf93069765f12121b8a59529f3))
+* BREAKING switch to mysql backend ([ec13e1d](https://github.com/SimACARS/acars-server/commit/ec13e1d564cdc3bc1725ac7123eec5298cfb0c07))
+
+
+### Performance Improvements
+
+* **cq:** removed unused imports ([b26c12e](https://github.com/SimACARS/acars-server/commit/b26c12e3a47484cb04a203f7445a0e96945ebfcc))
+* removed unused imports ([30bd2fc](https://github.com/SimACARS/acars-server/commit/30bd2fcd6c1255f45282429a46f2b9af0a9189c6))
+
 ## [1.10.13](https://github.com/SimACARS/acars-server/compare/v1.10.12...v1.10.13) (2026-06-06)
 
 
