@@ -2,7 +2,7 @@ beautifulsoup4==4.15.0
 camelot_py==2.0.0
 httpx2==2.3.0
 factory_boy==3.3.3
-Faker==40.21.0
+Faker==40.23.0
 pytest==9.0.3
 pytest-asyncio==1.4.0
 pytest-cov==7.1.0
