@@ -36,6 +36,8 @@ services:
         condition: service_healthy
       otel:
         condition: service_started
+    volumes:
+      - ../htmlcov:/app/htmlcov
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
