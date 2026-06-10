@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.11.1](https://github.com/SimACARS/acars-server/compare/v1.11.0...v1.11.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* BREAKING CHANGE bump semvar action ([bd71faf](https://github.com/SimACARS/acars-server/commit/bd71faf12fad59d85bdc617c49349139b748e945))
+
+
+### Performance Improvements
+
+* removed some un-needed lines of code ([7e8e057](https://github.com/SimACARS/acars-server/commit/7e8e057715942fd74ed91199cfde12f16b10f38c))
+
 # [2.0.0](https://github.com/SimACARS/acars-server/compare/v1.10.13...v2.0.0) (2026-06-10)
 
 
