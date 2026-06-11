@@ -12,7 +12,7 @@ import secrets
 from unittest.mock import AsyncMock, patch
 
 # Third Party Libraries
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 
@@ -247,8 +247,8 @@ class TestAirlineRx:
             redis_async_db.xread = mock_xread
 
             # Use httpx client directly to bypass TestClient streaming limitations
-            transport = httpx.ASGITransport(app=client.app)
-            async_client = httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
+            transport = httpx2.ASGITransport(app=client.app)
+            async_client = httpx2.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
             async_client.headers.update(airline.info["headers"])
 
             print("INFO: about to call async stream")
