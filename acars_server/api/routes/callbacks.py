@@ -104,7 +104,7 @@ async def atsu_callback_vatsim(
     if v_user[0] != 200:
         return JSONResponse(status_code=v_user[0], content={"error": v_user[1]})
 
-    return await complete_vatsim_atsu_logon(v_user[1]["data"], session)
+    return await complete_vatsim_atsu_logon(v_user[1], session)
 
 @router.post("/atsu/refresh")
 async def refresh_atsu_jwt(
