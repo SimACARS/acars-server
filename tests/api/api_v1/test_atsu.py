@@ -12,6 +12,7 @@ import os
 import re
 import secrets
 from datetime import datetime as dt, timezone as tz
+from typing import Dict, Tuple
 from unittest.mock import AsyncMock, MagicMock, patch
 from urllib.parse import urlparse, parse_qs
 
@@ -57,6 +58,24 @@ def vatsim_oauth_response():
     """VATSIM OAuth Response"""
     cid = CidFactory()
     return (200, {"data": {"cid": cid["cid"],"vatsim": {"rating": {"id": 4}}}})
+
+
+class VatsimAccessToken:
+    """VATSIM Access Token"""
+    def __init__(self, status_code:int=200) -> None:
+        self.status_code = status_code
+        self.state = OAuthStateFactory()
+        self.access_token = secrets.token_hex(32)
+
+    def token(self) -> Tuple[int, Dict[str,str]]:
+        """Returns a token"""
+        return (
+            self.status_code,
+                {
+                    "access_token": self.access_token,
+                    "state": self.state.oauth_state
+                }
+            )
 
 
 class TestATSULogon:
@@ -110,28 +129,22 @@ class TestATSUCallback:
 
         mock_vatsim_auth_class.return_value = mock_vatsim_auth
         mock_atsu_logon_func.return_value = mock_atsu_logon
-        state = OAuthStateFactory()
 
-        # ---- mock get_access_token ----
-        mock_vatsim_auth.get_access_token.return_value = (
-            200,
-            {
-                "access_token": secrets.token_hex(32),
-                "state": state.oauth_state
-            }
-        )
+        # Mock get_access_token
+        gat = VatsimAccessToken()
+        mock_vatsim_auth.get_access_token.return_value = gat.token()
 
-        # ---- mock get_user_details ----
+        # Mock get_user_details
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
 
-        # ---- mock get_access_token ----
+        # Mock get_access_token
         mock_atsu_logon.return_value = JSONResponse(
             status_code=200,
             content={"success": True},
         )
 
         response = client.get(
-            f"/callback/oauth/vatsim/atsu/{state.oauth_state}/{secrets.token_hex(32)}")
+            f"/callback/oauth/vatsim/atsu/{gat.state.oauth_state}/{secrets.token_hex(32)}")
         print(response.json())
         assert response.status_code == 200
 
@@ -146,7 +159,7 @@ class TestATSUCallback:
 
         state = OAuthStateFactory()
 
-        # ---- mock get_access_token ----
+        # Mock get_access_token
         mock_vatsim_auth.get_access_token.return_value = (
             400,
             {"hint": "some hint from the oauth provider"}
@@ -167,22 +180,18 @@ class TestATSUCallback:
         mock_vatsim_auth = MagicMock()
         mock_vatsim_auth_class.return_value = mock_vatsim_auth
 
-        state = OAuthStateFactory()
+        # Mock get_access_token
+        gat = VatsimAccessToken()
+        mock_vatsim_auth.get_access_token.return_value = gat.token()
 
-        # ---- mock get_access_token ----
-        mock_vatsim_auth.get_access_token.return_value = (
-            200,
-            {"access_token": secrets.token_hex(32)}
-        )
-
-        # ---- mock get_user_details ----
+        # Mock get_user_details
         mock_vatsim_auth.get_user_details.return_value = (
             400,
             {"hint": "some hint from the oauth provider"}
         )
 
         response = client.get(
-            f"/callback/oauth/vatsim/atsu/{state.oauth_state}/{secrets.token_hex(32)}")
+            f"/callback/oauth/vatsim/atsu/{gat.state.oauth_state}/{secrets.token_hex(32)}")
         print(response.json())
         assert response.status_code == 400
         assert response.json()["error"] == {"hint": "some hint from the oauth provider"}
@@ -208,33 +217,26 @@ class TestATSUCallback:
         mock_vatsim_auth_class.return_value = mock_vatsim_auth
         mock_atsu_logon_func.return_value = mock_atsu_logon
 
-        state = OAuthStateFactory()
+        # Mock get_access_token
+        gat = VatsimAccessToken()
+        mock_vatsim_auth.get_access_token.return_value = gat.token()
 
-        # ---- mock get_access_token ----
-        mock_vatsim_auth.get_access_token.return_value = (
-            200,
-            {
-                "access_token": secrets.token_hex(32),
-                "state": state.oauth_state
-            }
-        )
-
-        # ---- mock get_user_details ----
+        # Mock get_user_details
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
 
-        # ---- mock get_access_token ----
+        # Mock get_access_token
         mock_atsu_logon.return_value = JSONResponse(
             status_code=200,
             content={"success": True},
         )
 
         response_a = client.get(
-            f"/callback/oauth/vatsim/atsu/{state.oauth_state}/{secrets.token_hex(32)}")
+            f"/callback/oauth/vatsim/atsu/{gat.state.oauth_state}/{secrets.token_hex(32)}")
 
         assert response_a.status_code == 200
 
         response_b = client.get(
-            f"/callback/oauth/vatsim/atsu/{state.oauth_state}/{secrets.token_hex(32)}")
+            f"/callback/oauth/vatsim/atsu/{gat.state.oauth_state}/{secrets.token_hex(32)}")
 
         assert response_b.status_code == 404
         assert response_b.json()["error"] == "State code not found"
@@ -253,9 +255,9 @@ class TestATSUCompleteLogon:
         vatsim_oauth_response):
         """Complete VATSIM ATSU Logon"""
 
-        atsu_data: databases.ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
+        atsu = Authentication(None, "atsu")
 
-        mock_callsign_verification_func.return_value = atsu_data.callsign
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
 
         response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
         rdata = {
@@ -307,9 +309,9 @@ class TestATSUCompleteLogon:
         vatsim_oauth_response):
         """Complete VATSIM ATSU Logon"""
 
-        atsu_data: databases.ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
+        atsu = Authentication(None, "atsu")
 
-        mock_callsign_verification_func.return_value = atsu_data.callsign
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
 
         response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
         rdata = {

@@ -25,7 +25,7 @@ from tests.fixtures.user_authorisation import create_api_key
 
 class Authentication:
     """Authentication Helpers"""
-    def __init__(self, client:TestClient, build_type:str) -> None:
+    def __init__(self, client:TestClient|None, build_type:str) -> None:
         self.client = client
 
         if build_type == "airline":
