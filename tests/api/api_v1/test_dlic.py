@@ -86,7 +86,7 @@ class TestAirlineLogon:
         assert obj.atn_b1 is False
         assert obj.fans_1_a is False
         assert re.fullmatch(r"[a-f0-9]{64}", obj.logoff_code)
-        assert obj.logoff_code != airline_logon_response.json()["logoff_code"]
+        assert obj.logoff_code == airline_logon_response.json()["data"]["logoff_code"]
 
     def test_dlic_airline_logon_duplicate(self, client: TestClient):
         """
