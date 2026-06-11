@@ -11,7 +11,7 @@ from typing import Any, Dict
 
 # Third Party Libraries
 from fastapi.testclient import TestClient
-from httpx import Response
+from httpx2 import Response
 
 # Local Libraries
 from tests.api.api_v1.test_dlic import dlic_logon_request

@@ -16,6 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from urllib.parse import urlparse, parse_qs
 
 # Third Party Libraries
+import httpx2
 import pytest
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
