@@ -55,7 +55,7 @@ def test_auth_endpoint_no_api_key(client: TestClient, end_point, method, _data):
 @pytest.mark.parametrize("end_point,method,data", AUTHENTICATED_END_POINTS)
 def test_auth_endpoint_false_api_key(client: TestClient, end_point, method, data):
     """Tests an auth endpoint with no API key"""
-    message: StoreAndForward = MessageFactory()
+    message: StoreAndForward = MessageFactory() # type: ignore
     api_key = secrets.token_hex(32)
     print(message)
     client.headers.update({"x-key": api_key})

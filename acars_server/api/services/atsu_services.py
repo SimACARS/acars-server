@@ -31,7 +31,9 @@ async def complete_vatsim_atsu_logon(
     Returns a short expiry JWT for persistant login
     """
     # Does the user hold an ATC rating?
-    if int(user_data["data"]["vatsim"]["rating"]["id"]) <= 1:
+    rating_id = (
+        user_data.get("data", {}).get("vatsim", {}).get("rating", {}).get("id"))
+    if rating_id is None or int(rating_id) <= 1:
         return JSONResponse(status_code=403, content={"error": "No ATC rating found"})
 
     cvd = {

@@ -18,13 +18,11 @@ from fastapi.testclient import TestClient
 
 # Local Libraries
 from acars_server.databases import AirlineApiKey, RequestNewAirline, redis_async_db
-from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory, MessageFactoryNoCommit
 from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
 from tests.factories.user import CallsignFactory
-from tests.fixtures.airline_authorisation import create_airline_api_key
 from tests.fixtures.auth import Authentication
-from tests.fixtures.user_authorisation import create_api_key
+
 
 class TestTransmitMessage:
     """Airline Transmit Message"""
@@ -46,7 +44,7 @@ class TestTransmitMessage:
             )
 
         client.headers.update(airline.info["headers"])
-        response = client.post("/airline/tx", json=message.model_dump())
+        response = client.post("/airline/tx", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
         assert response.status_code == 201
@@ -64,16 +62,17 @@ class TestTransmitMessage:
         # Don't attempt to validate message at this point
         # Message validation during post to endpoint
         message = MessageFactory(
-            msg_to = callsign["callsign"],
+            msg_to = callsign["callsign"], # type: ignore
             msg_from = airline.info["callsign"]
             )
 
         client.headers.update(airline.info["headers"])
-        response = client.post("/airline/tx", json=message.model_dump())
+        response = client.post("/airline/tx", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
         assert response.status_code == 404
-        assert response.json()["error"] == f"{callsign['callsign']} is not active on the network"
+        assert response.json()["error"] == f"{
+            callsign['callsign']} is not active on the network" # type: ignore
 
 
 class TestNewAirline:
@@ -82,7 +81,7 @@ class TestNewAirline:
         """Create a new airline"""
         airline = NewAirlineRequestFactory()
 
-        response = client.post("/airline/new", json=airline.model_dump())
+        response = client.post("/airline/new", json=airline.model_dump()) # type: ignore
 
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
@@ -91,10 +90,10 @@ class TestNewAirline:
     def test_new_already_exists(self, client: TestClient):
         """Attempt to a create a new airline that already exists"""
         # This should create an airline
-        airline_a: AirlineApiKey = AirlineApiKeyFactory()
+        airline_a: AirlineApiKey = AirlineApiKeyFactory() # type: ignore
 
         # This should create a request for the same airline
-        airline_b: RequestNewAirline = NewAirlineRequestFactory(
+        airline_b: RequestNewAirline = NewAirlineRequestFactory( # type: ignore
             airline_callsign=airline_a.airline_callsign.split("_")[2],
             network=airline_a.network
             )
@@ -106,7 +105,7 @@ class TestNewAirline:
 
     def test_new_request_already_made(self, client: TestClient):
         """Create a new airline"""
-        airline: RequestNewAirline = NewAirlineRequestFactory()
+        airline: RequestNewAirline = NewAirlineRequestFactory() # type: ignore
 
         # First request to create an airline
         response_a = client.post("/airline/new", json=airline.model_dump())
@@ -124,7 +123,8 @@ class TestNewAirline:
     @patch("acars_server.api.routes.airlines.Resolver.resolve")
     def test_new_with_domain_verification(self, mock_resolve, client: TestClient):
         """Create a new airline"""
-        airline: RequestNewAirline = NewAirlineRequestFactory(domain="NOT-A-DOMAIN.LOCAL")
+        airline: RequestNewAirline = NewAirlineRequestFactory(
+            domain="NOT-A-DOMAIN.LOCAL") # type: ignore
 
         response = client.post("/airline/new", json=airline.model_dump())
         assert response.status_code == 200
@@ -156,7 +156,8 @@ class TestNewAirline:
     @patch("acars_server.api.routes.airlines.Resolver.resolve")
     def test_auth_with_no_matching_txt_record(self, mock_resolve, client: TestClient):
         """Create a new airline"""
-        airline: RequestNewAirline = NewAirlineRequestFactory(domain="NOT-A-DOMAIN.LOCAL")
+        airline: RequestNewAirline = NewAirlineRequestFactory(
+            domain="NOT-A-DOMAIN.LOCAL") # type: ignore
 
         response = client.post("/airline/new", json=airline.model_dump())
         assert response.status_code == 200
@@ -201,7 +202,7 @@ class TestAirlineRx:
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
-            response_tx = client.post("/acars/tx", json=msg.model_dump())
+            response_tx = client.post("/acars/tx", json=msg.model_dump()) # type: ignore
         client.headers.pop("Authorization")
 
         assert response_tx.status_code == 201
@@ -237,7 +238,8 @@ class TestAirlineRx:
                 if call_count[0] == 1:
                     # Return message on first call
                     return [
-                        [f"msg:coy:vatsim:_COY_{format(airline.airline.airline_callsign[-3:]).encode()}",
+                        [f"msg:coy:vatsim:_COY_{
+                            format(airline.airline.airline_callsign[-3:]).encode()}",
                          [("1-0", msg_data)]]]
                 else:
                     # No more messages
