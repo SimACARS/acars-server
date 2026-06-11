@@ -27,12 +27,10 @@ from fastapi.testclient import TestClient
 from acars_server import databases
 from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
 from acars_server.api.services.auth_services import jwt_auth
-from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.atsu import ATSUAuthorisedCallsignFactory
 from tests.factories.messages import MessageFactoryNoCommit
-from tests.factories.user import CallsignFactory, CidFactory, OAuthStateFactory
+from tests.factories.user import CidFactory, OAuthStateFactory
 from tests.fixtures.auth import Authentication
-from tests.fixtures.user_authorisation import create_api_key
 
 def atsu_dlic_logon_request(
     logon_from:str,

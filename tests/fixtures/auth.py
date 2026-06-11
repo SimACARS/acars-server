@@ -7,7 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 from datetime import datetime as dt, timezone as tz
 from unittest.mock import AsyncMock, patch
 
@@ -25,7 +25,8 @@ from tests.fixtures.user_authorisation import create_api_key
 
 class Authentication:
     """Authentication Helpers"""
-    def __init__(self, client:TestClient|None, build_type:str) -> None:
+    def __init__(self, client:TestClient|None, build_type:Literal[
+        "airline", "aircraft", "atsu"]) -> None:
         self.client = client
 
         if build_type == "airline":
@@ -67,16 +68,19 @@ class Authentication:
         """
         Logs on as a test airline to _SYSTEM_DLIC
         """
-        response, _ = self.dlic_logon_request(
-            logon_from=self.info["callsign"],
-            logon_to=self.info["logon_to"],
-            api_key=self.info["api_key"],
-            endpoint=f"/dlic/{self.info['type']}/logon",
-            client=self.client
-        )
-        if self.info["type"] == "aircraft":
-            self.info["headers"] = {"Authorization": f"Bearer {response.json()['access_token']}"}
-        return response
+        if self.client is not None:
+            response, _ = self.dlic_logon_request(
+                logon_from=self.info["callsign"],
+                logon_to=self.info["logon_to"],
+                api_key=self.info["api_key"],
+                endpoint=f"/dlic/{self.info['type']}/logon",
+                client=self.client
+            )
+            if self.info["type"] == "aircraft":
+                self.info["headers"] = {
+                    "Authorization": f"Bearer {response.json()['access_token']}"}
+            return response
+        raise ValueError("Expected client to be TestClient")
 
     def dlic_logon_request(
         self,
