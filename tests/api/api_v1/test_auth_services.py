@@ -11,7 +11,6 @@ import secrets
 from datetime import timedelta
 
 # Third Party Libraries
-import jwt
 import pytest
 import requests
 from fastapi import HTTPException
