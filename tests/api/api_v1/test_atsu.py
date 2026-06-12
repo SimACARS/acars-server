@@ -329,13 +329,16 @@ class TestATSUCompleteLogon:
 class TestATSURx:
     """Test ATSU Rx Path"""
 
-    @pytest.mark.skip("Incomplete coding")
-    @pytest.mark.anyio
-    @patch("acars_server.api.routes.callbacks.complete_vatsim_atsu_logon")
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+           new_callable=AsyncMock)
+    @patch("acars_server.api.routes.atsu.callsign_verification",
+               new_callable=AsyncMock)
     @patch("acars_server.api.routes.callbacks.auth.VatsimAuth")
     async def test_valid_auth(
         self,
         mock_vatsim_auth_class,
+        mock_callsign_verification2_func,
         mock_callsign_verification_func,
         client: TestClient,
         db,
@@ -346,42 +349,33 @@ class TestATSURx:
 
         # ATSU Generator
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
-        atsu_data: databases.ATSUAuthorisedCallsign = ATSUAuthorisedCallsignFactory()
-        mock_callsign_verification_func.return_value = atsu_data.callsign
+        atsu = Authentication(client, "atsu")
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
+        mock_callsign_verification2_func.return_value = atsu.info["callsign"]
         response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
-        print(json.loads(response.body))
+        print(response.body)
 
         atsu_auth_headers = {
             "scheme": "Bearer",
             "credentials": json.loads(response.body)["access_token"]
         }
-        atsu_url = f"/atsu/rx/{atsu_data.network}/{atsu_data.callsign}"
+        atsu_url = f"/atsu/rx/vatsim/{atsu.info['callsign']}"
 
         # Aircraft Generator
-        _, aircraft_key = create_api_key()
-        callsign = CallsignFactory()
-
-        # Aircraft Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=aircraft_key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft = Authentication(client, "aircraft")
+        aircraft_logon_response = aircraft.logon()
 
         msg = MessageFactoryNoCommit(
-            msg_from=callsign["callsign"],
-            msg_to=atsu_data.callsign)
+            msg_from=aircraft.info["callsign"],
+            msg_to=atsu.info["callsign"])
 
         # Aircraft Send Message
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        jwt = json.loads(response.body)["access_token"]
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
+            new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
             response_tx = client.post("/acars/tx", json=msg.model_dump())
         client.headers.pop("Authorization")
@@ -391,20 +385,19 @@ class TestATSURx:
 
         # Mock Redis to avoid event loop issues in testing
         # Return a sample message after first xread call
+        # Mock the xrange and xread calls
+        old_xrange = databases.redis_async_db.xrange
+        old_xread = databases.redis_async_db.xread
         try:
             msg_data = {
-                b"msg_from": callsign["callsign"].encode() if isinstance(
-                    callsign["callsign"], str) else callsign["callsign"],
-                b"msg_to": atsu_data.callsign.encode() if isinstance(
-                    atsu_data.callsign, str) else atsu_data.callsign,
+                b"msg_from": aircraft.info["callsign"].encode() if isinstance(
+                    aircraft.info["callsign"], str) else aircraft.info["callsign"],
+                b"msg_to": atsu.info["callsign"].encode() if isinstance(
+                    atsu.info["callsign"], str) else atsu.info["callsign"],
                 b"msg_type": b"telex",
                 b"packet": b"TEST",
                 b"network": b"vatsim",
             }
-
-            # Mock the xrange and xread calls
-            old_xrange = redis_async_db.xrange
-            old_xread = redis_async_db.xread
 
             async def mock_xrange(*args, **kwargs):
                 return []
@@ -415,19 +408,21 @@ class TestATSURx:
                 if call_count[0] == 1:
                     # Return message on first call
                     return [
-                        [f"msg:atc:vatsim:{format(atsu_data.callsign).encode()}",
+                        [f"msg:atc:vatsim:{format(atsu.info['callsign']).encode()}",
                          [("1-0", msg_data)]]]
                 else:
                     # No more messages
                     return None
 
-            redis_async_db.xrange = mock_xrange
-            redis_async_db.xread = mock_xread
+            databases.redis_async_db.xrange = mock_xrange
+            databases.redis_async_db.xread = mock_xread
 
             # Use httpx client directly to bypass TestClient streaming limitations
             transport = httpx2.ASGITransport(app=client.app)
             async_client = httpx2.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
-            async_client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
+            async_client.headers.update(
+                {"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
+            print(atsu_auth_headers)
 
             print("INFO: about to call async stream")
 
@@ -442,7 +437,7 @@ class TestATSURx:
 
                     if line.startswith("data:"):
                         found = True
-                        assert callsign["callsign"] in line
+                        assert aircraft.info["callsign"] in line
                         break
 
                 assert found, "No data message received from SSE stream"
@@ -450,11 +445,15 @@ class TestATSURx:
             await async_client.aclose()
         finally:
             # Restore original Redis methods
-            redis_async_db.xrange = old_xrange
-            redis_async_db.xread = old_xread
+            databases.redis_async_db.xrange = old_xrange
+            databases.redis_async_db.xread = old_xread
 
     def test_invalid_auth(self, client: TestClient):
         """Test an invalid api key"""
-        client.headers.update({"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30"})
+        client.headers.update(
+            {"Authorization": (
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkw"
+                "IiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0."
+                "KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30")})
         response = client.get("/atsu/rx/vatsim/wiffle")
         assert response.status_code == 401
