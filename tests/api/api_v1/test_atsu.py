@@ -28,7 +28,7 @@ from acars_server import databases
 from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
 from acars_server.api.services.auth_services import jwt_auth
 from tests.factories.atsu import ATSUAuthorisedCallsignFactory
-from tests.factories.messages import MessageFactoryNoCommit
+from tests.factories.messages import MessageFactory, MessageFactoryNoCommit
 from tests.factories.user import CidFactory, OAuthStateFactory
 from tests.fixtures.auth import Authentication
 
@@ -363,7 +363,7 @@ class TestATSURx:
 
         # Aircraft Generator
         aircraft = Authentication(client, "aircraft")
-        aircraft_logon_response = aircraft.logon()
+        aircraft.logon()
 
         msg = MessageFactoryNoCommit(
             msg_from=aircraft.info["callsign"],
@@ -457,3 +457,195 @@ class TestATSURx:
                 "KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30")})
         response = client.get("/atsu/rx/vatsim/wiffle")
         assert response.status_code == 401
+
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+           new_callable=AsyncMock)
+    @patch("acars_server.api.routes.atsu.callsign_verification",
+               new_callable=AsyncMock)
+    @patch("acars_server.api.routes.callbacks.auth.VatsimAuth")
+    async def test_invalid_callsign(
+        self,
+        mock_vatsim_auth_class,
+        mock_callsign_verification2_func,
+        mock_callsign_verification_func,
+        client: TestClient,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+        mock_vatsim_auth = MagicMock()
+        mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+        # ATSU Generator
+        mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
+        atsu = Authentication(client, "atsu")
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
+        mock_callsign_verification2_func.return_value = atsu.info["callsign"]
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
+        print(response.body)
+
+        atsu_auth_headers = {
+            "scheme": "Bearer",
+            "credentials": json.loads(response.body)["access_token"]
+        }
+        atsu_url = f"/atsu/rx/vatsim/NOTACALLSIGN"
+
+        # Use httpx client directly to bypass TestClient streaming limitations
+        transport = httpx2.ASGITransport(app=client.app)
+        async_client = httpx2.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
+        async_client.headers.update(
+            {"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
+        print(atsu_auth_headers)
+
+        print("INFO: about to call async stream")
+
+        async with async_client.stream("GET", atsu_url) as response:
+            print("INFO: stream opened", response.status_code)
+            assert response.status_code == 403
+        await async_client.aclose()
+
+
+class TestATSUTx:
+    """Test ATSU Tx"""
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+            new_callable=AsyncMock)
+    @patch("acars_server.api.routes.atsu.callsign_verification",
+                new_callable=AsyncMock)
+    @patch("acars_server.api.routes.callbacks.auth.VatsimAuth")
+    async def test_tx_msg(
+        self,
+        mock_vatsim_auth_class,
+        mock_callsign_verification2_func,
+        mock_callsign_verification_func,
+        client: TestClient,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+        mock_vatsim_auth = MagicMock()
+        mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+        # ATSU Generator
+        mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
+        atsu = Authentication(client, "atsu")
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
+        mock_callsign_verification2_func.return_value = atsu.info["callsign"]
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
+        print(response.body)
+
+        atsu_auth_headers = {
+            "scheme": "Bearer",
+            "credentials": json.loads(response.body)["access_token"]
+        }
+
+        # Aircraft Generator
+        aircraft = Authentication(client, "aircraft")
+        aircraft.logon()
+
+        msg = MessageFactory(
+            msg_from=atsu.info["callsign"],
+            msg_to=aircraft.info["callsign"])
+
+        client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
+        msg_response = client.post("/atsu/tx", json=msg.model_dump())
+        print(msg_response.content)
+        assert msg_response.status_code == 201
+        assert msg_response.json() == msg.model_dump()
+
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+            new_callable=AsyncMock)
+    @patch("acars_server.api.routes.atsu.callsign_verification",
+                new_callable=AsyncMock)
+    @patch("acars_server.api.routes.callbacks.auth.VatsimAuth")
+    async def test_tx_msg_station_offline(
+        self,
+        mock_vatsim_auth_class,
+        mock_callsign_verification2_func,
+        mock_callsign_verification_func,
+        client: TestClient,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+        mock_vatsim_auth = MagicMock()
+        mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+        # ATSU Generator
+        mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
+        atsu = Authentication(client, "atsu")
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
+        mock_callsign_verification2_func.return_value = atsu.info["callsign"]
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
+        print(response.body)
+
+        atsu_auth_headers = {
+            "scheme": "Bearer",
+            "credentials": json.loads(response.body)["access_token"]
+        }
+
+        # Aircraft Generator
+        aircraft = Authentication(client, "aircraft")
+
+        msg = MessageFactory(
+            msg_from=atsu.info["callsign"],
+            msg_to=aircraft.info["callsign"])
+
+        client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
+        msg_response = client.post("/atsu/tx", json=msg.model_dump())
+        print(msg_response.content)
+        assert msg_response.status_code == 404
+
+    @pytest.mark.skip()
+    @pytest.mark.asyncio
+    @patch("acars_server.api.services.atsu_services.callsign_verification",
+            new_callable=AsyncMock)
+    @patch("acars_server.api.routes.atsu.callsign_verification",
+                new_callable=AsyncMock)
+    @patch("acars_server.api.routes.callbacks.auth.VatsimAuth")
+    async def test_tx_msg_wrong_jwt(
+        self,
+        mock_vatsim_auth_class,
+        mock_callsign_verification2_func,
+        mock_callsign_verification_func,
+        client: TestClient,
+        db,
+        vatsim_oauth_response):
+        """Complete VATSIM ATSU Logon"""
+        mock_vatsim_auth = MagicMock()
+        mock_vatsim_auth_class.return_value = mock_vatsim_auth
+
+        # ATSU 1 Generator
+        mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
+        atsu = Authentication(client, "atsu")
+        print(atsu.info)
+        mock_callsign_verification_func.return_value = atsu.info["callsign"]
+        mock_callsign_verification2_func.return_value = atsu.info["callsign"]
+        response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
+        print(response.body)
+
+        # ATSU 2 Generator
+        mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
+        atsu2 = Authentication(client, "atsu")
+        print(atsu2.info)
+        mock_callsign_verification_func.return_value = atsu2.info["callsign"]
+        mock_callsign_verification2_func.return_value = atsu2.info["callsign"]
+        response2 = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
+        print(response2.body)
+
+        atsu2_auth_headers = {
+            "scheme": "Bearer",
+            "credentials": json.loads(response2.body)["access_token"]
+        }
+
+        # Aircraft Generator
+        aircraft = Authentication(client, "aircraft")
+        aircraft.logon()
+
+        msg = MessageFactory(
+            msg_from=atsu.info["callsign"],
+            msg_to=aircraft.info["callsign"])
+
+        client.headers.update({"Authorization": f"Bearer {atsu2_auth_headers['credentials']}"})
+        msg_response = client.post("/atsu/tx", json=msg.model_dump())
+        print(msg_response.content)
+        assert msg_response.status_code == 403

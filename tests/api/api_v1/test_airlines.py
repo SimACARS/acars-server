@@ -282,3 +282,25 @@ class TestAirlineRx:
         client.headers.update({"x-key": "NOT_A_KEY"})
         response = client.get("/airline/rx/vatsim/wiffle")
         assert response.status_code == 401
+
+    @pytest.mark.asyncio
+    async def test_invalid_callsign(self, client: TestClient):
+        """Test valid authentication"""
+        airline = Authentication(client, "airline")
+        airline.logon()
+
+        url = f"/airline/rx/{airline.airline.network}/NOTACALLSIGN"
+
+        client.headers.update(airline.info["headers"])
+        print("INFO: opening stream", url)
+
+        # Use httpx client directly to bypass TestClient streaming limitations
+        transport = httpx2.ASGITransport(app=client.app)
+        async_client = httpx2.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
+        async_client.headers.update(airline.info["headers"])
+
+        print("INFO: about to call async stream")
+
+        async with async_client.stream("GET", url) as response:
+            print("INFO: stream opened", response.status_code)
+            assert response.status_code == 403

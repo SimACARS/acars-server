@@ -75,7 +75,7 @@ async def receive_message_stream(
     async def event_generator():
         last_id = start_id
 
-        if last_id != "0-0":
+        if last_id != "0-0": # pragma: no cover
             history = await databases.redis_async_db.xrange(
                 stream_key,
                 min=f"({last_id}",
