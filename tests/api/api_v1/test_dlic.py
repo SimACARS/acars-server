@@ -293,7 +293,7 @@ class TestAircraftLogon:
         assert response.json()["status"] == "logged off"
         assert response.json()["callsign"] == callsign["callsign"]
 
-    @pytest.mark.anyio
+    @pytest.mark.asyncio
     async def test_dlic_aircraft_incorrect_logoff(self, client: TestClient):
         """
         Test that an incorrect logoff code is rejected.

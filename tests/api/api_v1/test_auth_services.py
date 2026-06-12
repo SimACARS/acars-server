@@ -7,18 +7,20 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
-import requests
 import secrets
+from datetime import timedelta
 
 # Third Party Libraries
+import jwt
 import pytest
+import requests
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 # Local Libraries
 from acars_server.databases import StoreAndForward
 from acars_server.api.message_types.inforeq import Vatsim
-from acars_server.api.services.auth_services import callsign_verification
+from acars_server.api.services.auth_services import callsign_verification, JWTAuth
 from tests.factories.messages import MessageFactory
 
 LOGON_DATA = {
@@ -123,3 +125,90 @@ async def test_give_invalid_network():
 
     with pytest.raises(HTTPException):
         await callsign_verification({"network": "wiffle", "uid": cid})
+
+
+class TestJWTRefresh:
+    """Test JWT Refresh"""
+    @pytest.mark.asyncio
+    async def test_valid_expired_jwt_inside_leeway(self, client:TestClient):
+        """Test a valid expired JWT which is inside leeway window"""
+        # Generate an expired JWT
+        jwt_auth = JWTAuth()
+        signed_jwt = await jwt_auth.sign_jwt(
+            "vatsim",
+            "12345678",
+            "d6ZcInCUE9EFxSd3x1Vo2UnfWuXoHT9rO7sZrDicitrPe60KEKNMkDFxntlzq1Ja",
+            ["acars:atsu"],
+            timedelta(microseconds=0)
+        )
+        print(signed_jwt)
+
+        # Pass auth headers to endpoint
+        client.headers.update({"Authorization": f"Bearer {signed_jwt['access_token']}"})
+        response = client.post("/callback/atsu/refresh")
+        print(response.content)
+        assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_valid_expired_jwt_outside_leeway(self, client:TestClient):
+        """Test a valid expired JWT which is inside leeway window"""
+        # Generate an expired JWT
+        jwt_auth = JWTAuth()
+        signed_jwt = await jwt_auth.sign_jwt(
+            "vatsim",
+            "12345678",
+            "d6ZcInCUE9EFxSd3x1Vo2UnfWuXoHT9rO7sZrDicitrPe60KEKNMkDFxntlzq1Ja",
+            ["acars:atsu"],
+            timedelta(minutes=-10)
+        )
+        print(signed_jwt)
+
+        # Pass auth headers to endpoint
+        client.headers.update({"Authorization": f"Bearer {signed_jwt['access_token']}"})
+        response = client.post("/callback/atsu/refresh")
+        print(response.content)
+        assert response.status_code == 401
+        assert response.json()["detail"] == "JWT expired signature"
+
+    @pytest.mark.asyncio
+    async def test_valid_expired_jwt_invalid_audience(self, client:TestClient):
+        """Test a valid expired JWT which is inside leeway window"""
+        # Generate an expired JWT
+        jwt_auth = JWTAuth()
+        signed_jwt = await jwt_auth.sign_jwt(
+            "vatsim",
+            "12345678",
+            "d6ZcInCUE9EFxSd3x1Vo2UnfWuXoHT9rO7sZrDicitrPe60KEKNMkDFxntlzq1Ja",
+            ["acars:none"],
+            timedelta(minutes=0)
+        )
+        print(signed_jwt)
+
+        # Pass auth headers to endpoint
+        client.headers.update({"Authorization": f"Bearer {signed_jwt['access_token']}"})
+        response = client.post("/callback/atsu/refresh")
+        print(response.content)
+        assert response.status_code == 401
+        assert response.json()["detail"] == "JWT invalid audience"
+
+    @pytest.mark.asyncio
+    async def test_valid_expired_jwt_invalid_signature(self, client:TestClient):
+        """Test a valid expired JWT which is inside leeway window"""
+        # Generate an expired JWT with an invalid signature
+        jwt_auth = JWTAuth()
+        jwt_auth.JWT_SECRET = "GSzexYbt2zpntRSUrJ6Pdome5NEyFfXsHjl1eqtUDNjHCMCyyPdkwLFVAH7mUUf"
+        signed_jwt = await jwt_auth.sign_jwt(
+            "vatsim",
+            "12345678",
+            "d6ZcInCUE9EFxSd3x1Vo2UnfWuXoHT9rO7sZrDicitrPe60KEKNMkDFxntlzq1Ja",
+            ["acars:atsu"],
+            timedelta(minutes=0)
+        )
+        print(signed_jwt)
+
+        # Pass auth headers to endpoint
+        client.headers.update({"Authorization": f"Bearer {signed_jwt['access_token']}"})
+        response = client.post("/callback/atsu/refresh")
+        print(response.content)
+        assert response.status_code == 401
+        assert response.json()["detail"] == "JWT invalid signature"
