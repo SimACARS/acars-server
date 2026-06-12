@@ -369,9 +369,6 @@ class TestATSURx:
             msg_from=aircraft.info["callsign"],
             msg_to=atsu.info["callsign"])
 
-        # Aircraft Send Message
-        jwt = json.loads(response.body)["access_token"]
-
         client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
