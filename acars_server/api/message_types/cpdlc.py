@@ -16,6 +16,19 @@ from typing import Any, Dict, Union
 from acars_server import common, databases, static_data
 
 # Message format
+# https://ext.eurocontrol.int/WikiLink/images/2/28/Link-2000-guidance-to-ground-implementers.pdf
+# p57-58
+# {MSG_ID}/{RESPONSE_ID}/{TIMESTAMP - YYMMDDHHMMSS}/{LOGICAL ACKNOWLEDGEMENT}/{MESSAGE}
+# {MSG_ID} assigned by the sending system sequentially and per destination
+# {RESPONSE_ID} for response messages only. The message reference number of a response message shall
+#   be identical to the message identification number of the received message to which it responds
+# {TIMESTAMP} the time the message is dispatched by the originating user. It consists of the date 
+#   (YYMMDD) and time (HHMMSS).
+# {LOGICAL ACKNOWLEDGEMENT} Indicates whether a logical acknowledgement (LACK) is required for the
+#   message. The ACL, ACM require a LACK for all messages (except for ERROR and LACK messages). 
+
+
+# 'Hoppie' format (not really Hoppie but commonly used on that network)
 # /data2/{MSG_ID}/{RESPONSE_ID}/{RESPONSE_TYPE}/{MESSAGE}
 
 
