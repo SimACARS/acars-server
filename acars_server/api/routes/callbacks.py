@@ -152,7 +152,7 @@ async def refresh_atsu_jwt(
     updated_jwt = await jwt_auth.sign_jwt(
         decoded_token["network"],
         decoded_token["uid"],
-        decoded_token["logoff"],
+        decoded_token["loc"],
         ["acars:atsu"],
         timedelta(minutes=10)
         )
