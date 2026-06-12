@@ -14,10 +14,8 @@ from fastapi.testclient import TestClient
 
 # Local Libraries
 from acars_server.databases import StoreAndForward
-from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory
-from tests.factories.user import CallsignFactory
-from tests.fixtures.user_authorisation import create_api_key
+from tests.fixtures.auth import Authentication
 
 class TestAircraftAcarsPoll:
     """Aircraft Poll"""
@@ -25,27 +23,16 @@ class TestAircraftAcarsPoll:
         """
         Test that an aircraft can poll the system
         """
-        # Create the database entry
-        _, key = create_api_key()
-        callsign = CallsignFactory()
-
-        # Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft = Authentication(client, "aircraft")
+        aircraft_logon_response = aircraft.logon()
 
         # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        assert aircraft_logon_response.status_code == 200
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
+            new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
             response_b = client.post("/acars/poll")
         client.headers.pop("Authorization")
@@ -57,32 +44,23 @@ class TestAircraftAcarsPoll:
         """
         Test that an aircraft can poll the system and retrieve messages
         """
-        # Create the database entry
-        _, key = create_api_key()
-        callsign = CallsignFactory()
-        messages: StoreAndForward = MessageFactory(msg_to=callsign["callsign"])
+        aircraft = Authentication(client, "aircraft")
+
+        messages: StoreAndForward = MessageFactory(msg_to=aircraft.info["callsign"]) # type: ignore
         i = 0
         while i < 100:
             MessageFactory()
             i += 1
 
-        # Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft_logon_response = aircraft.logon()
 
         # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        assert aircraft_logon_response.status_code == 200
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
+            new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
             response_b = client.post("/acars/poll")
         client.headers.pop("Authorization")
@@ -91,7 +69,7 @@ class TestAircraftAcarsPoll:
         assert response_b.status_code == 200
         assert rjson["message_count"] == 1
         assert rjson["messages"][0]["msg_from"] == messages.msg_from
-        assert rjson["messages"][0]["msg_to"] == callsign["callsign"]
+        assert rjson["messages"][0]["msg_to"] == aircraft.info["callsign"]
         assert rjson["messages"][0]["msg_type"] == messages.msg_type
         assert rjson["messages"][0]["packet"] == messages.packet
         assert rjson["messages"][0]["network"] == messages.network
@@ -100,24 +78,13 @@ class TestAircraftAcarsPoll:
         """
         Test what happens when no callsign is returned
         """
-        # Create the database entry
-        _, key = create_api_key()
-        callsign = CallsignFactory()
-
-        # Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft = Authentication(client, "aircraft")
+        aircraft_logon_response = aircraft.logon()
 
         # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        assert aircraft_logon_response.status_code == 200
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=None)
@@ -133,28 +100,17 @@ class TestAircraftAcarsTx:
 
     def test_send_message(self, client: TestClient):
         """Tests sending a message"""
-        # Create the database entry
-        _, key = create_api_key()
-        callsign = CallsignFactory()
-        message: StoreAndForward = MessageFactory(msg_from=callsign["callsign"])
-
-        # Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft = Authentication(client, "aircraft")
+        message: StoreAndForward = MessageFactory(msg_from=aircraft.info["callsign"]) # type: ignore
+        aircraft_logon_response = aircraft.logon()
 
         # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        assert aircraft_logon_response.status_code == 200
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
+            new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
             response_b = client.post("/acars/tx", json=message.model_dump())
         client.headers.pop("Authorization")
@@ -163,25 +119,14 @@ class TestAircraftAcarsTx:
 
     def test_send_message_no_callsign(self, client: TestClient):
         """Tests sending a message"""
-        # Create the database entry
-        _, key = create_api_key()
-        callsign = CallsignFactory()
-        message: StoreAndForward = MessageFactory(msg_from=callsign["callsign"])
-
-        # Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft = Authentication(client, "aircraft")
+        message: StoreAndForward = MessageFactory(msg_from=aircraft.info["callsign"]) # type: ignore
+        aircraft_logon_response = aircraft.logon()
 
         # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        assert aircraft_logon_response.status_code == 200
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=None)):
@@ -193,25 +138,14 @@ class TestAircraftAcarsTx:
 
     def test_legacy_send_message(self, client: TestClient):
         """Tests sending a message"""
-        # Create the database entry
-        _, key = create_api_key()
-        callsign = CallsignFactory()
-        message: StoreAndForward = MessageFactory(msg_from=callsign["callsign"])
-
-        # Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
+        aircraft = Authentication(client, "aircraft")
+        message: StoreAndForward = MessageFactory(msg_from=aircraft.info["callsign"]) # type: ignore
+        aircraft_logon_response = aircraft.logon()
 
         # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
+        assert aircraft_logon_response.status_code == 200
 
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
 
         msg = {
             "logon": "NoOp",

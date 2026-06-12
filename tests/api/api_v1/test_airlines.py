@@ -12,18 +12,17 @@ import secrets
 from unittest.mock import AsyncMock, patch
 
 # Third Party Libraries
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 
 # Local Libraries
 from acars_server.databases import AirlineApiKey, RequestNewAirline, redis_async_db
-from tests.api.api_v1.test_dlic import dlic_logon_request
 from tests.factories.messages import MessageFactory, MessageFactoryNoCommit
 from tests.factories.airlines import AirlineApiKeyFactory, NewAirlineRequestFactory
 from tests.factories.user import CallsignFactory
-from tests.fixtures.airline_authorisation import create_airline_api_key
-from tests.fixtures.user_authorisation import create_api_key
+from tests.fixtures.auth import Authentication
+
 
 class TestTransmitMessage:
     """Airline Transmit Message"""
@@ -31,45 +30,21 @@ class TestTransmitMessage:
         """
         Test that an airline can send a message to online aircraft
         """
-        # Create the database entry
-        airline, airline_key = create_airline_api_key()
-        _, aircraft_key = create_api_key()
-        callsign = CallsignFactory()
+        airline = Authentication(client, "airline")
+        airline.logon()
 
-        # Logon Aircraft
-        response_ac, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=aircraft_key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
-
-        # Check the results
-        assert response_ac.status_code == 200
-
-        # Logon Airline
-        response_coy, _ = dlic_logon_request(
-            logon_from=airline.airline_callsign,
-            logon_to="_SYSTEM_DLIC",
-            api_key=airline_key,
-            endpoint="/dlic/airline/logon",
-            client=client
-        )
-
-        # Check the results
-        print(response_coy.json())
-        assert response_coy.status_code == 200
+        aircraft = Authentication(client, "aircraft")
+        aircraft.logon()
 
         # Don't attempt to validate message at this point
         # Message validation during post to endpoint
         message = MessageFactory(
-            msg_to = callsign["callsign"],
-            msg_from = airline.airline_callsign
+            msg_to = aircraft.info["callsign"],
+            msg_from = airline.info["callsign"]
             )
 
-        client.headers.update({"x-key": airline_key})
-        response = client.post("/airline/tx", json=message.model_dump())
+        client.headers.update(airline.info["headers"])
+        response = client.post("/airline/tx", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
         assert response.status_code == 201
@@ -79,72 +54,25 @@ class TestTransmitMessage:
         Test that an airline attempting to send a message to an offline
         airline is rejected
         """
-        # Create the database entry
-        airline, airline_key = create_airline_api_key()
+        airline = Authentication(client, "airline")
+        airline.logon()
+
         callsign = CallsignFactory()
-
-        # Logon Airline
-        response_coy, _ = dlic_logon_request(
-            logon_from=airline.airline_callsign,
-            logon_to="_SYSTEM_DLIC",
-            api_key=airline_key,
-            endpoint="/dlic/airline/logon",
-            client=client
-        )
-
-        # Check the results
-        print(response_coy.json())
-        assert response_coy.status_code == 200
 
         # Don't attempt to validate message at this point
         # Message validation during post to endpoint
         message = MessageFactory(
-            msg_to = callsign["callsign"],
-            msg_from = airline.airline_callsign
+            msg_to = callsign["callsign"], # type: ignore
+            msg_from = airline.info["callsign"]
             )
 
-        client.headers.update({"x-key": airline_key})
-        response = client.post("/airline/tx", json=message.model_dump())
+        client.headers.update(airline.info["headers"])
+        response = client.post("/airline/tx", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
         assert response.status_code == 404
-        assert response.json()["error"] == f"{callsign['callsign']} is not active on the network"
-
-    def test_tx_incorrect_airline(self, client: TestClient):
-        """
-        Test that an airline attempting to send a message to an offline
-        airline is rejected
-        """
-        # Create the database entry
-        airline, airline_key = create_airline_api_key()
-        callsign = CallsignFactory()
-
-        # Logon Airline
-        response_coy, _ = dlic_logon_request(
-            logon_from=airline.airline_callsign,
-            logon_to="_SYSTEM_DLIC",
-            api_key=airline_key,
-            endpoint="/dlic/airline/logon",
-            client=client
-        )
-
-        # Check the results
-        print(response_coy.json())
-        assert response_coy.status_code == 200
-
-        # Don't attempt to validate message at this point
-        # Message validation during post to endpoint
-        message = MessageFactory(
-            msg_to = callsign["callsign"],
-            msg_from = airline.airline_callsign
-            )
-
-        client.headers.update({"x-key": airline_key})
-        response = client.post("/airline/tx", json=message.model_dump())
-        client.headers.pop("x-key")
-        print(response.json())
-        assert response.status_code == 404
-        assert response.json()["error"] == f"{callsign['callsign']} is not active on the network"
+        assert response.json()["error"] == f"{
+            callsign['callsign']} is not active on the network" # type: ignore
 
 
 class TestNewAirline:
@@ -153,7 +81,7 @@ class TestNewAirline:
         """Create a new airline"""
         airline = NewAirlineRequestFactory()
 
-        response = client.post("/airline/new", json=airline.model_dump())
+        response = client.post("/airline/new", json=airline.model_dump()) # type: ignore
 
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
@@ -162,10 +90,10 @@ class TestNewAirline:
     def test_new_already_exists(self, client: TestClient):
         """Attempt to a create a new airline that already exists"""
         # This should create an airline
-        airline_a: AirlineApiKey = AirlineApiKeyFactory()
+        airline_a: AirlineApiKey = AirlineApiKeyFactory() # type: ignore
 
         # This should create a request for the same airline
-        airline_b: RequestNewAirline = NewAirlineRequestFactory(
+        airline_b: RequestNewAirline = NewAirlineRequestFactory( # type: ignore
             airline_callsign=airline_a.airline_callsign.split("_")[2],
             network=airline_a.network
             )
@@ -177,7 +105,7 @@ class TestNewAirline:
 
     def test_new_request_already_made(self, client: TestClient):
         """Create a new airline"""
-        airline: RequestNewAirline = NewAirlineRequestFactory()
+        airline: RequestNewAirline = NewAirlineRequestFactory() # type: ignore
 
         # First request to create an airline
         response_a = client.post("/airline/new", json=airline.model_dump())
@@ -195,7 +123,8 @@ class TestNewAirline:
     @patch("acars_server.api.routes.airlines.Resolver.resolve")
     def test_new_with_domain_verification(self, mock_resolve, client: TestClient):
         """Create a new airline"""
-        airline: RequestNewAirline = NewAirlineRequestFactory(domain="NOT-A-DOMAIN.LOCAL")
+        airline: RequestNewAirline = NewAirlineRequestFactory(
+            domain="NOT-A-DOMAIN.LOCAL") # type: ignore
 
         response = client.post("/airline/new", json=airline.model_dump())
         assert response.status_code == 200
@@ -227,7 +156,8 @@ class TestNewAirline:
     @patch("acars_server.api.routes.airlines.Resolver.resolve")
     def test_auth_with_no_matching_txt_record(self, mock_resolve, client: TestClient):
         """Create a new airline"""
-        airline: RequestNewAirline = NewAirlineRequestFactory(domain="NOT-A-DOMAIN.LOCAL")
+        airline: RequestNewAirline = NewAirlineRequestFactory(
+            domain="NOT-A-DOMAIN.LOCAL") # type: ignore
 
         response = client.post("/airline/new", json=airline.model_dump())
         assert response.status_code == 200
@@ -252,64 +182,44 @@ class TestNewAirline:
 class TestAirlineRx:
     """Test Airline Rx Path"""
 
-    @pytest.mark.anyio
+    @pytest.mark.asyncio
     async def test_valid_auth(self, client: TestClient):
         """Test valid authentication"""
-        company, company_key = create_airline_api_key()
-        _, aircraft_key = create_api_key()
-        callsign = CallsignFactory()
+        airline = Authentication(client, "airline")
+        airline.logon()
 
-        url = f"/airline/rx/{company.network}/{company.airline_callsign[-3:]}"
+        aircraft = Authentication(client, "aircraft")
+        aircraft.logon()
 
-        response_coy, _ = dlic_logon_request(
-            logon_from=company.airline_callsign,
-            logon_to="_SYSTEM_DLIC",
-            api_key=company_key,
-            endpoint="/dlic/airline/logon",
-            client=client
-        )
-        assert response_coy.status_code == 200
+        url = f"/airline/rx/{airline.airline.network}/{airline.airline.airline_callsign[-3:]}"
 
         msg = MessageFactoryNoCommit(
-            msg_from=callsign["callsign"],
-            msg_to=company.airline_callsign)
+            msg_from=aircraft.info["callsign"],
+            msg_to=airline.info["callsign"])
 
-        # Aircraft Login
-        response, _ = dlic_logon_request(
-            logon_from=callsign["callsign"],
-            logon_to="EGKK",
-            api_key=aircraft_key,
-            endpoint="/dlic/aircraft/logon",
-            client=client
-        )
-
-        # Check the results
-        assert response.status_code == 200
-        jwt = response.json()["access_token"]
-
-        client.headers.update({"Authorization": f"Bearer {jwt}"})
+        client.headers.update(aircraft.info["headers"])
         with patch(
             "acars_server.api.routes.acars.callsign_verification",
-            new=AsyncMock(return_value=callsign["callsign"])
+            new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
-            response_tx = client.post("/acars/tx", json=msg.model_dump())
+            response_tx = client.post("/acars/tx", json=msg.model_dump()) # type: ignore
         client.headers.pop("Authorization")
 
         assert response_tx.status_code == 201
         print("INFO: sent tx", response_tx.status_code)
 
-        client.headers.update({"x-key": company_key})
+        client.headers.update(airline.info["headers"])
         print("INFO: opening stream", url)
 
         # Mock Redis to avoid event loop issues in testing
         # Return a sample message after first xread call
         try:
-            company_airline_callsign = f"_COY_{company.airline_callsign[-3:]}"
+            airline_callsign = f"_COY_{airline.airline.airline_callsign[-3:]}"
             msg_data = {
-                b"msg_from": callsign["callsign"].encode() if isinstance(
-                    callsign["callsign"], str) else callsign["callsign"],
-                b"msg_to": company_airline_callsign.encode() if isinstance(
-                    company_airline_callsign, str) else company_airline_callsign,
+                b"msg_from": aircraft.info["callsign"].encode() if isinstance(
+                    aircraft.info["callsign"], str) else aircraft.info["callsign"],
+                b"msg_to": airline_callsign.encode() if isinstance(
+                    airline_callsign, str) else airline_callsign,
                 b"msg_type": b"telex",
                 b"packet": b"TEST",
                 b"network": b"vatsim",
@@ -328,7 +238,8 @@ class TestAirlineRx:
                 if call_count[0] == 1:
                     # Return message on first call
                     return [
-                        [f"msg:coy:vatsim:_COY_{format(company.airline_callsign[-3:]).encode()}",
+                        [f"msg:coy:vatsim:_COY_{
+                            format(airline.airline.airline_callsign[-3:]).encode()}",
                          [("1-0", msg_data)]]]
                 else:
                     # No more messages
@@ -338,9 +249,9 @@ class TestAirlineRx:
             redis_async_db.xread = mock_xread
 
             # Use httpx client directly to bypass TestClient streaming limitations
-            transport = httpx.ASGITransport(app=client.app)
-            async_client = httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
-            async_client.headers.update({"x-key": company_key})
+            transport = httpx2.ASGITransport(app=client.app)
+            async_client = httpx2.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
+            async_client.headers.update(airline.info["headers"])
 
             print("INFO: about to call async stream")
 
@@ -355,7 +266,7 @@ class TestAirlineRx:
 
                     if line.startswith("data:"):
                         found = True
-                        assert callsign["callsign"] in line
+                        assert aircraft.info["callsign"] in line
                         break
 
                 assert found, "No data message received from SSE stream"
@@ -371,3 +282,25 @@ class TestAirlineRx:
         client.headers.update({"x-key": "NOT_A_KEY"})
         response = client.get("/airline/rx/vatsim/wiffle")
         assert response.status_code == 401
+
+    @pytest.mark.asyncio
+    async def test_invalid_callsign(self, client: TestClient):
+        """Test valid authentication"""
+        airline = Authentication(client, "airline")
+        airline.logon()
+
+        url = f"/airline/rx/{airline.airline.network}/NOTACALLSIGN"
+
+        client.headers.update(airline.info["headers"])
+        print("INFO: opening stream", url)
+
+        # Use httpx client directly to bypass TestClient streaming limitations
+        transport = httpx2.ASGITransport(app=client.app)
+        async_client = httpx2.AsyncClient(transport=transport, base_url="http://127.0.0.1:8000")
+        async_client.headers.update(airline.info["headers"])
+
+        print("INFO: about to call async stream")
+
+        async with async_client.stream("GET", url) as response:
+            print("INFO: stream opened", response.status_code)
+            assert response.status_code == 403

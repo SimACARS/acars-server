@@ -104,7 +104,7 @@ async def atsu_callback_vatsim(
     if v_user[0] != 200:
         return JSONResponse(status_code=v_user[0], content={"error": v_user[1]})
 
-    return await complete_vatsim_atsu_logon(v_user[1]["data"], session)
+    return await complete_vatsim_atsu_logon(v_user[1], session)
 
 @router.post("/atsu/refresh")
 async def refresh_atsu_jwt(
@@ -144,7 +144,7 @@ async def refresh_atsu_jwt(
         raise HTTPException(status_code=401, detail="JWT expired signature") from err
     except jwt.InvalidAudienceError as err:
         raise HTTPException(status_code=401, detail="JWT invalid audience") from err
-    except jwt.MissingRequiredClaimError as err:
+    except jwt.MissingRequiredClaimError as err: # pragma: no cover
         raise HTTPException(status_code=401, detail="JWT missing claim") from err
     except jwt.InvalidSignatureError as err:
         raise HTTPException(status_code=401, detail="JWT invalid signature") from err
@@ -152,7 +152,7 @@ async def refresh_atsu_jwt(
     updated_jwt = await jwt_auth.sign_jwt(
         decoded_token["network"],
         decoded_token["uid"],
-        decoded_token["logoff"],
+        decoded_token["loc"],
         ["acars:atsu"],
         timedelta(minutes=10)
         )

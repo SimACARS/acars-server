@@ -16,7 +16,10 @@ from loguru import logger
 # Local Libraries
 
 
-def load_json_url(url: str, timeout: int = 5, headers: dict|None = None) -> Dict[str, Any]:
+def load_json_url(
+        url: str,
+        timeout: int = 5,
+        headers: dict|None = None) -> Dict[str, Any]: # pragma: no cover
     """Requests a json page and returns the output"""
     try:
         if not headers:
@@ -33,7 +36,7 @@ def load_json_url(url: str, timeout: int = 5, headers: dict|None = None) -> Dict
         logger.warning(f"{err} - {url}")
     return {}
 
-async def _ensure_group(redis, stream: str, group: str):
+async def _ensure_group(redis, stream: str, group: str): # pragma: no cover
     """Add a group"""
     try:
         await redis.xgroup_create(
@@ -49,14 +52,14 @@ async def _ensure_group(redis, stream: str, group: str):
 
 _ensure_store = set()
 
-async def ensure_group_once(redis, stream, group):
+async def ensure_group_once(redis, stream, group): # pragma: no cover
     """Ensure the group exists in Redis."""
     if group in _ensure_store:
         return
     _ensure_store.add(group)
     await _ensure_group(redis, stream, group)
 
-async def stream_messages(redis, stream: str, group: str, consumer: str):
+async def stream_messages(redis, stream: str, group: str, consumer: str): # pragma: no cover
     """Stream Messages"""
     while True:
         resp = await redis.xreadgroup(

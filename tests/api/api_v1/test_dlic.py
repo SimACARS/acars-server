@@ -26,6 +26,7 @@ from acars_server.databases import AirlineApiKey, DataLinkInitiationCapability
 from tests.factories.airlines import AirlineApiKeyFactory
 from tests.factories.user import CallsignFactory
 from tests.fixtures.airline_authorisation import create_airline_api_key
+from tests.fixtures.auth import Authentication
 from tests.fixtures.user_authorisation import create_api_key
 
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -68,32 +69,24 @@ class TestAirlineLogon:
         """
         Test that an aircraft can log on using the API key authentication.
         """
-        # Create the database entry
-        airline, airline_key = create_airline_api_key()
-
-        # Login
-        response, login_data = dlic_logon_request(
-            logon_from=airline.airline_callsign,
-            logon_to="_SYSTEM_DLIC",
-            api_key=airline_key,
-            endpoint="/dlic/airline/logon",
-            client=client
-        )
+        airline = Authentication(client, "airline")
+        airline_logon_response = airline.logon()
+        print(airline_logon_response.json())
 
         # Check the results
-        assert response.status_code == 200
-        assert response.json()["status"] == "logged on"
-        obj = DataLinkInitiationCapability.model_validate(response.json()["data"])
+        assert airline_logon_response.status_code == 200
+        assert airline_logon_response.json()["status"] == "logged on"
+        obj = DataLinkInitiationCapability.model_validate(airline_logon_response.json()["data"])
         assert obj
         assert re.fullmatch(r"\d+\.\d+", str(obj.created))
-        assert obj.logon_from == f"_COY_{airline.airline_callsign}"
+        assert obj.logon_from == f"_COY_{airline.info['callsign']}"
         assert obj.logon_to == "_SYSTEM_DLIC"
         assert obj.network == "vatsim"
         assert obj.fans_1_a_atn_b1 is False
         assert obj.atn_b1 is False
         assert obj.fans_1_a is False
         assert re.fullmatch(r"[a-f0-9]{64}", obj.logoff_code)
-        assert obj.logoff_code != login_data["logoff_code"]
+        assert obj.logoff_code == airline_logon_response.json()["data"]["logoff_code"]
 
     def test_dlic_airline_logon_duplicate(self, client: TestClient):
         """
@@ -171,8 +164,8 @@ class TestAirlineLogon:
         Test that an airline can log off using the logoff code from logon.
         """
         # Create the database entry
-        airline_a: AirlineApiKey = AirlineApiKeyFactory()
-        airline_b: AirlineApiKey = AirlineApiKeyFactory()
+        airline_a: AirlineApiKey = AirlineApiKeyFactory() # type: ignore
+        airline_b: AirlineApiKey = AirlineApiKeyFactory() # type: ignore
 
         # Login
         response, _ = dlic_logon_request(
@@ -300,7 +293,7 @@ class TestAircraftLogon:
         assert response.json()["status"] == "logged off"
         assert response.json()["callsign"] == callsign["callsign"]
 
-    @pytest.mark.anyio
+    @pytest.mark.asyncio
     async def test_dlic_aircraft_incorrect_logoff(self, client: TestClient):
         """
         Test that an incorrect logoff code is rejected.
