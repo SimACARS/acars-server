@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/SimACARS/acars-server/compare/v2.0.0...v2.0.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* KeyError, should be loc not logoff ([d7ea698](https://github.com/SimACARS/acars-server/commit/d7ea698dec129b907544514546bc0728ee2d7f21))
+* should just be sending [1] ([c2f1427](https://github.com/SimACARS/acars-server/commit/c2f1427625f5704449364bf49dac1f5067af0cd7))
+
 # [2.0.0](https://github.com/SimACARS/acars-server/compare/v1.11.1...v2.0.0) (2026-06-10)
 
 
