@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.1.0-alpha.1](https://github.com/SimACARS/acars-server/compare/v2.0.1...v2.1.0-alpha.1) (2026-06-13)
+
+
+### Features
+
+* started adding cpdlc v1 type check ([2fdbbc7](https://github.com/SimACARS/acars-server/commit/2fdbbc7950a6fca49eda6ea95f31ea621b931398))
+
 ## [2.0.1](https://github.com/SimACARS/acars-server/compare/v2.0.0...v2.0.1) (2026-06-12)
 
 
