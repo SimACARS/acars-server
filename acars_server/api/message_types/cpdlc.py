@@ -138,21 +138,3 @@ class Cpdlc:
         common.logger.error(
             f"CPDLC: Invalid {direction} response format. - {response_required}")
         return {"data": "ERROR"}
-
-m = {
-    "msg_from": "RFI221B",
-    "msg_to": "_ATC_EGKK",
-    "msg_type": "cpdlc",
-    "packet": "1/1/260613182500/N/DM109,1423",
-    "network": "vatsim",
-    "created": datetime.now(tz=timezone.utc).timestamp()
-}
-m_val = databases.StoreAndForward.model_validate(m)
-logger.debug(m_val.model_dump())
-
-c = Cpdlc(m_val)
-c.parse_message()
-logger.debug(c.exploded)
-with Session(databases.engine) as s:
-    c.message_validation(s)
-logger.debug(c.exploded)
