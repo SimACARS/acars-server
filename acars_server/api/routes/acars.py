@@ -126,7 +126,7 @@ async def transmit_a_message(
     background_tasks: BackgroundTasks,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
-    Transmit a message
+    Allow an aircraft to transmit a message
     \nJWT Audience: ["acars:aircraft"]
     \n\tMessage Type:cpdlc
     \n\tPacket:str (separated by '/'): 
