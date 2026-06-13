@@ -1,4 +1,4 @@
-Ref #,Message Intent/Use,Message Element,Resp.,
+Ref,Message Intent,Message Element,Resp,
 UM  169q,Acknowledgement  of  receipt  of  a  CPDLC  downlink MAYDAY message.  Note.— No equivalent to ICAO Doc 4444.,ROGER MAYDAY,R,
 UM  169r,Acknowledgement  of  receipt  of  a  CPDLC  downlinked PAN message.  Note.— No equivalent to ICAO Doc 4444.,ROGER PAN,R,
 UM  169ak,Notification that an ADS-C emergency report  has been received from the aircraft.  Note.— No equivalent to ICAO Doc 4444.,CONFIRM  ADS-C  EMERGENCY,R,
