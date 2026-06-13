@@ -1,5 +1,24 @@
 # Changelog
 
+# [2.1.0-alpha.2](https://github.com/SimACARS/acars-server/compare/v2.1.0-alpha.1...v2.1.0-alpha.2) (2026-06-13)
+
+
+### Bug Fixes
+
+* missing bearer types ([0be4e3b](https://github.com/SimACARS/acars-server/commit/0be4e3bed8c17f496bf2650e01580889516241c3))
+* **temp:** nerf'd cpdlc checks ([ee6fca2](https://github.com/SimACARS/acars-server/commit/ee6fca2e6de6c5d9e160e4e53f18c9ae35b676bb))
+* test could should be removed ([faae2af](https://github.com/SimACARS/acars-server/commit/faae2af7cb2937dae08dbf30d050bee1d9440809))
+
+
+### Features
+
+* added CPDLC types table ([27ab94c](https://github.com/SimACARS/acars-server/commit/27ab94cc020473f9689396d088724b05718e1880))
+* calls cpdlc validator ([f09cae2](https://github.com/SimACARS/acars-server/commit/f09cae27a6aa4cf1b73f47116259788addfec60a))
+* cpdlc connection state store ([8ee3486](https://github.com/SimACARS/acars-server/commit/8ee34863923bd6b990830714b886dd4d63bb2f9e))
+* cpdlc validation (incomplete) ([0963a25](https://github.com/SimACARS/acars-server/commit/0963a25c7b45659cfce22423a22ae8dec1480449))
+* technology routes closes [#51](https://github.com/SimACARS/acars-server/issues/51) ([ad9f031](https://github.com/SimACARS/acars-server/commit/ad9f03124a40e8d9e50c2797b592fab9355f21b2))
+* transmission delay types ([54746f8](https://github.com/SimACARS/acars-server/commit/54746f8950a35ed8ef616585f3bcda2f5345a82f))
+
 # [2.1.0-alpha.1](https://github.com/SimACARS/acars-server/compare/v2.0.1...v2.1.0-alpha.1) (2026-06-13)
 
 
