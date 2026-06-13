@@ -106,16 +106,14 @@ async def dlic_aircraft_logon(
         cs_logon = databases.DataLinkInitiationCapability.find(
                     (databases.DataLinkInitiationCapability.logon_from == callsign)
                 ).first()
-    except NotFoundError:
-        pass
-
-    if cs_logon:
         common.logger.warning(f"{callsign} is already logged on {cs_logon.model_dump()}")
         return JSONResponse(content={
             "status": "already logged on",
             "callsign": callsign,
             "atsu": cs_logon.logon_to
             })
+    except NotFoundError:
+        pass
 
     sf_msg = databases.DataLinkInitiationCapability.model_validate(msg)
     logoff_code = await dlic_logoff_hash(sf_msg)
