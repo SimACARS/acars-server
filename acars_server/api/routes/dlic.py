@@ -97,10 +97,12 @@ async def dlic_aircraft_logon(
     """
     DLIC Aircraft Logon
     Returns a JWT for persistant login
+    This does <b>not</b> log a user onto an ATSU, a separate DM99 message must be sent
     """
     user_data = await api_authentication(session, api_key)
     callsign = await callsign_verification(user_data)
 
+    # Check to see if user is already logged on
     cs_logon = None
     try:
         cs_logon = databases.DataLinkInitiationCapability.find(
