@@ -126,8 +126,13 @@ async def transmit_a_message(
     background_tasks: BackgroundTasks,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
-    Legacy message
+    Transmit a message
     \nJWT Audience: ["acars:aircraft"]
+    \n\tMessage Type:cpdlc
+    \n\tPacket:str (separated by '/'): 
+    \n\t\t{MSG_ID:int}/{RESPONSE_ID:int|none}/{TIMESTAMP:%y%m%d%H%M%S}/{ACK:str}/{MESSAGE:str}
+    \n\t\tMESSAGE DM/UM codes only. Any data fields should follow in order delimted by ','
+    \n\t\texample: DM104,ABEVI,1430 or DM11,POL,FL240
     """
 
     user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
