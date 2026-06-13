@@ -35,9 +35,9 @@ LOGON_DATA = {
 
 AUTHENTICATED_END_POINTS = [
     ("/airline/rx/vatsim/BAW123", "get", None),
-    ("/airline/tx", "post", MessageFactory()),
+    ("/airline/tx/atn_vhf", "post", MessageFactory()),
     ("/acars/poll", "post", None),
-    ("/acars/tx", "post", MessageFactory()),
+    ("/acars/tx/atn_vhf", "post", MessageFactory()),
     ("/dlic/airline/logon", "post", LOGON_DATA),
     ("/dlic/aircraft/logon", "post", LOGON_DATA),
     ("/dlic/aircraft/logoff", "post", {"logoff_code": secrets.token_hex(32)}),

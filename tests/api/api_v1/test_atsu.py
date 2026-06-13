@@ -374,7 +374,7 @@ class TestATSURx:
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
-            response_tx = client.post("/acars/tx", json=msg.model_dump())
+            response_tx = client.post("/acars/tx/atn_vhf", json=msg.model_dump())
         client.headers.pop("Authorization")
 
         assert response_tx.status_code == 201
@@ -544,7 +544,7 @@ class TestATSUTx:
             msg_to=aircraft.info["callsign"])
 
         client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
-        msg_response = client.post("/atsu/tx", json=msg.model_dump())
+        msg_response = client.post("/atsu/tx/atn_vhf", json=msg.model_dump())
         print(msg_response.content)
         assert msg_response.status_code == 201
         assert msg_response.json() == msg.model_dump()
@@ -588,7 +588,7 @@ class TestATSUTx:
             msg_to=aircraft.info["callsign"])
 
         client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
-        msg_response = client.post("/atsu/tx", json=msg.model_dump())
+        msg_response = client.post("/atsu/tx/atn_vhf", json=msg.model_dump())
         print(msg_response.content)
         assert msg_response.status_code == 404
 
@@ -643,6 +643,6 @@ class TestATSUTx:
             msg_to=aircraft.info["callsign"])
 
         client.headers.update({"Authorization": f"Bearer {atsu2_auth_headers['credentials']}"})
-        msg_response = client.post("/atsu/tx", json=msg.model_dump())
+        msg_response = client.post("/atsu/tx/atn_vhf", json=msg.model_dump())
         print(msg_response.content)
         assert msg_response.status_code == 403
