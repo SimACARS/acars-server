@@ -324,6 +324,26 @@ class OAuthStateStore(HashModel, index=True): # type: ignore
         """MetaData"""
         database = redis_db
 
+
+class CpdlcConnectionStateStore(HashModel, index=True): # type: ignore
+    """A store for OAuth states"""
+    msg_initiator: Annotated[
+        str, Query(
+            min_length=4,
+            max_length=10,
+            pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
+    msg_to: Annotated[
+        str, Query(
+            min_length=4,
+            max_length=10,
+            pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
+    message_counter: int=1
+
+    class Meta:
+        """MetaData"""
+        database = redis_db
+
+
 class RequestNewAirline(HashModel):
     """A DLIC logoff request"""
     network: Annotated[str, AfterValidator(check_valid_network)]
