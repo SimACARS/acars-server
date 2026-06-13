@@ -12,7 +12,7 @@ import random
 import re
 from datetime import datetime as dt, timezone as tz
 from time import sleep
-from typing import Any, Dict
+from typing import Any, Dict, Literal, Tuple
 
 # Third Party Libraries
 
@@ -26,39 +26,33 @@ vs = inforeq.Vatsim()
 
 class TransmissionDelay:
     """Transmission Delay"""
-    @staticmethod
-    async def fans_hf() -> None:
-        """FANS 1/A HFDL - 60s to 90s - 1.8kbps"""
-        timer = random.randint(60,90)
-        sleep(timer)
+
+    BEARER_TYPES:Dict[str,Tuple[int,int]] = {
+        "fans_hf": (60,90), # 1.8kbps
+        "fans_vhf": (4,10), # 2.4kbps
+        "fans_satcom": (30,45),
+        "atn_vhf":  (1,4), # 31.5kbps
+        "atn_satcom": (10,20),
+    }
 
     @staticmethod
-    async def fans_vhf() -> None:
-        """FANS 1/A VHF - 4s to 10s - 2.4kbps"""
-        timer = random.randint(4,10)
-        sleep(timer)
-
-    @staticmethod
-    async def fans_satcom() -> None:
-        """FANS 1/A SATCOM - 30s to 45s"""
-        timer = random.randint(30,45)
-        sleep(timer)
-
-    @staticmethod
-    async def atn_vhf() -> None:
-        """ATN VHF - 1s to 4s - 31.5kbps"""
-        timer = random.randint(1,4)
-        sleep(timer)
-
-    @staticmethod
-    async def atn_satcom() -> None:
-        """ATN SATCOM - 10s to 20s"""
-        timer = random.randint(10,20)
-        sleep(timer)
+    async def random_delay(delay:Tuple[int,int], msg_created_timestamp:float) -> None:
+        """Delay any action by a random amount"""
+        now = dt.now(tz.utc).timestamp()
+        timer = random.randint(delay[0], delay[1])
+        if (now - msg_created_timestamp) < timer:
+            sleep(timer)
 
 
-async def message_parse(msg:databases.StoreAndForward):
+async def message_parse(
+        msg:databases.StoreAndForward,
+        bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"]):
     """Parse a message"""
+
+    # Force an artificial delay to simulate a network type
+    await TransmissionDelay.random_delay(
+        TransmissionDelay.BEARER_TYPES[bearer], msg.created)
+
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
 

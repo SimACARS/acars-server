@@ -8,7 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 from datetime import datetime as dt, timezone as tz
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, Literal
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
@@ -112,17 +112,19 @@ async def hoppie_formated_url(
     sf_msg = databases.StoreAndForward.model_validate(msg)
     await transmit_a_message(
         msg=sf_msg,
+        bearer="fans_vhf",
         background_tasks=background_tasks,
         jwt=jwt)
 
 @router.post(
-        "/tx",
+        "/tx/{bearer}",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
+    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
     background_tasks: BackgroundTasks,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
@@ -141,7 +143,7 @@ async def transmit_a_message(
 
     # If the callsign has been validated
     if callsign:
-        background_tasks.add_task(tasks.message_parse, sf_msg)
+        background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
         return sf_msg
 
     error = (f"Callsign validation failed - Network: {user_data['network']}, "
