@@ -52,7 +52,7 @@ class Cpdlc:
             return data_check
 
         common.logger.error(
-            f"CPDLC: Invalid Format. Expected ^/data2/d+/d*/[A-Z]{0,2}/.*$ - {self.message}")
+            f"CPDLC: Invalid Format - {self.message}")
         return None
 
     def parse_message(self) -> None:
