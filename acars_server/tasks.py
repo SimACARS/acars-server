@@ -21,6 +21,40 @@ from acars_server.api.message_types import adexp, inforeq
 
 vs = inforeq.Vatsim()
 
+
+class TransmissionDelay:
+    """Transmission Delay"""
+    @staticmethod
+    async def fans_hf() -> None:
+        """FANS 1/A HFDL - 60s to 90s - 1.8kbps"""
+        timer = random.randint(60,90)
+        sleep(timer)
+
+    @staticmethod
+    async def fans_vhf() -> None:
+        """FANS 1/A VHF - 4s to 10s - 2.4kbps"""
+        timer = random.randint(4,10)
+        sleep(timer)
+
+    @staticmethod
+    async def fans_satcom() -> None:
+        """FANS 1/A SATCOM - 30s to 45s"""
+        timer = random.randint(30,45)
+        sleep(timer)
+
+    @staticmethod
+    async def atn_vhf() -> None:
+        """ATN VHF - 1s to 4s - 31.5kbps"""
+        timer = random.randint(1,4)
+        sleep(timer)
+
+    @staticmethod
+    async def atn_satcom() -> None:
+        """ATN SATCOM - 10s to 20s"""
+        timer = random.randint(10,20)
+        sleep(timer)
+
+
 async def message_parse(msg:databases.StoreAndForward):
     """Parse a message"""
     common.logger.debug("Message Parser")
