@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, Query
 from pydantic import AfterValidator, SerializeAsAny
 from redis_om import get_redis_connection, Field as RedisField, HashModel, JsonModel
-from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
+from sqlmodel import Column, Field, Relationship, Session, SQLModel, Text, create_engine
 
 # Local Libraries
 from acars_server import static_data
@@ -119,6 +119,24 @@ class ApiKeyUpdate(ApiKeyBase):
     network: str | None = None
     last_used: float | None = None
 
+
+# ------------------------------------------------------------------
+# CPDLC Message Types
+# ------------------------------------------------------------------
+class CPDLCTypes(SQLModel, table=True):
+    """A table to hold all CPDLC message types"""
+    direction: str
+    reference_number: Annotated[
+        str, Query(
+            min_length=3,
+            max_length=7,
+            pattern="^[UD]M[0-9]{1,3}[a-z]{0,2}$")] = Field(index=True, primary_key=True)
+    message_intent: str = Field(sa_column=Column(Text))
+    message_element: str
+    response_type: str
+    fans_1_a: bool = False
+    fans_1_a_atn_b1: bool = False
+    atn_b1: bool = False
 
 # ------------------------------------------------------------------
 # Airline API Keys - For airlines to access the API
