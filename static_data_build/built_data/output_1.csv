@@ -1,4 +1,4 @@
-Ref  #,Message Intent/Use,Message Element,Resp.,Data  link  system(s)
+Ref,Message Intent,Message Element,Resp,Data link system
 UM  0,Indicates  that  ATC  cannot  comply  with  the request.,UNABLE,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
 UM  1,"Indicates  that  ATC  has  received  the  message and will respond.  Note.—  The  flight  crew  is  informed  that  the  request  is  being  assessed  and  there  will  be  a  short-term  delay  (e.g.  as  appropriate, given the situation, but not to  exceed  10  minutes).  The  exchange  is  not  closed  and  the  request  will  be  responded  to when conditions allow.",STANDBY,N  or  NE,FANS 1/A  ATN B1  FANS 1/A- ATN B1
 UM  2,Indicates  that  ATC  has  received  the  request but it has been deferred until later.  Note.—  The  flight  crew  is  informed  that  the request is being assessed and a long- term delay can be expected. The exchange  is  not  closed  and  the  request  will  be  responded to when conditions allow.,REQUEST DEFERRED,N  or  NE,FANS 1/A
