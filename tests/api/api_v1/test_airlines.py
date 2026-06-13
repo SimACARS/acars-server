@@ -44,7 +44,7 @@ class TestTransmitMessage:
             )
 
         client.headers.update(airline.info["headers"])
-        response = client.post("/airline/tx", json=message.model_dump()) # type: ignore
+        response = client.post("/airline/tx/atn_vhf", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
         assert response.status_code == 201
@@ -67,7 +67,7 @@ class TestTransmitMessage:
             )
 
         client.headers.update(airline.info["headers"])
-        response = client.post("/airline/tx", json=message.model_dump()) # type: ignore
+        response = client.post("/airline/tx/atn_vhf", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
         assert response.status_code == 404
@@ -202,7 +202,7 @@ class TestAirlineRx:
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
-            response_tx = client.post("/acars/tx", json=msg.model_dump()) # type: ignore
+            response_tx = client.post("/acars/tx/atn_vhf", json=msg.model_dump()) # type: ignore
         client.headers.pop("Authorization")
 
         assert response_tx.status_code == 201

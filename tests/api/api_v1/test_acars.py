@@ -112,7 +112,7 @@ class TestAircraftAcarsTx:
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=aircraft.info["callsign"])
         ):
-            response_b = client.post("/acars/tx", json=message.model_dump())
+            response_b = client.post("/acars/tx/atn_vhf", json=message.model_dump())
         client.headers.pop("Authorization")
 
         assert response_b.status_code == 201
@@ -131,7 +131,7 @@ class TestAircraftAcarsTx:
             "acars_server.api.routes.acars.callsign_verification",
             new=AsyncMock(return_value=None)):
 
-            response_b = client.post("/acars/tx", json=message.model_dump())
+            response_b = client.post("/acars/tx/atn_vhf", json=message.model_dump())
         client.headers.pop("Authorization")
 
         assert response_b.status_code == 403
