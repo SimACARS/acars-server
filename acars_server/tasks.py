@@ -8,15 +8,17 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import ast
+import random
 import re
 from datetime import datetime as dt, timezone as tz
+from time import sleep
 from typing import Any, Dict
 
 # Third Party Libraries
 
 # Local Libraries
 from acars_server import common, databases, functions
-from acars_server.api.message_types import adexp, inforeq
+from acars_server.api.message_types import adexp, cpdlc, inforeq
 
 
 vs = inforeq.Vatsim()
@@ -69,8 +71,8 @@ async def message_parse(msg:databases.StoreAndForward):
             return
     # CPDLC
     elif msg["msg_type"] == "cpdlc": # pragma: no cover
-        if not msg_type_cpdlc(msg):
-            return
+        send_msg = msg_type_cpdlc(msg)
+
     # ADEXP
     elif msg["msg_type"] == "adexp": # pragma: no cover
         adexp_msg = adexp.Adexp(msg)
@@ -114,11 +116,10 @@ def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
         return True
     return False
 
-def msg_type_cpdlc(msg:databases.StoreAndForward) -> bool:
+def msg_type_cpdlc(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Validates CPDLC messages"""
-    if re.match(r"^\/data2\/\d+\/\d*\/[A-Z]{0,2}\/.*$", msg["packet"]):
-        return True
-    return False
+    msg_validation = cpdlc.Cpdlc(msg)
+    return msg_validation
 
 def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Handle INFOREQ messages"""
