@@ -96,3 +96,5 @@ app.include_router(tests.router, prefix="/test", tags=["Testing"])
 app.include_router(dlic.router, prefix="/dlic", tags=["Data Link Initiation and Capability"])
 # ACARS Endpoints
 app.include_router(acars.router, prefix="/acars", tags=["Messaging"])
+# Admin Endpoints
+app.include_router(acars.router, prefix="/admin", tags=["Administration"])
