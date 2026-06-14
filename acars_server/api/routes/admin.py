@@ -93,7 +93,10 @@ async def add_new_atsu_callsign(
 
     common.logger.debug(api_admin)
 
-    if action == "add" and api_admin.id is not None:
+    if action == "add":
+        if api_admin.id is None:
+            raise HTTPException(status_code=403, detail="Admin account missing identifier")
+
         db_check = select(databases.ATSUCallsign).where(
                 (databases.ATSUCallsign.atsu_callsign == msg.atsu_callsign),
                 (databases.ATSUCallsign.network == msg.network),)
@@ -114,6 +117,8 @@ async def add_new_atsu_callsign(
         return JSONResponse(content=msg.model_dump())
     elif action == "delete":
         raise HTTPException(status_code=501, detail="Delete action not implemented")
+
+    raise HTTPException(status_code=400, detail="Invalid action")
 
 @router.post(
         "/{action}/atsu_authorised_callsign/{atsu_callsign}",
