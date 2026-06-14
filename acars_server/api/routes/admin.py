@@ -163,3 +163,5 @@ async def add_new_authorised_atsu_callsign(
                 content={"error": f"{atsu_callsign} doesn't exist"})
     elif action == "delete":
         raise HTTPException(status_code=501, detail="Delete action is not implemented")
+    else:
+        raise HTTPException(status_code=403, detail="Invalid admin authentication state")
