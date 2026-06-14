@@ -14,7 +14,6 @@ from pathlib import Path
 
 # Third Party Libraries
 from dotenv import load_dotenv
-from fastapi import Depends
 from loguru import logger
 from sqlmodel import Session, SQLModel, create_engine, text
 from sqlalchemy.exc import ProgrammingError
