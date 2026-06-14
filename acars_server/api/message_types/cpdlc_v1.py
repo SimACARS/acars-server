@@ -145,4 +145,4 @@ class CpldcTypes:
         Along Track Waypoint
         SEQUENCE
         """
-        ...
+        raise NotImplementedError("atw_along_track_waypoint is not implemented yet")
