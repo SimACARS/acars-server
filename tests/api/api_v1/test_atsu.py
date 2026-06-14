@@ -614,7 +614,7 @@ class TestATSUTx:
         # ATSU 1 Generator
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
         atsu = Authentication(client, "atsu")
-        print(atsu.info)
+
         mock_callsign_verification_func.return_value = atsu.info["callsign"]
         mock_callsign_verification2_func.return_value = atsu.info["callsign"]
         response = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
@@ -623,7 +623,7 @@ class TestATSUTx:
         # ATSU 2 Generator
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
         atsu2 = Authentication(client, "atsu")
-        print(atsu2.info)
+
         mock_callsign_verification_func.return_value = atsu2.info["callsign"]
         mock_callsign_verification2_func.return_value = atsu2.info["callsign"]
         response2 = await complete_vatsim_atsu_logon(vatsim_oauth_response[1], db)
