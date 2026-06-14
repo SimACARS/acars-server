@@ -55,7 +55,6 @@ data_to_build = [
 
 for file in data_to_build:
     logger.debug(file)
-    line_one = True
     with open(file, "r", encoding="utf-8") as f:
         read_csv = csv.DictReader(f)
         for line in read_csv:
