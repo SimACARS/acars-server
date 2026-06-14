@@ -67,7 +67,7 @@ async def add_new_atsu_callsign_owner(
 
         return JSONResponse(content=rtn)
     elif action == "delete":
-        ...
+        raise HTTPException(status_code=501, detail="Delete action not implemented")
 
 @router.post(
         "/{action}/atsu_callsign",
