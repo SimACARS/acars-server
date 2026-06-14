@@ -111,7 +111,7 @@ async def add_new_atsu_callsign(
         session.commit()
         return JSONResponse(content=msg.model_dump())
     elif action == "delete":
-        ...
+        raise HTTPException(status_code=501, detail="Delete action not implemented")
 
 @router.post(
         "/{action}/atsu_authorised_callsign/{atsu_callsign}",
