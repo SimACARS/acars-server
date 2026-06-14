@@ -1,5 +1,27 @@
 # Changelog
 
+# [2.1.0-alpha.4](https://github.com/SimACARS/acars-server/compare/v2.1.0-alpha.3...v2.1.0-alpha.4) (2026-06-14)
+
+
+### Bug Fixes
+
+* Potential fix for pull request finding 'Empty except' ([f225981](https://github.com/SimACARS/acars-server/commit/f225981200c8e12042e724442569384c20531a43))
+* Potential fix for pull request finding 'Explicit returns mixed with implicit (fall through) returns' ([aa6747c](https://github.com/SimACARS/acars-server/commit/aa6747ce2eaad8a1b376100896bdf0c7905a0455))
+* Potential fix for pull request finding 'Explicit returns mixed with implicit (fall through) returns' ([dbfa8dc](https://github.com/SimACARS/acars-server/commit/dbfa8dc93d7ae16b30c367d507d300f46653a484))
+* Potential fix for pull request finding 'Explicit returns mixed with implicit (fall through) returns' ([57d119a](https://github.com/SimACARS/acars-server/commit/57d119a4d1cd3bbacdc4a5abbb3a2b88c6328f9f))
+* Potential fix for pull request finding 'Statement has no effect' ([3bf77d9](https://github.com/SimACARS/acars-server/commit/3bf77d937b7b1ef29be1903dae0e2c73ea378d43))
+* Potential fix for pull request finding 'Statement has no effect' ([fb701eb](https://github.com/SimACARS/acars-server/commit/fb701eb1447c5868e917a568a05348ef69131006))
+* Potential fix for pull request finding 'Statement has no effect' ([a0fd4d4](https://github.com/SimACARS/acars-server/commit/a0fd4d4fb5000e8874a72b3144082f55dae4700a))
+* Potential fix for pull request finding 'Statement has no effect' ([caab14f](https://github.com/SimACARS/acars-server/commit/caab14ff968302b505af6fe87fc9a113dce9fdf8))
+
+
+### Performance Improvements
+
+* Potential fix for pull request finding 'Unused global variable' ([9797f54](https://github.com/SimACARS/acars-server/commit/9797f54584c8f89fa43a9a9b8c95282b9070c321))
+* Potential fix for pull request finding 'Unused import' ([53ef0e9](https://github.com/SimACARS/acars-server/commit/53ef0e986649cb2692316f92ef32301bafd27089))
+* Potential fix for pull request finding 'Unused import' ([cdb6da4](https://github.com/SimACARS/acars-server/commit/cdb6da47b263621fdc3581fa134c53eea9590381))
+* Potential fix for pull request finding 'Unused import' ([a95e804](https://github.com/SimACARS/acars-server/commit/a95e804ed5c213536eec45c70452da4dc9ba1332))
+
 # [2.1.0-alpha.3](https://github.com/SimACARS/acars-server/compare/v2.1.0-alpha.2...v2.1.0-alpha.3) (2026-06-14)
 
 
