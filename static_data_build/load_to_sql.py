@@ -11,7 +11,6 @@ import csv
 import os
 import re
 from pathlib import Path
-from typing import Annotated
 
 # Third Party Libraries
 from dotenv import load_dotenv
