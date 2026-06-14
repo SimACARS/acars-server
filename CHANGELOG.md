@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/SimACARS/acars-server/compare/v2.1.0...v2.1.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* cwe-532 ([70a2eb6](https://github.com/SimACARS/acars-server/commit/70a2eb69b8e37bdc2c0bcf47bdcdc38d3ebe78f9))
+
 # [2.1.0](https://github.com/SimACARS/acars-server/compare/v2.0.1...v2.1.0) (2026-06-14)
 
 
