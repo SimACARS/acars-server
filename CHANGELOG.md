@@ -1,5 +1,14 @@
 # Changelog
 
+# [2.1.0-alpha.3](https://github.com/SimACARS/acars-server/compare/v2.1.0-alpha.2...v2.1.0-alpha.3) (2026-06-14)
+
+
+### Features
+
+* admin api auth ([7226ada](https://github.com/SimACARS/acars-server/commit/7226ada55ec5b265ca2a97315624aa8df78fc70a))
+* admin router ([62c2f94](https://github.com/SimACARS/acars-server/commit/62c2f94202b1c47aecbee471c035e38d89caa2f9))
+* atsu admin api ([d9fd0dd](https://github.com/SimACARS/acars-server/commit/d9fd0ddd20183ab98efbc2350d5da7bc03064f90))
+
 # [2.1.0-alpha.2](https://github.com/SimACARS/acars-server/compare/v2.1.0-alpha.1...v2.1.0-alpha.2) (2026-06-13)
 
 
