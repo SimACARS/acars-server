@@ -1,3 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acars-server"
+version = "2.0.1"
+description = "ACARS Server"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["acars_server*"]
+
 [tool.fastapi]
 entrypoint = "acars_server.__main__:app"
 

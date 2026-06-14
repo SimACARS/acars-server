@@ -8,7 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 from datetime import datetime as dt, timezone as tz
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, Literal
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
@@ -112,22 +112,29 @@ async def hoppie_formated_url(
     sf_msg = databases.StoreAndForward.model_validate(msg)
     await transmit_a_message(
         msg=sf_msg,
+        bearer="fans_vhf",
         background_tasks=background_tasks,
         jwt=jwt)
 
 @router.post(
-        "/tx",
+        "/tx/{bearer}",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
+    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
     background_tasks: BackgroundTasks,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
-    Legacy message
+    Allow an aircraft to transmit a message
     \nJWT Audience: ["acars:aircraft"]
+    \n\tMessage Type:cpdlc
+    \n\tPacket:str (separated by '/'): 
+    \n\t\t{MSG_ID:int}/{RESPONSE_ID:int|none}/{TIMESTAMP:%y%m%d%H%M%S}/{ACK:str}/{MESSAGE:str}
+    \n\t\tMESSAGE DM/UM codes only. Any data fields should follow in order delimted by ','
+    \n\t\texample: DM104,ABEVI,1430 or DM11,POL,FL240
     """
 
     user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
@@ -136,7 +143,7 @@ async def transmit_a_message(
 
     # If the callsign has been validated
     if callsign:
-        background_tasks.add_task(tasks.message_parse, sf_msg)
+        background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
         return sf_msg
 
     error = (f"Callsign validation failed - Network: {user_data['network']}, "

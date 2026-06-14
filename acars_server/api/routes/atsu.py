@@ -8,6 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import os
+from typing import Literal
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, Query
@@ -96,7 +97,7 @@ async def receive_message_stream(
     return EventSourceResponse(event_generator())
 
 @router.post(
-        "/tx",
+        "/tx/{bearer}",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward,
@@ -104,6 +105,7 @@ async def receive_message_stream(
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
+    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
     background_tasks: BackgroundTasks,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """Airline Send a Message"""
@@ -128,5 +130,5 @@ async def transmit_a_message(
             status_code=404,
             content={"error": f"{msg.msg_to} is not active on the network"})
 
-    background_tasks.add_task(tasks.message_parse, sf_msg)
+    background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
     return sf_msg

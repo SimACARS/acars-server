@@ -10,9 +10,10 @@ Chris Parkinson (@chssn)
 import os
 import secrets
 from datetime import datetime as dt, timezone as tz
-from dns.resolver import Resolver
+from typing import Literal
 
 # Third Party Libraries
+from dns.resolver import Resolver
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -102,7 +103,7 @@ async def receive_message_stream(
     return EventSourceResponse(event_generator())
 
 @router.post(
-        "/tx",
+        "/tx/{bearer}",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward,
@@ -110,6 +111,7 @@ async def receive_message_stream(
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
+    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
     session:databases.SessionDep,
     background_tasks: BackgroundTasks,
     api_key:str = Depends(common.header_api_key)):
@@ -132,7 +134,7 @@ async def transmit_a_message(
             status_code=404,
             content={"error": f"{msg.msg_to} is not active on the network"})
 
-    background_tasks.add_task(tasks.message_parse, sf_msg)
+    background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
     return sf_msg
 
 @router.post(

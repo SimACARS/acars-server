@@ -8,21 +8,51 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import ast
+import random
 import re
 from datetime import datetime as dt, timezone as tz
-from typing import Any, Dict
+from time import sleep
+from typing import Any, Dict, Literal, Tuple
 
 # Third Party Libraries
 
 # Local Libraries
 from acars_server import common, databases, functions
-from acars_server.api.message_types import adexp, inforeq
+from acars_server.api.message_types import adexp, cpdlc, inforeq
 
 
 vs = inforeq.Vatsim()
 
-async def message_parse(msg:databases.StoreAndForward):
+
+class TransmissionDelay:
+    """Transmission Delay"""
+
+    BEARER_TYPES:Dict[str,Tuple[int,int]] = {
+        "fans_hf": (60,90), # 1.8kbps
+        "fans_vhf": (4,10), # 2.4kbps
+        "fans_satcom": (30,45),
+        "atn_vhf":  (1,4), # 31.5kbps
+        "atn_satcom": (10,20),
+    }
+
+    @staticmethod
+    async def random_delay(delay:Tuple[int,int], msg_created_timestamp:float) -> None:
+        """Delay any action by a random amount"""
+        now = dt.now(tz.utc).timestamp()
+        timer = random.randint(delay[0], delay[1])
+        if (now - msg_created_timestamp) < timer:
+            sleep(timer)
+
+
+async def message_parse(
+        msg:databases.StoreAndForward,
+        bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"]):
     """Parse a message"""
+
+    # Force an artificial delay to simulate a network type
+    await TransmissionDelay.random_delay(
+        TransmissionDelay.BEARER_TYPES[bearer], msg.created)
+
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
 
@@ -35,8 +65,8 @@ async def message_parse(msg:databases.StoreAndForward):
             return
     # CPDLC
     elif msg["msg_type"] == "cpdlc": # pragma: no cover
-        if not msg_type_cpdlc(msg):
-            return
+        send_msg = msg_type_cpdlc(msg)
+
     # ADEXP
     elif msg["msg_type"] == "adexp": # pragma: no cover
         adexp_msg = adexp.Adexp(msg)
@@ -80,11 +110,12 @@ def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
         return True
     return False
 
-def msg_type_cpdlc(msg:databases.StoreAndForward) -> bool:
+def msg_type_cpdlc(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Validates CPDLC messages"""
-    if re.match(r"^\/data2\/\d+\/\d*\/[A-Z]{0,2}\/.*$", msg["packet"]):
-        return True
-    return False
+    msg_validation = cpdlc.Cpdlc(msg)
+    msg_validation.parse_message()
+    #msg_validation.message_validation()
+    return msg
 
 def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Handle INFOREQ messages"""
