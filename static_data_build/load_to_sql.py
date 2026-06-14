@@ -42,8 +42,10 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 with engine.begin() as conn:
     try:
         conn.execute(text("TRUNCATE TABLE cpdlctypes"))
-    except ProgrammingError:
-        pass
+    except ProgrammingError as exc:
+        logger.warning(
+            "Skipping truncate for cpdlctypes due to ProgrammingError: {}", exc
+        )
 
 SQLModel.metadata.create_all(engine)
 session = Session(engine)
