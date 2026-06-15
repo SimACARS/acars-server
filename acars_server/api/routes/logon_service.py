@@ -14,7 +14,8 @@ from datetime import datetime as dt, timezone as tz
 from fastapi import APIRouter, Security
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
-from redis_om.model.model import NotFoundError # type: ignore
+from redis_om.model.model import NotFoundError
+from sqlmodel import select # type: ignore
 
 # Local Libraries
 from acars_server import common, databases
@@ -28,6 +29,7 @@ router = APIRouter()
 @router.get("/contact/{callsign}")
 async def ls_cm_contact(
     callsign:str,
+    session: databases.SessionDep,
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)):
     """
     Attempts to send a UM117 (CONTACT  [unit  name]  [frequency]) to the provided callsign
@@ -41,50 +43,60 @@ async def ls_cm_contact(
                 content={"detail": "Unauthorised callsign for provided JWT"}
             )
 
-        # Get the primary frequency for the ATSU
-        try:
-            get_freq = databases.DataLinkInitiationCapability.find(
-                    (databases.DataLinkInitiationCapability.logon_from == callsign_chk)
+        # Get the 'parent' ATSU callsign
+        parent = select(
+            databases.ATSUAuthorisedCallsign).where(
+                databases.ATSUAuthorisedCallsign.callsign == callsign_chk)
+        result = session.exec(parent).first()
+        print(parent)
+        print(result.atsu_callsign.atsu_callsign)
+        if result:
+            # Get the primary frequency for the ATSU
+            atsu_cs = result.atsu_callsign.atsu_callsign
+            try:
+                get_freq = databases.DataLinkInitiationCapability.find(
+                    (databases.DataLinkInitiationCapability.logon_from == atsu_cs)
                     & (databases.DataLinkInitiationCapability.logon_to == "_SYSTEM_DLIC")
-                    & (databases.DataLinkInitiationCapability.primary_frequency != None)
+                    & (databases.DataLinkInitiationCapability.primary_frequency != "100.000")
                 ).first()
-        except NotFoundError:
-            return JSONResponse(
-                status_code=404,
-                content={
-                    "error": f"{callsign_chk} is not active on the network"})
+            except NotFoundError:
+                return JSONResponse(
+                    status_code=404,
+                    content={
+                        "error": f"{callsign_chk} is not active on the network"})
 
-        dtg = dt.now(tz.utc).strftime("%y%m%d%H%M%S")
-        msg = {
-            "msg_from": callsign_chk,
-            "msg_to": callsign,
-            "msg_type": "cpdlc",
-            "msg_packet": f"1//{dtg}/WU/UM117,{callsign_chk},{get_freq.primary_frequency}",
-            "network": user_data["network"],
-            "created": dt.now(tz.utc).timestamp()
-        }
+            dtg = dt.now(tz.utc).strftime("%y%m%d%H%M%S")
+            msg = {
+                "msg_from": result.atsu_callsign.atsu_callsign,
+                "msg_to": callsign,
+                "msg_type": "cpdlc",
+                "packet": f"1//{dtg}/WU/UM117,{callsign_chk},{get_freq.primary_frequency}",
+                "network": user_data["network"],
+                "created": dt.now(tz.utc).timestamp()
+            }
 
-        sf_msg = databases.StoreAndForward.model_validate(msg)
+            sf_msg = databases.StoreAndForward.model_validate(msg)
 
-        # An ATSU should only be able to send a message to an online station
-        try:
-            databases.DataLinkInitiationCapability.find(
-                    (databases.DataLinkInitiationCapability.logon_from == sf_msg.msg_to)
-                ).first()
-        except NotFoundError:
-            return JSONResponse(
-                status_code=404,
-                content={
-                    "error": f"{sf_msg.msg_to} is not active on the network"})
+            # An ATSU should only be able to send a message to an online station
+            try:
+                databases.DataLinkInitiationCapability.find(
+                        (databases.DataLinkInitiationCapability.logon_from == sf_msg.msg_to)
+                    ).first()
+            except NotFoundError:
+                return JSONResponse(
+                    status_code=404,
+                    content={
+                        "error": f"{sf_msg.msg_to} is not active on the network"})
 
-        # Save the message to the store and forward.
-        # Expire message in 5 minutes if not retrieved.
-        sf_msg.save()
-        databases.redis_db.expire(
-                sf_msg.key(),
-                300,
-            )
-        return sf_msg
+            # Save the message to the store and forward.
+            # Expire message in 5 minutes if not retrieved.
+            sf_msg.save()
+            databases.redis_db.expire(
+                    sf_msg.key(),
+                    300,
+                )
+            return JSONResponse(status_code=201, content=sf_msg.model_dump_json())
+    return JSONResponse(status_code=404, content={"error": "callsign validation error"})
 
 @router.post("/logon", deprecated=True)
 async def ls_cm_logon():
