@@ -1,5 +1,51 @@
 # Changelog
 
+## [2.1.1](https://github.com/SimACARS/acars-server/compare/v2.1.0...v2.1.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* cwe-532 ([70a2eb6](https://github.com/SimACARS/acars-server/commit/70a2eb69b8e37bdc2c0bcf47bdcdc38d3ebe78f9))
+
+# [2.1.0](https://github.com/SimACARS/acars-server/compare/v2.0.1...v2.1.0) (2026-06-14)
+
+
+### Bug Fixes
+
+* missing bearer types ([0be4e3b](https://github.com/SimACARS/acars-server/commit/0be4e3bed8c17f496bf2650e01580889516241c3))
+* Potential fix for pull request finding 'Empty except' ([f225981](https://github.com/SimACARS/acars-server/commit/f225981200c8e12042e724442569384c20531a43))
+* Potential fix for pull request finding 'Explicit returns mixed with implicit (fall through) returns' ([aa6747c](https://github.com/SimACARS/acars-server/commit/aa6747ce2eaad8a1b376100896bdf0c7905a0455))
+* Potential fix for pull request finding 'Explicit returns mixed with implicit (fall through) returns' ([dbfa8dc](https://github.com/SimACARS/acars-server/commit/dbfa8dc93d7ae16b30c367d507d300f46653a484))
+* Potential fix for pull request finding 'Explicit returns mixed with implicit (fall through) returns' ([57d119a](https://github.com/SimACARS/acars-server/commit/57d119a4d1cd3bbacdc4a5abbb3a2b88c6328f9f))
+* Potential fix for pull request finding 'Statement has no effect' ([3bf77d9](https://github.com/SimACARS/acars-server/commit/3bf77d937b7b1ef29be1903dae0e2c73ea378d43))
+* Potential fix for pull request finding 'Statement has no effect' ([fb701eb](https://github.com/SimACARS/acars-server/commit/fb701eb1447c5868e917a568a05348ef69131006))
+* Potential fix for pull request finding 'Statement has no effect' ([a0fd4d4](https://github.com/SimACARS/acars-server/commit/a0fd4d4fb5000e8874a72b3144082f55dae4700a))
+* Potential fix for pull request finding 'Statement has no effect' ([caab14f](https://github.com/SimACARS/acars-server/commit/caab14ff968302b505af6fe87fc9a113dce9fdf8))
+* **temp:** nerf'd cpdlc checks ([ee6fca2](https://github.com/SimACARS/acars-server/commit/ee6fca2e6de6c5d9e160e4e53f18c9ae35b676bb))
+* test could should be removed ([faae2af](https://github.com/SimACARS/acars-server/commit/faae2af7cb2937dae08dbf30d050bee1d9440809))
+
+
+### Features
+
+* added CPDLC types table ([27ab94c](https://github.com/SimACARS/acars-server/commit/27ab94cc020473f9689396d088724b05718e1880))
+* admin api auth ([7226ada](https://github.com/SimACARS/acars-server/commit/7226ada55ec5b265ca2a97315624aa8df78fc70a))
+* admin router ([62c2f94](https://github.com/SimACARS/acars-server/commit/62c2f94202b1c47aecbee471c035e38d89caa2f9))
+* atsu admin api ([d9fd0dd](https://github.com/SimACARS/acars-server/commit/d9fd0ddd20183ab98efbc2350d5da7bc03064f90))
+* calls cpdlc validator ([f09cae2](https://github.com/SimACARS/acars-server/commit/f09cae27a6aa4cf1b73f47116259788addfec60a))
+* cpdlc connection state store ([8ee3486](https://github.com/SimACARS/acars-server/commit/8ee34863923bd6b990830714b886dd4d63bb2f9e))
+* cpdlc validation (incomplete) ([0963a25](https://github.com/SimACARS/acars-server/commit/0963a25c7b45659cfce22423a22ae8dec1480449))
+* started adding cpdlc v1 type check ([2fdbbc7](https://github.com/SimACARS/acars-server/commit/2fdbbc7950a6fca49eda6ea95f31ea621b931398))
+* technology routes closes [#51](https://github.com/SimACARS/acars-server/issues/51) ([ad9f031](https://github.com/SimACARS/acars-server/commit/ad9f03124a40e8d9e50c2797b592fab9355f21b2))
+* transmission delay types ([54746f8](https://github.com/SimACARS/acars-server/commit/54746f8950a35ed8ef616585f3bcda2f5345a82f))
+
+
+### Performance Improvements
+
+* Potential fix for pull request finding 'Unused global variable' ([9797f54](https://github.com/SimACARS/acars-server/commit/9797f54584c8f89fa43a9a9b8c95282b9070c321))
+* Potential fix for pull request finding 'Unused import' ([53ef0e9](https://github.com/SimACARS/acars-server/commit/53ef0e986649cb2692316f92ef32301bafd27089))
+* Potential fix for pull request finding 'Unused import' ([cdb6da4](https://github.com/SimACARS/acars-server/commit/cdb6da47b263621fdc3581fa134c53eea9590381))
+* Potential fix for pull request finding 'Unused import' ([a95e804](https://github.com/SimACARS/acars-server/commit/a95e804ed5c213536eec45c70452da4dc9ba1332))
+
 # [2.1.0-alpha.4](https://github.com/SimACARS/acars-server/compare/v2.1.0-alpha.3...v2.1.0-alpha.4) (2026-06-14)
 
 

@@ -297,6 +297,9 @@ class DataLinkInitiationCapability(HashModel, index=True): # type: ignore
     fans_1_a_atn_b1: Optional[bool] = False
     atn_b1: Optional[bool] = False
     fans_1_a: Optional[bool] = False
+    primary_frequency: Annotated[
+        Optional[str],
+        Query(pattern="1[0-3]\\d\\.\\d{3}")] = RedisField(index=True, default=None)
 
     def __getitem__(self, key):
         return getattr(self, key)

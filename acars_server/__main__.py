@@ -27,6 +27,7 @@ from acars_server.api.routes import (
     atsu,
     callbacks,
     dlic,
+    logon_service,
     status,
     tests,
     users
@@ -104,6 +105,8 @@ app.include_router(callbacks.router, prefix="/callback", tags=["Callback"])
 app.include_router(tests.router, prefix="/test", tags=["Testing"])
 # DLIC (Data Link Initiation and Capability) Endpoints
 app.include_router(dlic.router, prefix="/dlic", tags=["Data Link Initiation and Capability"])
+# LS (Logon System) Endpoints
+app.include_router(logon_service.router, prefix="/ls", tags=["Logon System"])
 # ACARS Endpoints
 app.include_router(acars.router, prefix="/acars", tags=["Messaging"])
 # Admin Endpoints
