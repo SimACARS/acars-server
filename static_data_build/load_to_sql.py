@@ -11,11 +11,9 @@ import csv
 import os
 import re
 from pathlib import Path
-from typing import Annotated
 
 # Third Party Libraries
 from dotenv import load_dotenv
-from fastapi import Depends
 from loguru import logger
 from sqlmodel import Session, SQLModel, create_engine, text
 from sqlalchemy.exc import ProgrammingError
@@ -42,8 +40,10 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 with engine.begin() as conn:
     try:
         conn.execute(text("TRUNCATE TABLE cpdlctypes"))
-    except ProgrammingError:
-        pass
+    except ProgrammingError as exc:
+        logger.warning(
+            "Skipping truncate for cpdlctypes due to ProgrammingError: {}", exc
+        )
 
 SQLModel.metadata.create_all(engine)
 session = Session(engine)
@@ -55,7 +55,6 @@ data_to_build = [
 
 for file in data_to_build:
     logger.debug(file)
-    line_one = True
     with open(file, "r", encoding="utf-8") as f:
         read_csv = csv.DictReader(f)
         for line in read_csv:

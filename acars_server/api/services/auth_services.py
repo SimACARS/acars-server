@@ -52,6 +52,22 @@ async def airline_api_authentication(
         raise HTTPException(status_code=401, detail="Unauthorised. This is an AIRLINE endpoint.")
     return api_airline
 
+async def admin_api_authentication(
+        session:databases.SessionDep, api_key:str) -> databases.ATSUCallsignOwner:
+    """Authenticates an API Key"""
+    hashed_api = get_api_key_hash(api_key)
+
+    db_auth = select(
+        databases.ATSUCallsignOwner).where(
+            databases.ATSUCallsignOwner.api_key == hashed_api)
+
+    api_admin = session.exec(db_auth).first()
+
+    if not api_admin:
+        common.logger.error("401: API key not recognised. This is an ATSU ADMIN endpoint.")
+        raise HTTPException(status_code=401, detail="Unauthorised. This is an ATSU ADMIN endpoint.")
+    return api_admin
+
 async def callsign_verification(user_data) -> str|None:
     """Validate callsign on various networks"""
     callsign = None

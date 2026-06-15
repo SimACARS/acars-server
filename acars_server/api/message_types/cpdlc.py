@@ -13,7 +13,7 @@ from typing import Any, Dict, Union
 
 # Third Party Libraries
 from loguru import logger
-from sqlmodel import select, Session
+from sqlmodel import select
 
 # Local Libraries
 from acars_server import common, databases, static_data
