@@ -1,5 +1,19 @@
 # Changelog
 
+# [2.2.0-alpha.1](https://github.com/SimACARS/acars-server/compare/v2.1.1...v2.2.0-alpha.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* looking up the authorised callsign rather than the parent ATSU callsign ([c6f4ac0](https://github.com/SimACARS/acars-server/commit/c6f4ac01f504e4822f219a67896b7c8130bd2642))
+* missing LS import ([ff12155](https://github.com/SimACARS/acars-server/commit/ff121553d6fce69f4760c97631c980029e99d9ee))
+* no route ([0db066f](https://github.com/SimACARS/acars-server/commit/0db066f22306f70bafe3d10f54a32934d85d31c4))
+
+
+### Features
+
+* [#57](https://github.com/SimACARS/acars-server/issues/57) implemented blind contact ([e00b373](https://github.com/SimACARS/acars-server/commit/e00b373e4dba1e58cdc4f58776ba67b849b73399))
+
 ## [2.1.1](https://github.com/SimACARS/acars-server/compare/v2.1.0...v2.1.1) (2026-06-14)
 
 
