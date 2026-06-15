@@ -9,26 +9,23 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import re
 from datetime import datetime as dt, timezone as tz
-from hashlib import blake2b
 
 # Third Party Libraries
 from fastapi import APIRouter, Security
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
-from acars_server import auth, common, databases, static_data
+from acars_server import common, databases
 from acars_server.api.services.auth_services import (
-    airline_api_authentication,
-    api_authentication,
     callsign_verification,
     jwt_auth
     )
 
 router = APIRouter()
 
-@router.get("/ls/contact/{callsign}")
+@router.get("/contact/{callsign}")
 async def ls_cm_contact(
     callsign:str,
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)):
@@ -89,25 +86,25 @@ async def ls_cm_contact(
             )
         return sf_msg
 
-@router.post("/ls/logon", deprecated=True)
+@router.post("/logon", deprecated=True)
 async def ls_cm_logon():
     """CM Logon - handled by DLIC"""
     return JSONResponse(
         status_code=501, content={"error", "not implemented, use DLIC routes instead"})
 
-@router.post("/ls/forward", deprecated=True)
+@router.post("/forward", deprecated=True)
 async def ls_cm_forward():
     """Allows an ATSU to forward a logon request from an airspace user"""
     return JSONResponse(
         status_code=501, content={"error", "not implemented, use DLIC routes instead"})
 
-@router.post("/ls/user-abort", deprecated=True)
+@router.post("/user-abort", deprecated=True)
 async def ls_cm_user_abort():
     """Allows a user to logoff"""
     return JSONResponse(
         status_code=501, content={"error", "not implemented, use DLIC routes instead"})
 
-@router.post("/ls/provider-abort", deprecated=True)
+@router.post("/provider-abort", deprecated=True)
 async def ls_cm_provider_abort():
     """Allows a provider to logoff"""
     return JSONResponse(
