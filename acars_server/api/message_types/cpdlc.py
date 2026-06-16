@@ -87,6 +87,8 @@ class Cpdlc:
                 "msg_to": str(self.message.msg_to),
                 "msg_from": str(self.message.msg_from)
             }
+            return
+        raise ValueError("Unknown message type")
 
     def message_validation(
             self,
