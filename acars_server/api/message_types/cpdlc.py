@@ -49,7 +49,7 @@ class Cpdlc:
         self.parse_message()
         with Session(databases.engine) as s:
             self.message_validation(s)
-        #self.message_transaction_state()
+        self.message_transaction_state()
         return self.response_type_required_check()
 
     def _msg_type_cpdlc(self) -> re.Match[str]:
