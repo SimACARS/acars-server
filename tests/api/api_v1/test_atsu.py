@@ -329,6 +329,12 @@ class TestATSUCompleteLogon:
 class TestATSURx:
     """Test ATSU Rx Path"""
 
+    GOOD_MESSAGES = [
+        {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
     @pytest.mark.asyncio
     @patch("acars_server.api.services.atsu_services.callsign_verification",
            new_callable=AsyncMock)
@@ -341,6 +347,7 @@ class TestATSURx:
         mock_callsign_verification2_func,
         mock_callsign_verification_func,
         client: TestClient,
+        msg_in,
         db,
         vatsim_oauth_response):
         """Complete VATSIM ATSU Logon"""
@@ -367,7 +374,9 @@ class TestATSURx:
 
         msg = MessageFactoryNoCommit(
             msg_from=aircraft.info["callsign"],
-            msg_to=atsu.info["callsign"])
+            msg_to=atsu.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"])
 
         client.headers.update(aircraft.info["headers"])
         with patch(
@@ -504,6 +513,13 @@ class TestATSURx:
 
 class TestATSUTx:
     """Test ATSU Tx"""
+
+    GOOD_MESSAGES = [
+        {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
     @pytest.mark.asyncio
     @patch("acars_server.api.services.atsu_services.callsign_verification",
             new_callable=AsyncMock)
@@ -517,6 +533,7 @@ class TestATSUTx:
         mock_callsign_verification_func,
         client: TestClient,
         db,
+        msg_in,
         vatsim_oauth_response):
         """Complete VATSIM ATSU Logon"""
         mock_vatsim_auth = MagicMock()
@@ -541,7 +558,9 @@ class TestATSUTx:
 
         msg = MessageFactory(
             msg_from=atsu.info["callsign"],
-            msg_to=aircraft.info["callsign"])
+            msg_to=aircraft.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"])
 
         client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
         msg_response = client.post("/atsu/tx/atn_vhf", json=msg.model_dump())
