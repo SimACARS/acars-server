@@ -134,7 +134,8 @@ class Cpdlc:
             atsu = self.message.msg_to
             aircraft = self.message.msg_from
         else:
-            raise ValueError("Unexpected prefix. Expected _ATC_")
+            atsu = self.message.msg_to
+            aircraft = self.message.msg_from
 
         # Generate a transaction string
         transaction_string = f"{self.message.network}:{aircraft}:{atsu}"
