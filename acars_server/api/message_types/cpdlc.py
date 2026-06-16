@@ -52,7 +52,7 @@ class Cpdlc:
         #self.message_transaction_state()
         return self.response_type_required_check()
 
-    def _msg_type_cpdlc(self) -> re.Match[str]|None:
+    def _msg_type_cpdlc(self) -> re.Match[str]:
         """Validates CPDLC messages"""
         data_check = re.match(
             r"^(\d+)\/(\d*)\/([23]\d[01]\d[0-3]\d[0-2]\d[0-6]\d[0-6]\d)\/([A-Z]*)\/(.*)$",
@@ -63,9 +63,9 @@ class Cpdlc:
 
         common.logger.error(
             f"CPDLC: Invalid Format - {self.message}")
-        return None
+        raise ValueError(f"Invalid string: {self.message.packet}")
 
-    def parse_message(self) -> None:
+    def parse_message(self) -> bool:
         """Breaks the message up into logical parts"""
         chk = self._msg_type_cpdlc()
         if chk:
@@ -87,8 +87,8 @@ class Cpdlc:
                 "msg_to": str(self.message.msg_to),
                 "msg_from": str(self.message.msg_from)
             }
-            return
-        raise ValueError("Unknown message type")
+            return True
+        raise ValueError(f"Unknown message type: {self.message}")
 
     def message_validation(
             self,
