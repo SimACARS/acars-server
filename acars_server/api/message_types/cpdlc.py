@@ -140,9 +140,10 @@ class Cpdlc:
         # Generate a transaction string
         transaction_string = f"{self.message.network}:{aircraft}:{atsu}"
         transaction = base64.urlsafe_b64encode(transaction_string.encode())
+        transaction = transaction.decode()
 
         rtn_msg = {
-            "transaction_str": str(transaction)
+            "transaction_str": transaction
         }
 
         try:
