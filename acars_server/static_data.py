@@ -47,80 +47,80 @@ CPDLC_UPLINK_MESSAGE_RESPONSES = {
     "W_U": {
         "response_required": True,
         "valid_responses": [
-            "WILCO",
-            "UNABLE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM0", "WILCO"),
+            ("DM1", "UNABLE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
         "will_close_uplink": [
-            "WILCO",
-            "UNABLE",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "ERROR"
+            ("DM0", "WILCO"),
+            ("DM1", "UNABLE"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ],
         "FANS_1_A": [
-            "WILCO",
-            "UNABLE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "ERROR"
+            ("DM0", "WILCO"),
+            ("DM1", "UNABLE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ]
     },
     "A_N": {
         "response_required": True,
         "valid_responses": [
-            "AFFIRM",
-            "NEGATIVE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM4", "AFFIRM"),
+            ("DM5", "NEGATIVE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
         "will_close_uplink": [
-            "AFIRM",
-            "NEGATIVE",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "ERROR"
+            ("DM4", "AFFIRM"),
+            ("DM5", "NEGATIVE"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ],
         "FANS_1_A": [
-            "AFIRM",
-            "NEGATIVE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "ERROR"
+            ("DM4", "AFFIRM"),
+            ("DM5", "NEGATIVE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ]
     },
     "R": {
         "response_required": True,
         "valid_responses": [
-            "ROGER",
-            "UNABLE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM3", "ROGER"),
+            ("DM1", "UNABLE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
         "will_close_uplink": [
-            "ROGER",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "ERROR"
+            ("DM3", "ROGER"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ],
         # FANS 1/A aircraft do not have the capability to send UNABLE in
         # response to an uplink message containing message elements with
         # an “R” response attribute
         "FANS_1_A": [
-            "ROGER",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "ERROR"
+            ("DM3", "ROGER"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ]
     },
     "Y": {
@@ -132,12 +132,12 @@ CPDLC_UPLINK_MESSAGE_RESPONSES = {
     "N": {
         "response_required": False,
         "valid_responses": [
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
-        "will_close_uplink": ["ERROR"],
+        "will_close_uplink": [("UM159", "ERROR")],
         "FANS_1_A": ["~NOT USED"]
     },
     "NE": {
@@ -162,10 +162,10 @@ CPDLC_DOWNLINK_MESSAGE_RESPONSES = {
         "valid_responses": [
             "SERVICE UNAVAILABLE",
             "FLIGHT PLAN NOT HELD",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
-        "will_close_uplink": ["ERROR"],
+        "will_close_uplink": [("UM159", "ERROR")],
         # FANS 1/A.— Aircraft do not have the capability to receive technical
         # responses to downlink message elements with an “N” response attribute
         # (other than LACK or ERROR for ATN B1 aircraft)
