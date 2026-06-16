@@ -160,7 +160,7 @@ class Cpdlc:
             expected_id = 1
 
         # If ID is out of sequence then deny
-        if expected_id != self.exploded["tx_id"]:
+        if int(expected_id) != int(self.exploded["tx_id"]):
             raise ValueError(
                 f"Unexpected ID {self.exploded['tx_id']} provided. Expected {expected_id}")
 
