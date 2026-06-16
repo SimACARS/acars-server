@@ -44,6 +44,14 @@ class Cpdlc:
         self.message = message
         self.exploded:Dict[str, Any] = {}
 
+    def run(self) -> Dict[str, Union[str, Any]]:
+        """Runs all checks"""
+        self.parse_message()
+        with Session(databases.engine) as s:
+            self.message_validation(s)
+        #self.message_transaction_state()
+        return self.response_type_required_check()
+
     def _msg_type_cpdlc(self) -> re.Match[str]|None:
         """Validates CPDLC messages"""
         data_check = re.match(
@@ -160,9 +168,6 @@ class Cpdlc:
             val_msg.key(),
             3600,
         )
-
-    def response_id_checker(self):
-        """Checks that the responding_to_id is valid"""
 
     def response_type_required_check(self) -> Dict[str, Union[str, Any]]:
         """Checks that the response_required is valid"""
