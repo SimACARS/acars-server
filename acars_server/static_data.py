@@ -160,8 +160,8 @@ CPDLC_DOWNLINK_MESSAGE_RESPONSES = {
     "N": {
         "response_required": False,
         "valid_responses": [
-            "SERVICE UNAVAILABLE",
-            "FLIGHT PLAN NOT HELD",
+            ("UM162", "SERVICE UNAVAILABLE"),
+            ("UM234", "FLIGHT PLAN NOT HELD"),
             ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
             ("UM159", "ERROR")
         ],
