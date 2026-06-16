@@ -7,13 +7,15 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import base64
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Union
 
 # Third Party Libraries
 from loguru import logger
-from sqlmodel import select
+from redis_om.model.model import NotFoundError # type: ignore
+from sqlmodel import select, Session
 
 # Local Libraries
 from acars_server import common, databases, static_data
@@ -45,7 +47,7 @@ class Cpdlc:
     def _msg_type_cpdlc(self) -> re.Match[str]|None:
         """Validates CPDLC messages"""
         data_check = re.match(
-            r"^(\d+)\/(\d+)\/([23]\d[01]\d[0-3]\d[0-2]\d[0-6]\d[0-6]\d)\/([A-Z]*)\/(.*)$",
+            r"^(\d+)\/(\d*)\/([23]\d[01]\d[0-3]\d[0-2]\d[0-6]\d[0-6]\d)\/([A-Z]*)\/(.*)$",
             self.message.packet)
         if data_check:
             logger.debug(data_check)
@@ -112,6 +114,52 @@ class Cpdlc:
 
         # Overwrite data with validated message
         self.exploded["content"] = rtn
+
+    def message_transaction_state(self):
+        """Maintains a state between two stations"""
+        if self.message.msg_from.startswith("_ATC_"):
+            atsu = self.message.msg_from
+            aircraft = self.message.msg_to
+        elif self.message.msg_to.startswith("_ATC_"):
+            atsu = self.message.msg_to
+            aircraft = self.message.msg_from
+        else:
+            raise ValueError("Unexpected prefix. Expected _ATC_")
+
+        # Generate a transaction string
+        transaction_string = f"{self.message.network}:{aircraft}:{atsu}"
+        transaction = base64.urlsafe_b64encode(transaction_string.encode())
+
+        rtn_msg = {
+            "transaction_str": str(transaction)
+        }
+
+        try:
+            # Test to see if transaction is already live
+            check_if_current = databases.CpdlcConnectionStateStore.find(
+                        (databases.CpdlcConnectionStateStore.transaction_str == transaction)
+                    ).first()
+            expected_id = check_if_current.expected_next_tx_id
+        except NotFoundError:
+            # If this is a new transaction and ATC are trying to initiate, then deny
+            if self.message.msg_from.startswith("_ATC_"):
+                raise ValueError("No live transaction. ATC cannot initiate unsolicitated CPDLC")
+            # If no live transaction, then this is the first message
+            expected_id = 1
+
+        # If ID is out of sequence then deny
+        if expected_id != self.exploded["tx_id"]:
+            raise ValueError(
+                f"Unexpected ID {self.exploded['tx_id']} provided. Expected {expected_id}")
+
+        rtn_msg["expected_next_tx_id"] = str(int(expected_id) + 1)
+
+        val_msg = databases.CpdlcConnectionStateStore.model_validate(rtn_msg)
+        val_msg.save()
+        databases.redis_db.expire(
+            val_msg.key(),
+            3600,
+        )
 
     def response_id_checker(self):
         """Checks that the responding_to_id is valid"""
