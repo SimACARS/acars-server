@@ -113,8 +113,7 @@ def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
 def msg_type_cpdlc(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Validates CPDLC messages"""
     msg_validation = cpdlc.Cpdlc(msg)
-    msg_validation.parse_message()
-    #msg_validation.message_validation()
+    msg_validation.run()
     return msg
 
 def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:

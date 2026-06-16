@@ -91,7 +91,7 @@ class MessageProvider(BaseProvider):
         super().__init__(generator)
         messages = [
             {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
-            {"msg_type": "cpdlc", "network": "vatsim", "packet": "/data2/1/1/N/TEST1"}
+            {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/2606161911/N/DM1"}
         ]
         self.msg = self.random_element(messages)
 

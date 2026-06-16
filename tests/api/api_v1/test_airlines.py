@@ -26,7 +26,14 @@ from tests.fixtures.auth import Authentication
 
 class TestTransmitMessage:
     """Airline Transmit Message"""
-    def test_tx(self, client: TestClient):
+
+    GOOD_MESSAGES = [
+        {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
+    def test_tx(self, msg_in, client: TestClient):
         """
         Test that an airline can send a message to online aircraft
         """
@@ -40,7 +47,9 @@ class TestTransmitMessage:
         # Message validation during post to endpoint
         message = MessageFactory(
             msg_to = aircraft.info["callsign"],
-            msg_from = airline.info["callsign"]
+            msg_from = airline.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"]
             )
 
         client.headers.update(airline.info["headers"])
@@ -182,8 +191,14 @@ class TestNewAirline:
 class TestAirlineRx:
     """Test Airline Rx Path"""
 
+    GOOD_MESSAGES = [
+        #{"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
     @pytest.mark.asyncio
-    async def test_valid_auth(self, client: TestClient):
+    async def test_valid_auth(self, msg_in, client: TestClient):
         """Test valid authentication"""
         airline = Authentication(client, "airline")
         airline.logon()
@@ -195,7 +210,9 @@ class TestAirlineRx:
 
         msg = MessageFactoryNoCommit(
             msg_from=aircraft.info["callsign"],
-            msg_to=airline.info["callsign"])
+            msg_to=airline.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"])
 
         client.headers.update(aircraft.info["headers"])
         with patch(
