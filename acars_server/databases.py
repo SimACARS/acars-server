@@ -326,18 +326,9 @@ class OAuthStateStore(HashModel, index=True): # type: ignore
 
 
 class CpdlcConnectionStateStore(HashModel, index=True): # type: ignore
-    """A store for OAuth states"""
-    msg_initiator: Annotated[
-        str, Query(
-            min_length=4,
-            max_length=10,
-            pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
-    msg_to: Annotated[
-        str, Query(
-            min_length=4,
-            max_length=10,
-            pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
-    message_counter: int=1
+    """A store for CPDLC connection states states"""
+    transaction_str: str = RedisField(index=True)
+    expected_next_tx_id: int = 1
 
     class Meta:
         """MetaData"""
