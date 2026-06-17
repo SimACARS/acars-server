@@ -1,5 +1,13 @@
 # Changelog
 
+# [2.2.0-alpha.3](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.2...v2.2.0-alpha.3) (2026-06-17)
+
+
+### Features
+
+* basic non-functioning SWIM framework ([7f3afdd](https://github.com/SimACARS/acars-server/commit/7f3afdd73ceebd30f858dd7f1257342124229e13))
+* LS-GEN-0180 [#62](https://github.com/SimACARS/acars-server/issues/62) ([702c877](https://github.com/SimACARS/acars-server/commit/702c877bc36690363b35e3be8be8237afce6383c))
+
 # [2.2.0-alpha.2](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.1...v2.2.0-alpha.2) (2026-06-17)
 
 
