@@ -62,5 +62,6 @@ services:
       PWDLIB_SALT: ilF5QxKce3b9Sb6NpDw465clBeXrrLXkM2gZROvqRGDUIkh7433ymPhbIVKh5aI
 
       PYTHONPATH: /app
+      RUNNING_IN_DOCKER: "true"
 
     command: pytest tests/ -v

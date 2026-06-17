@@ -37,7 +37,7 @@ DATABASE_URL = (
 
 redis_db = get_redis_connection(
     host=os.getenv("REDIS_HOST"),
-    port=int(os.getenv("REDIS_PORT")),
+    port=int(os.getenv("REDIS_PORT", "6379")),
     password=os.getenv("REDIS_PASSWORD"),
     username="default",
     decode_responses=True
@@ -45,7 +45,7 @@ redis_db = get_redis_connection(
 
 redis_async_db = redis.Redis(
     host=os.getenv("REDIS_HOST"),
-    port=int(os.getenv("REDIS_PORT")),
+    port=int(os.getenv("REDIS_PORT", "6379")),
     password=os.getenv("REDIS_PASSWORD"),
     username="default",
     decode_responses=True

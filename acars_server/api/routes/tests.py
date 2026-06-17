@@ -94,6 +94,7 @@ async def test_inforeq(
     ir_type:str,
     network:str,
     station:str,
+    session: databases.SessionDep,
     background_tasks: BackgroundTasks,
     ): # pragma: no cover
     """INFOREQ Test"""
@@ -107,13 +108,14 @@ async def test_inforeq(
     }
     sf_msg = databases.StoreAndForward.model_validate(t_msg)
     common.logger.success(sf_msg)
-    background_tasks.add_task(tasks.message_parse, sf_msg)
+    background_tasks.add_task(tasks.message_parse, sf_msg, _, session)
     return JSONResponse(content={"status": "ok"})
 
 @router.post("/tx", status_code=204)
 async def test_tx(
     msg:databases.StoreAndForward,
     background_tasks: BackgroundTasks,
+    session: databases.SessionDep
     ): # pragma: no cover
     """INFOREQ Test"""
     sf_msg = databases.StoreAndForward.model_validate(msg)
@@ -127,7 +129,7 @@ async def test_tx(
     }
     sf2_msg = databases.StoreAndForward.model_validate(t_msg)
     common.logger.success(sf2_msg)
-    background_tasks.add_task(tasks.message_parse, sf2_msg)
+    background_tasks.add_task(tasks.message_parse, sf2_msg, _, session)
     return JSONResponse(content={"status": "ok"})
 
 @router.get(
