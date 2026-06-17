@@ -15,7 +15,7 @@ from typing import Any, Dict, Union
 # Third Party Libraries
 from loguru import logger
 from redis_om.model.model import NotFoundError # type: ignore
-from sqlmodel import select, Session
+from sqlmodel import select
 
 # Local Libraries
 from acars_server import common, databases, static_data
@@ -40,15 +40,18 @@ from acars_server import common, databases, static_data
 class Cpdlc:
     """A CPDLC Class"""
 
-    def __init__(self, message:databases.StoreAndForward) -> None:
+    def __init__(
+            self,
+            message:databases.StoreAndForward,
+            session:databases.SessionDep) -> None:
         self.message = message
         self.exploded:Dict[str, Any] = {}
+        self.session = session
 
     def run(self) -> Dict[str, Union[str, Any]]:
         """Runs all checks"""
         self.parse_message()
-        with Session(databases.engine) as s:
-            self.message_validation(s)
+        self.message_validation()
         self.message_transaction_state()
         return self.response_type_required_check()
 
@@ -90,9 +93,7 @@ class Cpdlc:
             return True
         raise ValueError(f"Unknown message type: {self.message}")
 
-    def message_validation(
-            self,
-            session:databases.SessionDep) -> None:
+    def message_validation(self) -> None:
         """Validates a message"""
         rtn:Dict[str, Any] = {}
         # Check that the message contains a UM or DM code
@@ -104,7 +105,7 @@ class Cpdlc:
                 databases.CPDLCTypes).where(
                     databases.CPDLCTypes.reference_number == content_val.group(1))
             logger.debug(f"\n{lookup}")
-            result = session.exec(lookup).first()
+            result = self.session.exec(lookup).first()
             logger.debug(result)
             if result:
                 rtn["ref"] = result.reference_number
