@@ -1,5 +1,28 @@
 # Changelog
 
+# [2.2.0-alpha.2](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.1...v2.2.0-alpha.2) (2026-06-17)
+
+
+### Bug Fixes
+
+* bytes should be str ([ad51cd2](https://github.com/SimACARS/acars-server/commit/ad51cd2984ad0dd61ff64714009bccb0545ef4eb))
+* failing if aircraft is sending message ([9513dc2](https://github.com/SimACARS/acars-server/commit/9513dc2f2d8faf39b6bdda422a5f55de6aea1d0d))
+* incorrect function call ([d4707e5](https://github.com/SimACARS/acars-server/commit/d4707e598ca7b0e9bfa990619a1bf6728bbc94f9))
+* incorrect session object being passed ([c5aace3](https://github.com/SimACARS/acars-server/commit/c5aace303f3af69e0c259f70d58e92cbf713146e))
+* missed downlink messages ([6a065d9](https://github.com/SimACARS/acars-server/commit/6a065d99f09209bb2af848a666a61710c9d76be3))
+* missing short code responses ([7c0e3b8](https://github.com/SimACARS/acars-server/commit/7c0e3b8a79c8e77c8577752537ed44ac58c4c204))
+* not handling value error at all ([9ca4da0](https://github.com/SimACARS/acars-server/commit/9ca4da0b155d2569c28de8ed0c8ab3a040780f1c))
+* overly complicated connection state store ([c5bf238](https://github.com/SimACARS/acars-server/commit/c5bf238d7f67f156f4612b5b725a069a5d7290f4))
+* should compare same types ([4851429](https://github.com/SimACARS/acars-server/commit/48514295f29aece51ac8dfb988c75a171d4bc86f))
+* still poor error handling ([6de6258](https://github.com/SimACARS/acars-server/commit/6de625888894eb8eaaa5c486232736380822ffad))
+* transaction_state disabled ([6f82bd8](https://github.com/SimACARS/acars-server/commit/6f82bd8c920d64902f80e47d05a2f357b6adb733))
+
+
+### Features
+
+* added run function to CPDLC ([fc0db58](https://github.com/SimACARS/acars-server/commit/fc0db583f91b45ff9c9a38b4a823b2ebe9fdce1b))
+* cpdlc message checking ([5968d4e](https://github.com/SimACARS/acars-server/commit/5968d4edf9f502349c73097de9f94ecb64ea37f6))
+
 # [2.2.0-alpha.1](https://github.com/SimACARS/acars-server/compare/v2.1.1...v2.2.0-alpha.1) (2026-06-15)
 
 
