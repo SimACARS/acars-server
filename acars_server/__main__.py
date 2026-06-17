@@ -29,6 +29,7 @@ from acars_server.api.routes import (
     dlic,
     logon_service,
     status,
+    swim,
     tests,
     users
     )
@@ -111,3 +112,5 @@ app.include_router(logon_service.router, prefix="/ls", tags=["Logon System"])
 app.include_router(acars.router, prefix="/acars", tags=["Messaging"])
 # Admin Endpoints
 app.include_router(admin.router, prefix="/admin", tags=["Administration"])
+# SWIM Endpoints
+app.include_router(swim.router, prefix="/swim", tags=["System Wide Information Management"])

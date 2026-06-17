@@ -8,7 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 from datetime import datetime as dt, timezone as tz
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Query, Response
@@ -17,6 +17,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 # Local Libraries
 from acars_server import auth, common, databases, tasks
+from acars_server.api.services.auth_services import get_api_key_hash
 
 router = APIRouter()
 # ------------------------------------------------------------------
@@ -32,11 +33,12 @@ async def test_auth_new_user(
     """Creates a test user for testing purposes. Not to be used in production"""
     # Generate the API key using the cid
     api_key = auth.Auth().api_key_generator(cid, "testing")
+    hashed_key = get_api_key_hash(api_key)
 
     # Add the API key to the DB
     dtnow = dt.now(tz.utc).timestamp()
     db_data = {
-        "api_key": api_key,
+        "api_key": hashed_key,
         "network": "testing",
         "created": dtnow,
         "last_used": dtnow
@@ -45,7 +47,7 @@ async def test_auth_new_user(
     session.add(db_add)
     session.commit()
     session.refresh(db_add)
-    return db_add
+    return JSONResponse(content={"db": db_add.model_dump_json(), "apikey": api_key})
 
 @router.get("/poll/{callsign}")
 async def test_poll(callsign:str) -> Response: # pragma: no cover
