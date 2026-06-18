@@ -24,7 +24,7 @@ class Noaa:
         pass # pragma: no cover
 
     @staticmethod
-    def metar(icao:str) -> str:
+    async def metar(icao:str) -> str:
         """Gets a METAR from NOAA"""
         try:
             rsp = requests.get(
@@ -37,7 +37,7 @@ class Noaa:
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
-    def taf(icao:str) -> str:
+    async def taf(icao:str) -> str:
         """Gets a TAF from NOAA"""
         try:
             rsp = requests.get(
@@ -50,7 +50,7 @@ class Noaa:
         return f"NO TAF AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
-    def shorttaf(icao:str) -> str:
+    async def shorttaf(icao:str) -> str:
         """Gets a SHORT TAF from NOAA"""
         try:
             rsp = requests.get(
@@ -114,7 +114,7 @@ class Vatsim:
 
         self.dataframes = df_update
 
-    def get_atis(self, icao:str) -> str:
+    async def get_atis(self, icao:str) -> str:
         """Get ATIS"""
         self._data_collector()
         df = self.dataframes["atis"]
@@ -132,7 +132,7 @@ class Vatsim:
         return f"NO ATIS AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
-    def get_metar(icao:str) -> str:
+    async def get_metar(icao:str) -> str:
         """Get METAR from VATSIM"""
         rsp = requests.get(
             f"https://metar.vatsim.net/{icao.upper()}", timeout=30)
