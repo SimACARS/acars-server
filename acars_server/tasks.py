@@ -50,8 +50,8 @@ async def message_parse(
     """Parse a message"""
 
     # Force an artificial delay to simulate a network type
-    await TransmissionDelay.random_delay(
-        TransmissionDelay.BEARER_TYPES[bearer], msg.created)
+    #await TransmissionDelay.random_delay(
+    #    TransmissionDelay.BEARER_TYPES[bearer], msg.created)
 
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
