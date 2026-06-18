@@ -15,6 +15,8 @@ from typing import Annotated, Optional
 import redis.asyncio as redis
 from dotenv import load_dotenv
 from fastapi import Depends, Query
+from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from pydantic import AfterValidator, SerializeAsAny
 from redis_om import get_redis_connection, Field as RedisField, HashModel, JsonModel
 from sqlmodel import Column, Field, Relationship, Session, SQLModel, Text, create_engine
@@ -56,6 +58,8 @@ redis_db.flushall() # Clear Redis DB on startup
 # ------------- DEV CODE -------------
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+SQLAlchemyInstrumentor().instrument(engine=engine)
+RedisInstrumentor().instrument()
 
 def create_db_and_tables(): # pragma: no cover
     """Create DB and Tables"""
