@@ -7,9 +7,10 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import os
+import string
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
-from random import randint
+from random import choices, randint
 from time import sleep
 
 # Third Party Libraries
@@ -19,11 +20,10 @@ from loguru import logger
 
 
 # Local Libraries
-from acars_server.databases import DataLinkInitiationCapability, StoreAndForward
 from dotenv import load_dotenv
 
 PWD = Path(os.path.dirname(__file__))
-CSV_FILE = os.path.join(PWD.parent.parent, "shared", ".secret", "messages.csv")
+CSV_FILE = os.path.join(PWD.parent, ".secret", "messages.csv")
 
 load_dotenv(os.path.join(PWD.parent, "acars_server", ".env"))
 
@@ -60,43 +60,47 @@ CALLSIGNS = list(set(callsigns))
 
 class Poller(HttpUser):
     """Poller"""
-    wait_time = between(1, 5)
+    wait_time = between(20, 50)
     callsigns = list(CALLSIGNS)
-    headers = {}
-    jwt_headers = {}
 
     def on_start(self):
         # Register a new user
+        random_str = ''.join(choices(string.ascii_uppercase, k=3))
+        self.callsign = f"{random_str}{randint(10,1000)}"
         user_cid = randint(10000, 99999999)
         user_registration = self.client.get(
             f"/test/auth/new_user/{user_cid}",
             name="/test/auth/new_user")
-        if user_registration.status_code == 200:
-            user_api_key = user_registration.json()["api_key"]
-            headers = {
-                    "x-key": user_api_key,
-                    "accept": "application/json"
-                }
-            sleep(randint(1,20))
+        if user_registration.status_code != 200:
+            raise PermissionError(user_registration.text)
 
-            # Log the user on
-            logon_data = {
-                "logon_from": "RFI221B",
-                "logon_to": "_ATC_EFGF",
-                "created": 0,
-                "network": "testing",
-                "logoff_code": "",
-                }
-            msg = DataLinkInitiationCapability.model_validate(logon_data)
-            jwt = self.client.post(
-                "/dlic/aircraft/logon",
-                name="/dlic/aircraft/logon",
-                headers=headers,
-                json=msg.model_dump())
-            if jwt.status_code == 200:
-                self.jwt_headers = {
-                    "Authorization": f"Bearer {jwt.json()["access_token"]}"
-                }
+        user_api_key = user_registration.json()["api_key"]
+        headers = {
+                "x-key": user_api_key,
+                "accept": "application/json"
+            }
+
+        # Log the user on
+        logon_data = {
+            "logon_from": self.callsign,
+            "logon_to": "_ATC_EFGF",
+            "created": 0,
+            "network": "testing",
+            "logoff_code": "",
+            }
+        jwt = self.client.post(
+            "/dlic/aircraft/logon",
+            name="/dlic/aircraft/logon",
+            headers=headers,
+            json=logon_data)
+        if jwt.status_code != 200:
+            raise PermissionError(jwt.text)
+        payload = jwt.json()
+        if "access_token" not in payload:
+            raise KeyError(f"Unexpected response: {payload}")
+        self.jwt_headers = {
+            "Authorization": f"Bearer {jwt.json()['access_token']}"
+        }
 
     @task(3)
     def poll(self):
@@ -113,16 +117,11 @@ class Poller(HttpUser):
     @task
     def tx_data(self):
         """Transmit Data"""
-        row = df.sample(n=1).iloc[0]
+        row = df.iloc[randint(0, len(df) - 1)]
         if str(row["Type"]) == "ads":
             msg_type = "ads-c"
         else:
             msg_type = str(row["Type"])
-
-        if len(str(row["From"])) < 4:
-            msg_from = f"_COY_{row['From']}"
-        else:
-            msg_from = row['From']
 
         if len(str(row["To"])) < 4:
             msg_to = f"_COY_{row['To']}"
@@ -130,17 +129,18 @@ class Poller(HttpUser):
             msg_to = row['To']
 
         msg = {
-            "msg_from": msg_from,
+            "msg_from": self.callsign,
             "msg_to": msg_to,
             "msg_type": msg_type,
             "packet": str(row["Content"]),
             "network": "testing",
             "created": dt.now(tz.utc).timestamp()
         }
-        if StoreAndForward.model_validate(msg):
-            self.client.post(
-                "/acars/tx/atn_vhf",
-                json=msg, 
-                name="/acars/tx/atn_vhf",
-                headers=self.jwt_headers
-                )
+        rsp = self.client.post(
+            "/acars/tx/atn_vhf",
+            json=msg, 
+            name="/acars/tx/atn_vhf",
+            headers=self.jwt_headers
+            )
+        if rsp.status_code != 201:
+            logger.error(rsp.text)
