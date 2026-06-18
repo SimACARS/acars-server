@@ -15,14 +15,15 @@ from time import sleep
 # Third Party Libraries
 import pandas as pd
 from locust import HttpUser, task, between
+from loguru import logger
 
 
 # Local Libraries
-from acars_server.databases import StoreAndForward
+from acars_server.databases import DataLinkInitiationCapability, StoreAndForward
 from dotenv import load_dotenv
 
 PWD = Path(os.path.dirname(__file__))
-CSV_FILE = os.path.join(PWD.parent, ".secret", "messages.csv")
+CSV_FILE = os.path.join(PWD.parent.parent, "shared", ".secret", "messages.csv")
 
 load_dotenv(os.path.join(PWD.parent, "acars_server", ".env"))
 
@@ -31,6 +32,7 @@ for name in [
     "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
     "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
     "OTEL_METRICS_EXPORTER",
+    "REDIS_HOST",
 ]:
     print(name, "=", os.getenv(name))
 
@@ -61,7 +63,7 @@ class Poller(HttpUser):
     wait_time = between(1, 5)
     callsigns = list(CALLSIGNS)
     headers = {}
-    user_api_key = ""
+    jwt_headers = {}
     user_cid = randint(10000, 99999999)
 
     def on_start(self):
@@ -70,23 +72,45 @@ class Poller(HttpUser):
             f"/test/auth/new_user/{self.user_cid}",
             name="/test/auth/new_user")
         if user_registration.status_code == 200:
-            self.user_api_key = user_registration.json()["api_key"]
-            self.headers = {
-                    "x-key": self.user_api_key,
+            user_api_key = user_registration.json()["api_key"]
+            headers = {
+                    "x-key": user_api_key,
                     "accept": "application/json"
                 }
             sleep(randint(1,20))
 
             # Log the user on
-            self.client.post(
+            logon_data = {
+                "logon_from": "RFI221B",
+                "logon_to": "_ATC_EFGF",
+                "created": 0,
+                "network": "testing",
+                "logoff_code": "",
+                }
+            msg = DataLinkInitiationCapability.model_validate(logon_data)
+            jwt = self.client.post(
                 "/dlic/aircraft/logon",
-                name="/acars/poll",
-                headers=self.headers)
+                name="/dlic/aircraft/logon",
+                headers=headers,
+                json=msg.model_dump())
+            if jwt.status_code == 200:
+                self.jwt_headers = {
+                    "Authorization": f"Bearer {jwt.json()["access_token"]}"
+                }
 
     @task(3)
     def poll(self):
         """Poll"""
-        self.client.post("/acars/poll", name="/acars/poll", headers=self.headers)
+        rsp = self.client.post("/acars/poll", name="/acars/poll", headers=self.jwt_headers)
+        if rsp.status_code != 200:
+            logger.error(rsp.headers)
+            logger.error(rsp.text)
+            logger.error(rsp.request.method)
+            logger.error(rsp.request.url)
+            logger.error(rsp.request.headers)
+            logger.error(rsp.request.body)
+        else:
+            logger.success(rsp.text)
 
     @task
     def tx_data(self):
@@ -116,4 +140,9 @@ class Poller(HttpUser):
             "created": dt.now(tz.utc).timestamp()
         }
         if StoreAndForward.model_validate(msg):
-            self.client.post("/acars/tx", json=msg, name="/acars/tx", headers=self.headers)
+            self.client.post(
+                "/acars/tx/atn_vhf",
+                json=msg, 
+                name="/acars/tx/atn_vhf",
+                headers=self.jwt_headers
+                )
