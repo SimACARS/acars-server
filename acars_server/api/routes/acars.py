@@ -14,7 +14,6 @@ from typing import Annotated, Any, Dict, Literal
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
-from redis import ResponseError
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
@@ -45,14 +44,12 @@ async def poll_for_new_messages(
             "relayed": True,
             "relayed_at": dt.now(tz.utc).timestamp()
         }
-        try:
-            all_messages = databases.StoreAndForward.find(
-                        (databases.StoreAndForward.msg_to == callsign)
-                        # needs this declaration (== False ! is False) for redis to work
-                        & (databases.StoreAndForward.relayed == False)
-                    ).all()
-        except ResponseError:
-            return JSONResponse(content={"msg_count": 0})
+        all_messages = (databases.StoreAndForward.find(
+                (databases.StoreAndForward.msg_to == callsign)
+                # needs this declaration (== False ! is False) for redis to work
+                & (databases.StoreAndForward.relayed == False)
+            ).all()
+        ) or []
         if len(all_messages) > 0:
             rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
             update_id_list = []
