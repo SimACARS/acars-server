@@ -64,12 +64,12 @@ class Poller(HttpUser):
     callsigns = list(CALLSIGNS)
     headers = {}
     jwt_headers = {}
-    user_cid = randint(10000, 99999999)
 
     def on_start(self):
         # Register a new user
+        user_cid = randint(10000, 99999999)
         user_registration = self.client.get(
-            f"/test/auth/new_user/{self.user_cid}",
+            f"/test/auth/new_user/{user_cid}",
             name="/test/auth/new_user")
         if user_registration.status_code == 200:
             user_api_key = user_registration.json()["api_key"]
@@ -109,8 +109,6 @@ class Poller(HttpUser):
             logger.error(rsp.request.url)
             logger.error(rsp.request.headers)
             logger.error(rsp.request.body)
-        else:
-            logger.success(rsp.text)
 
     @task
     def tx_data(self):
