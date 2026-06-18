@@ -55,10 +55,6 @@ redis_async_db = redis.Redis(
     decode_responses=True
 )
 
-# ------------- DEV CODE -------------
-redis_db.flushall() # Clear Redis DB on startup
-# ------------- DEV CODE -------------
-
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SQLAlchemyInstrumentor().instrument(engine=engine)
 

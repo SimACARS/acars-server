@@ -39,6 +39,7 @@ settings = config.Settings()
 
 def run_startup_tasks():
     """Startup Tasks"""
+    databases.redis_db.flushall() # Clear Redis DB on startup
     databases.create_db_and_tables()
     Migrator().run()
 
