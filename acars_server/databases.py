@@ -37,9 +37,11 @@ DATABASE_URL = (
     f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
 )
 
+RedisInstrumentor().instrument()
+
 redis_db = get_redis_connection(
     host=os.getenv("REDIS_HOST"),
-    port=int(os.getenv("REDIS_PORT")),
+    port=os.getenv("REDIS_PORT", "6379"),
     password=os.getenv("REDIS_PASSWORD"),
     username="default",
     decode_responses=True
@@ -47,7 +49,7 @@ redis_db = get_redis_connection(
 
 redis_async_db = redis.Redis(
     host=os.getenv("REDIS_HOST"),
-    port=int(os.getenv("REDIS_PORT")),
+    port=os.getenv("REDIS_PORT", "6379"),
     password=os.getenv("REDIS_PASSWORD"),
     username="default",
     decode_responses=True
@@ -59,7 +61,6 @@ redis_db.flushall() # Clear Redis DB on startup
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SQLAlchemyInstrumentor().instrument(engine=engine)
-RedisInstrumentor().instrument()
 
 def create_db_and_tables(): # pragma: no cover
     """Create DB and Tables"""
