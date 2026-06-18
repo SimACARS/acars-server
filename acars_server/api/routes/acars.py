@@ -123,6 +123,7 @@ async def transmit_a_message(
     msg:databases.StoreAndForward,
     bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
     background_tasks: BackgroundTasks,
+    session: databases.SessionDep,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
     Allow an aircraft to transmit a message
@@ -140,7 +141,7 @@ async def transmit_a_message(
 
     # If the callsign has been validated
     if callsign:
-        background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
+        background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
         return sf_msg
 
     error = (f"Callsign validation failed - Network: {user_data['network']}, "

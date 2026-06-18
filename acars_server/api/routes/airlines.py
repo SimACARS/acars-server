@@ -134,7 +134,7 @@ async def transmit_a_message(
             status_code=404,
             content={"error": f"{msg.msg_to} is not active on the network"})
 
-    background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
+    background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
     return sf_msg
 
 @router.post(

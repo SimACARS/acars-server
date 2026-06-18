@@ -107,6 +107,7 @@ async def transmit_a_message(
     msg:databases.StoreAndForward,
     bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
     background_tasks: BackgroundTasks,
+    session: databases.SessionDep,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """Airline Send a Message"""
 
@@ -130,5 +131,5 @@ async def transmit_a_message(
             status_code=404,
             content={"error": f"{msg.msg_to} is not active on the network"})
 
-    background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
+    background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
     return sf_msg

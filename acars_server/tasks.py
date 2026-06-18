@@ -46,7 +46,8 @@ class TransmissionDelay:
 
 async def message_parse(
         msg:databases.StoreAndForward,
-        bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"]):
+        bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
+        session: databases.SessionDep):
     """Parse a message"""
 
     # Force an artificial delay to simulate a network type
@@ -65,12 +66,12 @@ async def message_parse(
             return
     # CPDLC
     elif msg["msg_type"] == "cpdlc": # pragma: no cover
-        send_msg = msg_type_cpdlc(msg)
+        send_msg = msg_type_cpdlc(msg, session)
 
     # ADEXP
     elif msg["msg_type"] == "adexp": # pragma: no cover
         adexp_msg = adexp.Adexp(msg)
-        if not msg_type_cpdlc(msg):
+        if not adexp_msg:
             return
 
     # Validate the message content
@@ -110,11 +111,12 @@ def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
         return True
     return False
 
-def msg_type_cpdlc(msg:databases.StoreAndForward) -> Dict[str, Any]:
+def msg_type_cpdlc(
+        msg:databases.StoreAndForward,
+        session:databases.SessionDep) -> Dict[str, Any]:
     """Validates CPDLC messages"""
-    msg_validation = cpdlc.Cpdlc(msg)
-    msg_validation.parse_message()
-    #msg_validation.message_validation()
+    msg_validation = cpdlc.Cpdlc(msg, session)
+    msg_validation.run()
     return msg
 
 async def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
