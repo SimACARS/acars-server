@@ -103,7 +103,10 @@ async def dlic_aircraft_logon(
     This does <b>not</b> log a user onto an ATSU, a separate DM99 message must be sent
     """
     user_data = await api_authentication(session, api_key)
-    callsign = await callsign_verification(user_data)
+    if msg.network != "testing":
+        callsign = await callsign_verification(user_data)
+    else:
+        callsign = msg.logon_from
     # Check to see if user is already logged on
     cs_logon = None
     try:
