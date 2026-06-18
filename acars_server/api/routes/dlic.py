@@ -14,6 +14,7 @@ from hashlib import blake2b
 from fastapi import APIRouter, Security
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials
+from redis.exceptions import ResponseError
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
@@ -62,6 +63,8 @@ async def dlic_airline_logon(
                     (databases.DataLinkInitiationCapability.logon_from == f"_COY_{msg.logon_from}")
                 ).first()
     except NotFoundError:
+        pass
+    except ResponseError:
         pass
 
     if cs_logon:
@@ -115,6 +118,8 @@ async def dlic_aircraft_logon(
             "atsu": cs_logon.logon_to
             })
     except NotFoundError:
+        pass
+    except ResponseError:
         pass
 
     sf_msg = databases.DataLinkInitiationCapability.model_validate(msg)
