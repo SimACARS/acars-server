@@ -122,6 +122,16 @@ class ApiKeyUpdate(ApiKeyBase):
 
 
 # ------------------------------------------------------------------
+# System Config
+# ------------------------------------------------------------------
+class SystemConfig(SQLModel, table=True):
+    """A table to hold all system config"""
+    id: int | None = Field(default=None, primary_key=True)
+    setting: str
+    enabled: Optional[bool] = True
+
+
+# ------------------------------------------------------------------
 # CPDLC Message Types
 # ------------------------------------------------------------------
 class CPDLCTypes(SQLModel, table=True):
