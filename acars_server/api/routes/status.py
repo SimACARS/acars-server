@@ -9,8 +9,6 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 
 # Third Party Libraries
-from requests import status_codes
-
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse

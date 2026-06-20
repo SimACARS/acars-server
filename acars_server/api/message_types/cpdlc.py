@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Union
 
 # Third Party Libraries
-from loguru import logger
 from redis_om.model.model import NotFoundError # type: ignore
 from sqlmodel import select
 
@@ -61,7 +60,7 @@ class Cpdlc:
             r"^(\d+)\/(\d*)\/([23]\d[01]\d[0-3]\d[0-2]\d[0-6]\d[0-6]\d)\/([A-Z]*)\/(.*)$",
             self.message.packet)
         if data_check:
-            logger.debug(data_check)
+            common.logger.debug(data_check)
             return data_check
 
         common.logger.error(
@@ -98,29 +97,29 @@ class Cpdlc:
         rtn:Dict[str, Any] = {}
         # Check that the message contains a UM or DM code
         content_val = re.match(r"^([UD]M[0-9]{1,3}[a-z]{0,2})(.*)", self.exploded["content"])
-        logger.debug(content_val)
+        common.logger.debug(content_val)
         if content_val:
             # Lookup the UM or DM code to validate it
             lookup = select(
                 databases.CPDLCTypes).where(
                     databases.CPDLCTypes.reference_number == content_val.group(1))
-            logger.debug(f"\n{lookup}")
+            common.logger.debug(lookup)
             result = self.session.exec(lookup).first()
-            logger.debug(result)
+            common.logger.debug(result)
             if result:
                 rtn["ref"] = result.reference_number
                 rtn["variables"] = {}
                 # Look for any variables in the message element. Indicated by [ ]
                 matches = re.findall(r"\[([^\]]+)\]", result.message_element)
-                logger.debug(matches)
+                common.logger.debug(matches)
                 if matches:
                     ordered_match_set = list(dict.fromkeys(matches))
-                    logger.debug(ordered_match_set)
+                    common.logger.debug(ordered_match_set)
                     split_content = content_val.group(2).split(",")
-                    logger.debug(split_content)
+                    common.logger.debug(split_content)
 
                     for match, sc in zip(ordered_match_set, split_content[1:]):
-                        logger.debug(f"{match} {sc}")
+                        common.logger.debug(f"{match} {sc}")
                         rtn["variables"][match] = sc
 
         # Overwrite data with validated message
