@@ -92,7 +92,7 @@ async def ls_cm_contact(
             sf_msg.save()
             databases.redis_db.expire(
                     sf_msg.key(),
-                    300,
+                    240,
                 )
             return JSONResponse(status_code=201, content=sf_msg.model_dump_json())
     return JSONResponse(status_code=404, content={"error": "callsign validation error"})
