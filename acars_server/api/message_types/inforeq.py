@@ -70,26 +70,26 @@ class Vatsim:
         # get the most up-to-date URLs from status.vatsim.net
         vatsim_status_url = "https://status.vatsim.net/status.json"
 
-        #vatsim_servers = functions.load_json_url(vatsim_status_url, timeout=30)
-        #common.logger.debug(vatsim_servers)
+        vatsim_servers = functions.load_json_url(vatsim_status_url, timeout=30)
+        common.logger.debug(vatsim_servers)
 
         self.member_stat_data = {}
 
         # json output from status.vatsim.net/status.json is sub-divided by data, user and metar.
         # only data has further sub-divisions.
-        #vs_data = vatsim_servers["data"]
-        #self.vatsim_urls = {
-        #    "all": str(vs_data["v3"]).strip("'[]"),
-        #    "transceivers": str(vs_data["transceivers"]).strip("'[]"),
-        #    "primary_servers": str(vs_data["servers"]).strip("'[]"),
-        #    "sweatbox_servers": str(vs_data["servers_sweatbox"]).strip("'[]"),
-        #    "all_servers": str(vs_data["servers_all"]).strip("'[]"),
-        #    "user_details": str(vatsim_servers["user"]).strip("'[]"),
-        #    "metar": str(vatsim_servers["metar"]).strip("'[]"),
-        #    "map_api": "https://api.vatsim.net/api/map_data/",
-        #    "slurper": "https://slurper.vatsim.net/users/info",
-        #    "member_data": "https://api.vatsim.net/v2/members/"
-        #}
+        vs_data = vatsim_servers["data"]
+        self.vatsim_urls = {
+            "all": str(vs_data["v3"]).strip("'[]"),
+            "transceivers": str(vs_data["transceivers"]).strip("'[]"),
+            "primary_servers": str(vs_data["servers"]).strip("'[]"),
+            "sweatbox_servers": str(vs_data["servers_sweatbox"]).strip("'[]"),
+            "all_servers": str(vs_data["servers_all"]).strip("'[]"),
+            "user_details": str(vatsim_servers["user"]).strip("'[]"),
+            "metar": str(vatsim_servers["metar"]).strip("'[]"),
+            "map_api": "https://api.vatsim.net/api/map_data/",
+            "slurper": "https://slurper.vatsim.net/users/info",
+            "member_data": "https://api.vatsim.net/v2/members/"
+        }
         self.dataframes = {}
         #threading.Thread(target=self._data_collector).start()
         #sleep(1)
