@@ -1,5 +1,23 @@
 # Changelog
 
+# [2.2.0-alpha.4](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.3...v2.2.0-alpha.4) (2026-06-20)
+
+
+### Bug Fixes
+
+* failing on redis.ResponseError ([ef76287](https://github.com/SimACARS/acars-server/commit/ef76287704aca17a5c808a40553a708908b7fb9d))
+* flush is in the wrong place - look to remove completely once out of dev ([b76eb89](https://github.com/SimACARS/acars-server/commit/b76eb893ddccdeffc3927d1b08b6c846a5017881))
+* long poll jobs not async ([6ae6150](https://github.com/SimACARS/acars-server/commit/6ae6150bea933faf9af4735b05c048e25401c6b0))
+* returning 404 instead of 200 ([4f0d397](https://github.com/SimACARS/acars-server/commit/4f0d397bc3c982b70a829093fd9569ba6489da19))
+* try except should be removed in favour of or ([f1960ae](https://github.com/SimACARS/acars-server/commit/f1960ae920657a6e9f1d6b82033867cb23d6e264))
+* undo nerf's vatsim urls ([e6e80ef](https://github.com/SimACARS/acars-server/commit/e6e80ef6d515aa832bfd9d78f21e116a48db04e5))
+
+
+### Performance Improvements
+
+* nerf'd artificial delay, there is enough delay in the system without adding more! ([57b6a52](https://github.com/SimACARS/acars-server/commit/57b6a52cf737973751ddcaa230510e40b00301ef))
+* nerf'd inforeq for now ([c049ed5](https://github.com/SimACARS/acars-server/commit/c049ed509fc43d11d991fe895df205d09406d5f9))
+
 # [2.2.0-alpha.3](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.2...v2.2.0-alpha.3) (2026-06-17)
 
 
