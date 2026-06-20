@@ -48,8 +48,7 @@ async def ls_cm_contact(
             databases.ATSUAuthorisedCallsign).where(
                 databases.ATSUAuthorisedCallsign.callsign == callsign_chk)
         result = session.exec(parent).first()
-        print(parent)
-        print(result.atsu_callsign.atsu_callsign)
+
         if result:
             # Get the primary frequency for the ATSU
             atsu_cs = result.atsu_callsign.atsu_callsign
