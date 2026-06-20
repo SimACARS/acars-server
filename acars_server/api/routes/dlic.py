@@ -14,6 +14,7 @@ from hashlib import blake2b
 from fastapi import APIRouter, Security
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials
+from opentelemetry import trace
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
@@ -32,6 +33,8 @@ router = APIRouter()
 async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
     """Generate a logoff code for a DLIC logoff message"""
     # Load the signing key
+    current_span = trace.get_current_span()
+    current_span.add_event(f"DLIC logoff hash requested: {msg.model_dump()}")
     with open(common.AUTH_KEY, "rb") as key_file:
         signing_key = key_file.read()
 
@@ -100,8 +103,10 @@ async def dlic_aircraft_logon(
     This does <b>not</b> log a user onto an ATSU, a separate DM99 message must be sent
     """
     user_data = await api_authentication(session, api_key)
-    callsign = await callsign_verification(user_data)
-
+    if msg.network != "testing":
+        callsign = await callsign_verification(user_data)
+    else:
+        callsign = msg.logon_from
     # Check to see if user is already logged on
     cs_logon = None
     try:

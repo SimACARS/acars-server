@@ -9,7 +9,10 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 
 # Third Party Libraries
+from requests import status_codes
+
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 
 # Local Libraries
@@ -22,7 +25,10 @@ router = APIRouter()
 @router.get("/", tags=["Status"])
 async def ping():
     """Ping the server. Returns 'OK' and VERSION"""
-    return {"server_status": "OK", "server_version": __VERSION__}
+    return JSONResponse(
+        status_code=200,
+        content={"server_status": "OK", "server_version": __VERSION__}
+        )
 
 @router.get("/logs/stream", tags=["Status"])
 async def stream_logs(): # pragma: no cover
