@@ -7,13 +7,14 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
 import secrets
 from typing import Literal
 
 # Third Party Libraries
 from fastapi import APIRouter, HTTPException, Security
 from fastapi.responses import JSONResponse
-from sqlmodel import select
+from sqlmodel import select, update
 
 # Local Libraries
 from acars_server import common, databases, static_data
@@ -172,3 +173,37 @@ async def add_new_authorised_atsu_callsign(
         raise HTTPException(status_code=501, detail="Delete action is not implemented")
     else:
         raise HTTPException(status_code=403, detail="Invalid admin authentication state")
+
+@router.post(
+        "/set/{setting}/{on_off}",
+        status_code=201,
+        responses=static_data.COMMON_ERRORS,
+        )
+async def change_system_settings(
+    setting: Literal["ls_cm_contact"],
+    on_off: Literal["on", "off"],
+    session: databases.SessionDep,
+    api_key: str = Security(common.header_api_key)):
+    """
+    Change a system setting and reload
+    """
+
+    try:
+        api_admin = await admin_api_authentication(session, api_key)
+    except HTTPException as exc:
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+    setit = False
+    if on_off == "on":
+        setit = True
+
+    update_setting = (update(databases.SystemConfig)
+                      .where(databases.SystemConfig.setting == setting)
+                      .values(enabled = setit))
+    result = session.exec(update_setting)
+    if result:
+        session.commit()
+        os.environ[f"DS_{setting.upper()}"] = str(setit)
+        common.logger.info(f"Admin has set {setting} to {setit}")
+        return JSONResponse(content={"success": f"Admin has set {setting} to {setit}"})
+    return JSONResponse(status_code=403, content={"error", "no access"})

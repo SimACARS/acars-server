@@ -6,7 +6,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 __ALL__ = [
-    "message_types",
-    "routes",
-    "services"
+    "atsu_services",
+    "auth_services",
+    "user_services"
 ]

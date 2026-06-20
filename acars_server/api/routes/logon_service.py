@@ -7,6 +7,7 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
 import re
 from datetime import datetime as dt, timezone as tz
 
@@ -34,6 +35,11 @@ async def ls_cm_contact(
     """
     Attempts to send a UM117 (CONTACT  [unit  name]  [frequency]) to the provided callsign
     """
+    if os.getenv("DS_LS_CM_CONTACT") == "False":
+        return JSONResponse(
+            status_code=403,
+            content={"warning": "CM_CONTACT has been temporarily disabled"}
+            )
     if re.match(r"[A-Z0-9]+", callsign):
         user_data = await jwt_auth.decode_jwt(jwt, ["acars:atsu"])
         callsign_chk = await callsign_verification(user_data)
