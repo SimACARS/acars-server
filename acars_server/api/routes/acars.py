@@ -142,7 +142,7 @@ async def transmit_a_message(
     # If the callsign has been validated
     if callsign:
         background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
-        return sf_msg
+        return JSONResponse(status_code=202, content=sf_msg.model_dump_json())
 
     error = (f"Callsign validation failed - Network: {user_data['network']}, "
              f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")
