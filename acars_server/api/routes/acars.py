@@ -84,7 +84,7 @@ async def poll_for_new_messages(
     common.logger.error(error)
     return JSONResponse(status_code=403, content = {"error": error})
 
-@router.get("/connect.html", tags=["Legacy Messaging"], deprecated=True)
+        status_code=202,
 async def hoppie_formated_url(
     api_key: Annotated[str, Query(alias="logon")],
     msg_from: Annotated[str, Query(alias="from")],
