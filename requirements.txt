@@ -2,7 +2,6 @@ alembic==1.18.4
 cryptography==49.0.0
 dnspython==2.8.0
 fastapi[standard]==0.138.0
-locust==2.44.3
 loguru==0.7.3
 pandas==3.0.3
 pwdlib[argon2]==0.3.0
