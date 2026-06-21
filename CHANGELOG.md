@@ -1,5 +1,24 @@
 # Changelog
 
+# [2.2.0-alpha.5](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.4...v2.2.0-alpha.5) (2026-06-21)
+
+
+### Bug Fixes
+
+* LS-DAT-0110 - should be 4 minutes ([61d5beb](https://github.com/SimACARS/acars-server/commit/61d5beb598108778f00877656c73df189aeb1fc7))
+* this should return a 202 response on success ([38800c4](https://github.com/SimACARS/acars-server/commit/38800c4ab2a2eb1c493e0464b85f7d7435fb65d5))
+
+
+### Features
+
+* base system config ([dea2f45](https://github.com/SimACARS/acars-server/commit/dea2f45dd8c214813648cb21d86e1f7d14267e2b))
+* LS-FCT-0110 [#73](https://github.com/SimACARS/acars-server/issues/73) ([9af8788](https://github.com/SimACARS/acars-server/commit/9af878806c13cc1a137d4004925ab4c0cea6e483))
+
+
+### Performance Improvements
+
+* removed some test code ([789bed5](https://github.com/SimACARS/acars-server/commit/789bed56b94568fe30922215420394ac8521a10c))
+
 # [2.2.0-alpha.4](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.3...v2.2.0-alpha.4) (2026-06-20)
 
 
