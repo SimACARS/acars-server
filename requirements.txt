@@ -15,4 +15,4 @@ redis[otel]==7.4.1
 redis_om==1.1.0
 Requests==2.34.2
 sqlmodel==0.0.38
-sse_starlette>=3.4.4
+sse_starlette==3.4.5
