@@ -24,7 +24,10 @@ from sqlmodel import Column, Field, Relationship, Session, SQLModel, Text, creat
 # Local Libraries
 from acars_server import static_data
 
-load_dotenv()
+if os.getenv("RUNNING_IN_DOCKER", "").lower() == "true":
+    pass
+else:
+    load_dotenv()
 
 DATABASE_HOST = os.getenv("MYSQL_HOST", "localhost")
 DATABASE_PORT = int(os.getenv("MYSQL_PORT", "3306"))

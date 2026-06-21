@@ -2,12 +2,12 @@ services:
   mysql:
     image: mysql:8.4
     environment:
-      MYSQL_ROOT_PASSWORD: 9Bo9pcHwoW0xsqWFB34sVL
-      MYSQL_DATABASE: acars_test
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: acars
       MYSQL_USER: acars
-      MYSQL_PASSWORD: tC1Pu9oQ5TFpZttQ6D97Hqw7L71
+      MYSQL_PASSWORD: acars_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p9Bo9pcHwoW0xsqWFB34sVL"]
+      test: ["CMD-SHELL", "mysql -uacars -pacars_password -e 'SELECT 1' acars"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -42,7 +42,7 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_USER: acars
-      MYSQL_PASSWORD: tC1Pu9oQ5TFpZttQ6D97Hqw7L71
+      MYSQL_PASSWORD: acars_password
       MYSQL_DB: acars
 
       REDIS_HOST: redis
@@ -54,7 +54,7 @@ services:
       VATSIM_OAUTH_REDIRECT_URI_ATSU: https://efps.vnpas.uk/oauth/token/
       OTLPS_ENDPOINT: otel
       OTLPS_PORT: 4317
-      OTEL_EXPORTER_OTLP_ENDPOINT: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: otel
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: otel
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: otel
       JWT_SECRET: KuRgN89vGrBHMaBY8oPxBv4EXkm9WlHaQaWyp6expqchdQpMyf8xhYzuBoCPzhu
@@ -63,5 +63,3 @@ services:
 
       PYTHONPATH: /app
       RUNNING_IN_DOCKER: "true"
-
-    command: pytest tests/ -v
