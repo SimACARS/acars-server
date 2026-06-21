@@ -60,7 +60,8 @@ async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[
     db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == hashed_api)
     api_user = session.exec(db_auth).first()
     if not api_user:
-        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint.")
+        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint. "
+                            f"Attempted logon by {hashed_api} (hashed)")
         raise HTTPException(status_code=401, detail="Unauthorised. This is an AIRCRAFT endpoint.")
 
     # Some logging and span
