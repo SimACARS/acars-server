@@ -241,3 +241,18 @@ METADATA_TAGS:list[dict[str, Any]] = [
                         "Capability (DLIC) process as defined in ICAO Doc 4444")
     }
 ]
+
+# Per https://vats.im/coc-companion [2026-06-19]
+PERMANENTLY_BLOCKED_CALLSIGNS = [
+    r"^VATSIM\d+$",
+    r"^VATGOV\d+$",
+    r"^VAT[A-Z]{3}\d+$",
+    r"^.*_SUP$",
+    r"^.*_ADM$",
+    r"^AAL11.*$",
+    r"^AAL77.*$",
+    r"^MAS17.*$",
+    r"^MAS370.*$",
+    r"^UAL93.*$",
+    r"^UAL175.*$",
+]

@@ -23,6 +23,7 @@ from acars_server.api.services.auth_services import (
     airline_api_authentication,
     api_authentication,
     callsign_verification,
+    check_banned_callsigns,
     jwt_auth
     )
 
@@ -102,6 +103,7 @@ async def dlic_aircraft_logon(
     Returns a JWT for persistant login
     This does <b>not</b> log a user onto an ATSU, a separate DM99 message must be sent
     """
+    check_banned_callsigns(msg.logon_from)
     user_data = await api_authentication(session, api_key)
     if msg.network != "testing":
         callsign = await callsign_verification(user_data)

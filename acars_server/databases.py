@@ -137,6 +137,18 @@ class SystemConfig(SQLModel, table=True):
 # ------------------------------------------------------------------
 # CPDLC Message Types
 # ------------------------------------------------------------------
+class BlockList(SQLModel, table=True):
+    """A table to hold blocked users or airlines"""
+    id: int | None = Field(default=None, primary_key=True)
+    entity_type: str
+    block_key: str
+    expires: Optional[float] = 0.0
+    reason: str
+
+
+# ------------------------------------------------------------------
+# CPDLC Message Types
+# ------------------------------------------------------------------
 class CPDLCTypes(SQLModel, table=True):
     """A table to hold all CPDLC message types"""
     direction: str
