@@ -1,7 +1,7 @@
 cryptography==49.0.0
 dnspython==2.8.0
 fastapi[standard]==0.136.3
-locust==2.44.3
+locust==2.44.4
 loguru==0.7.3
 pandas==3.0.3
 pwdlib[argon2]==0.3.0
