@@ -34,9 +34,10 @@ from tests.factories.user import UserApiKeyFactory
 PWD = Path(os.path.dirname(__file__))
 
 if os.getenv("RUNNING_IN_DOCKER", "").lower() == "true":
-    load_dotenv()
+    SUFFIX = ""
 else:
     load_dotenv(os.path.join(PWD.parent, "acars_server", ".env"))
+    SUFFIX = "_test"
 
 DATABASE_HOST = os.getenv("MYSQL_HOST")
 DATABASE_PORT = int(os.getenv("MYSQL_PORT", "3306"))
@@ -46,7 +47,7 @@ DATABASE_PASSWORD = os.getenv("MYSQL_PASSWORD")
 
 DATABASE_URL = (
     f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}"
-    f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}_test"
+    f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}{SUFFIX}"
 )
 
 redis_db = get_redis_connection(

@@ -4,9 +4,10 @@ WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt requirements-dev.txt pyproject.toml ./
+COPY docker/init.sh requirements.txt requirements-dev.txt pyproject.toml ./
 
-RUN pip install --upgrade pip && \
+RUN chmod +x init.sh && \
+    pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install -r requirements-dev.txt && \
     pip install opentelemetry-distro && \
@@ -16,5 +17,7 @@ RUN pip install --upgrade pip && \
     python -c "import secrets; open('auth.key', 'wb').write(secrets.token_bytes(32))"
 
 COPY . .
+
+ENTRYPOINT [ "./init.sh" ]
 
 CMD ["pytest", "tests/", "-v", "--cov=acars_server", "--cov-report=html", "--cov-report=term-missing"]

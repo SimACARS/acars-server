@@ -386,7 +386,7 @@ class TestATSURx:
             response_tx = client.post("/acars/tx/atn_vhf", json=msg.model_dump())
         client.headers.pop("Authorization")
 
-        assert response_tx.status_code == 201
+        assert response_tx.status_code == 202
         print("INFO: sent tx", response_tx.status_code)
 
         # Mock Redis to avoid event loop issues in testing

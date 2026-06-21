@@ -24,7 +24,10 @@ from sqlmodel import Column, Field, Relationship, Session, SQLModel, Text, creat
 # Local Libraries
 from acars_server import static_data
 
-load_dotenv()
+if os.getenv("RUNNING_IN_DOCKER", "").lower() == "true":
+    pass
+else:
+    load_dotenv()
 
 DATABASE_HOST = os.getenv("MYSQL_HOST", "localhost")
 DATABASE_PORT = int(os.getenv("MYSQL_PORT", "3306"))
@@ -119,6 +122,16 @@ class ApiKeyUpdate(ApiKeyBase):
     api_key: str | None = None
     network: str | None = None
     last_used: float | None = None
+
+
+# ------------------------------------------------------------------
+# System Config
+# ------------------------------------------------------------------
+class SystemConfig(SQLModel, table=True):
+    """A table to hold all system config"""
+    id: int | None = Field(default=None, primary_key=True)
+    setting: str
+    enabled: Optional[bool] = True
 
 
 # ------------------------------------------------------------------
