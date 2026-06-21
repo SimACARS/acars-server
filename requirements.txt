@@ -1,13 +1,12 @@
 alembic==1.18.4
 cryptography==49.0.0
 dnspython==2.8.0
-fastapi[standard]==0.136.3
-locust==2.44.3
+fastapi[standard]==0.138.0
 loguru==0.7.3
 pandas==3.0.3
 pwdlib[argon2]==0.3.0
 pydantic==2.13.4
-pydantic_settings==2.14.1
+pydantic_settings==2.14.2
 pyjwt==2.13.0
 pymysql==1.2.0
 python-dotenv==1.2.2
@@ -15,4 +14,4 @@ redis[otel]==7.4.1
 redis_om==1.1.0
 Requests==2.34.2
 sqlmodel==0.0.38
-sse_starlette>=3.4.4
+sse_starlette==3.4.5
