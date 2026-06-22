@@ -8,7 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import os
-from typing import Annotated, Literal
+from typing import Annotated
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
