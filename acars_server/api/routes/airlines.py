@@ -104,7 +104,7 @@ async def receive_message_stream(
 
 @router.post(
         "/tx/{bearer}",
-        status_code=201,
+        status_code=202,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward,
         tags=["Messaging"]
