@@ -56,7 +56,7 @@ class TestTransmitMessage:
         response = client.post("/airline/tx/atn_vhf", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
-        assert response.status_code == 201
+        assert response.status_code == 202
 
     def test_tx_recipient_offline(self, client: TestClient):
         """
