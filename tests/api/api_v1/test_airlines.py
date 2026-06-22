@@ -274,6 +274,8 @@ class TestAirlineRx:
 
             async with async_client.stream("GET", url) as response:
                 print("INFO: stream opened", response.status_code)
+                body = await response.aread()
+                print("Raw body:", body.decode(errors="replace"))
                 assert response.status_code == 200
                 assert response.headers["content-type"].startswith("text/event-stream")
 
