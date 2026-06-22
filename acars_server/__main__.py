@@ -103,6 +103,12 @@ app.mount(
     "/static",
     StaticFiles(directory=os.path.join(common.PWD.parent, "front_end")),
     name="static")
+# --------------- TEST CODE ------------------
+app.mount(
+    "/coverage",
+    StaticFiles(directory=os.path.join(common.PWD.parent, "htmlcov")),
+    name="coverage")
+# --------------- TEST CODE ------------------
 
 # Server Status Endpoints
 app.include_router(status.router)
