@@ -68,7 +68,7 @@ es.onmessage = (event: MessageEvent) => {
         tags=["Messaging"]
         )
 async def receive_message_stream(
-    callsign:Annotated[str, Path(pattern="^_COY_[A-Z]+$")],
+    callsign:Annotated[str, Path(min_length=3, max_length=4, pattern="^[A-Z]+$")],
     network:static_data.NetworkTypes,
     session:databases.SessionDep,
     last_event_id: str | None = Query(default=None),
@@ -76,18 +76,6 @@ async def receive_message_stream(
     ):
     """
     Airline receive messages via Server-Sent Events
-
-    Example for TypeScript: https://docs.servicestack.net/typescript-server-events-client
-
-    Example client side JavaScript:
-
-        const es = new EventSource("/stream/BAW");
-
-        es.onmessage = (event) => {
-            console.log("MSG:", JSON.parse(event.data));
-        };
-
-    https://developer.mozilla.org/en-US/docs/Web/API/EventSource
     """
     try:
         airline_data = await airline_api_authentication(session, api_key)
