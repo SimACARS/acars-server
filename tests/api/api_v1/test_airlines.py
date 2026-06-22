@@ -299,7 +299,7 @@ class TestAirlineRx:
     def test_invalid_auth(self, client: TestClient):
         """Test an invalid api key"""
         client.headers.update({"x-key": "NOT_A_KEY"})
-        response = client.get("/airline/rx/vatsim/wiffle")
+        response = client.get("/airline/rx/vatsim/WIFF")
         assert response.status_code == 401
 
     @pytest.mark.asyncio
@@ -308,7 +308,7 @@ class TestAirlineRx:
         airline = Authentication(client, "airline")
         airline.logon()
 
-        url = f"/airline/rx/{airline.airline.network}/NOTACALLSIGN"
+        url = f"/airline/rx/{airline.airline.network}/WIFF"
 
         client.headers.update(airline.info["headers"])
         print("INFO: opening stream", url)
