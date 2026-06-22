@@ -14,7 +14,6 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data
-from acars_server.api.services.user_services import responses_user_new_network
 
 router = APIRouter()
 # ------------------------------------------------------------------
