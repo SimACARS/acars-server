@@ -12,12 +12,12 @@ import random
 import re
 from datetime import datetime as dt, timezone as tz
 from time import sleep
-from typing import Any, Dict, Literal, Tuple
+from typing import Any, Dict, Tuple
 
 # Third Party Libraries
 
 # Local Libraries
-from acars_server import common, databases, functions
+from acars_server import common, databases, functions, static_data
 from acars_server.api.message_types import adexp, cpdlc, inforeq
 
 
@@ -46,7 +46,7 @@ class TransmissionDelay:
 
 async def message_parse(
         msg:databases.StoreAndForward,
-        bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
+        bearer: static_data.BearerTypes,
         session: databases.SessionDep):
     """Parse a message"""
 

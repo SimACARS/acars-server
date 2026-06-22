@@ -6,8 +6,70 @@ Chris Parkinson (@chssn)
 
 #!/usr/bin/env python3
 
-from typing import Any, Dict
+# Standard Libraries
+from enum import StrEnum
+from typing import Annotated, Any, Dict
 
+# Third Party Libraries
+from pydantic import BaseModel, Field
+
+# Local Libraries
+
+
+class MessageTypes(StrEnum):
+    """Message Types"""
+    PROGRESS = "progress"
+    CPDLC = "cpdlc"
+    TELEX = "telex"
+    ADEXP = "adexp"
+    PING = "ping"
+    POSREQ = "posreq"
+    POSITION = "position"
+    DATAREQ = "datareq"
+    POLL = "poll"
+    PEEK = "peek"
+    INFOREQ = "inforeq"
+    ADS_C = "ads-c"
+
+
+class NetworkTypes(StrEnum):
+    """Network Types"""
+    VATSIM = "vatsim"
+    IVAO = "ivao"
+    PILOTEDGE = "pilotedge"
+    POSCON = "poscon"
+    APOC = "apoc"
+    SAYINTENTIONS = "sayintentions"
+    OFFLINE = "offline"
+    TESTING = "testing"
+
+
+class SystemConfigTypes(StrEnum):
+    """System Config Types"""
+    LS_CM_CONTACT = "ls_cm_contact"
+
+
+class BearerTypes(StrEnum):
+    """Bearer Types"""
+    FANS_HF = "fans_hf"
+    FANS_VHF = "fans_vhf"
+    FANS_SATCOM = "fans_satcom"
+    ATN_VHF = "atn_vhf"
+    ATN_SATCOM = "atn_satcom"
+
+
+class ResponseJWT(BaseModel):
+    """A quick class to return a JWT"""
+    exp: Annotated[int, Field(default="<int:Expiry>")]
+    nbf: Annotated[int, Field(default="<int:Not Before>")]
+    iat: Annotated[int, Field(default="<int:Issued At>")]
+    iss: str = "urn:simacars"
+    aud: Annotated[str, Field(default="<str:Audience>")]
+    network: Annotated[str, Field(default="<str:Network>")]
+    loc: Annotated[str, Field(default="<str:Log Off Code>")]
+    uid: Annotated[int, Field(default="<int:User ID>")]
+    sub: Annotated[str, Field(default="<str:Subscriber ID>")]
+    jti: Annotated[str, Field(default="<str:Unique ID>")]
 
 # Ref: https://www.oag.com/hubfs/Inbound-Services/OAG-ACARS-OOOI-Message-Types-and-Examples.pdf
 OOOI_SMI_TYPES = {
