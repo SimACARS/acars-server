@@ -1,5 +1,13 @@
 # Changelog
 
+# [2.2.0-alpha.7](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.6...v2.2.0-alpha.7) (2026-06-23)
+
+
+### Bug Fixes
+
+* inforeq still nerf'd ([e694862](https://github.com/SimACARS/acars-server/commit/e694862d72b9275442a5fc18facf17c8f039a8f3))
+* inforeq still nerf'd ([262040e](https://github.com/SimACARS/acars-server/commit/262040e6a4f8ed278aa59faf5fca1f0dd7b02555))
+
 # [2.2.0-alpha.6](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.5...v2.2.0-alpha.6) (2026-06-23)
 
 
