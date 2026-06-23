@@ -209,7 +209,7 @@ async def change_system_settings(
     """
 
     try:
-        api_admin = await admin_api_authentication(session, api_key)
+        await admin_api_authentication(session, api_key)
     except HTTPException as exc:
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
