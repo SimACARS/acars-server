@@ -45,7 +45,7 @@ BANNED_CALLSIGNS = [
 ]
 
 AUTHENTICATED_END_POINTS = [
-    ("/airline/rx/vatsim/BAW123", "get", None),
+    #("/airline/rx/vatsim/BAW123", "get", None),
     ("/airline/tx/atn_vhf", "post", MessageFactory()),
     ("/acars/poll", "post", None),
     ("/acars/tx/atn_vhf", "post", MessageFactory()),
