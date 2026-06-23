@@ -9,11 +9,14 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 from datetime import datetime as dt, timezone as tz
 from hashlib import blake2b
+from typing import Annotated
 
 # Third Party Libraries
 from fastapi import APIRouter, Security
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials
+from opentelemetry import trace
+from pydantic import BaseModel, Field
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
@@ -22,6 +25,7 @@ from acars_server.api.services.auth_services import (
     airline_api_authentication,
     api_authentication,
     callsign_verification,
+    check_banned_callsigns,
     jwt_auth
     )
 
@@ -32,6 +36,8 @@ router = APIRouter()
 async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
     """Generate a logoff code for a DLIC logoff message"""
     # Load the signing key
+    current_span = trace.get_current_span()
+    current_span.add_event(f"DLIC logoff hash requested: {msg.model_dump()}")
     with open(common.AUTH_KEY, "rb") as key_file:
         signing_key = key_file.read()
 
@@ -42,7 +48,16 @@ async def dlic_logoff_hash(msg:databases.DataLinkInitiationCapability) -> str:
 
     return h.hexdigest()
 
-@router.post("/airline/logon")
+
+class ResponseDLICLogon(BaseModel):
+    """A quick class for responses to an airline logon"""
+    status: Annotated[str, Field(default="logged on")]
+    message: databases.DataLinkInitiationCapability
+
+@router.post(
+        "/airline/logon",
+        response_model=ResponseDLICLogon,
+        summary="DLIC Airline Logon")
 async def dlic_airline_logon(
     msg:databases.DataLinkInitiationCapability,
     session:databases.SessionDep,
@@ -88,7 +103,10 @@ async def dlic_airline_logon(
     logon_msg.save()
     return JSONResponse(content={"status": "logged on", "data": logon_msg.model_dump()})
 
-@router.post("/aircraft/logon")
+@router.post(
+        "/aircraft/logon",
+        response_model=static_data.ResponseJWT,
+        summary="DLIC Aircraft Logon")
 async def dlic_aircraft_logon(
     msg:databases.DataLinkInitiationCapability,
     session:databases.SessionDep,
@@ -99,9 +117,12 @@ async def dlic_aircraft_logon(
     Returns a JWT for persistant login
     This does <b>not</b> log a user onto an ATSU, a separate DM99 message must be sent
     """
+    check_banned_callsigns(msg.logon_from)
     user_data = await api_authentication(session, api_key)
-    callsign = await callsign_verification(user_data)
-
+    if msg.network != "testing":
+        callsign = await callsign_verification(user_data)
+    else:
+        callsign = msg.logon_from
     # Check to see if user is already logged on
     cs_logon = None
     try:
@@ -139,7 +160,13 @@ async def dlic_aircraft_logon(
         ["acars:aircraft"])
     return JSONResponse(content=jwt_response)
 
-@router.post("/atsu/logon")
+@router.post(
+        "/atsu/logon",
+        status_code=307,
+        summary="DLIC ATSU Logon",
+        description=("ATSU authentication is handled by the relevant network (eg VATSIM). "
+                     "This endpoint will redirect a user to a VATSIM OAuth endpoint.")
+)
 async def dlic_atsu_logon(
     msg:databases.DataLinkInitiationCapability):
     """
@@ -175,7 +202,17 @@ async def dlic_atsu_logon(
     common.logger.error(error)
     return JSONResponse(status_code=400, content={"error": error})
 
-@router.post("/airline/logoff")
+
+class ResponseDLICLogoff(BaseModel):
+    """Response to a DLIC Logoff"""
+    status: Annotated[str, Field(default="logged off")]
+    callsign: Annotated[str, Field(default="{logged off callsign}")]
+
+@router.post(
+        "/airline/logoff",
+        summary="DLIC Airline Logoff",
+        response_model=ResponseDLICLogoff
+        )
 async def dlic_airline_logoff(
     msg: databases.LogoffRequest,
     session:databases.SessionDep,
@@ -185,7 +222,10 @@ async def dlic_airline_logoff(
     await airline_api_authentication(session, api_key)
     return await dlic_logoff(msg)
 
-@router.post("/aircraft/logoff")
+@router.post(
+        "/aircraft/logoff",
+        summary="DLIC Aircraft Logoff",
+        response_model=ResponseDLICLogoff)
 async def dlic_aircraft_logoff(
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
     ):
@@ -194,7 +234,10 @@ async def dlic_aircraft_logoff(
     msg = databases.LogoffRequest.model_validate({"logoff_code": user_data["loc"]})
     return await dlic_logoff(msg)
 
-@router.post("/atsu/logoff")
+@router.post(
+        "/atsu/logoff",
+        summary="DLIC ATSU Logoff",
+        response_model=ResponseDLICLogoff)
 async def dlic_atsu_logoff(
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)
     ):

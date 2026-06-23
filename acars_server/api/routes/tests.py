@@ -47,7 +47,7 @@ async def test_auth_new_user(
     session.add(db_add)
     session.commit()
     session.refresh(db_add)
-    return JSONResponse(content={"db": db_add.model_dump_json(), "apikey": api_key})
+    return JSONResponse(content={"db": db_add.model_dump_json(), "api_key": api_key})
 
 @router.get("/poll/{callsign}")
 async def test_poll(callsign:str) -> Response: # pragma: no cover

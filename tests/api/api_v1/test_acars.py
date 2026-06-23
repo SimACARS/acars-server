@@ -127,7 +127,7 @@ class TestAircraftAcarsTx:
             response_b = client.post("/acars/tx/atn_vhf", json=message.model_dump())
         client.headers.pop("Authorization")
 
-        assert response_b.status_code == 201
+        assert response_b.status_code == 202
 
     def test_send_message_no_callsign(self, client: TestClient):
         """Tests sending a message"""
@@ -174,4 +174,4 @@ class TestAircraftAcarsTx:
         print(response.url)
         client.headers.pop("Authorization")
 
-        assert response.status_code == 200
+        assert response.status_code == 202

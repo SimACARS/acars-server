@@ -1,5 +1,65 @@
 # Changelog
 
+# [2.2.0-alpha.6](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.5...v2.2.0-alpha.6) (2026-06-23)
+
+
+### Bug Fixes
+
+* and again, this should be a 202 response ([5f49fa1](https://github.com/SimACARS/acars-server/commit/5f49fa13245eb702a30e4acfb97f0c6602307d84))
+* Path annotation too restrictive ([831f4ec](https://github.com/SimACARS/acars-server/commit/831f4ecdfd81331a12d9b71e782370aa4cc75406))
+* regex too restrictive ([67b7286](https://github.com/SimACARS/acars-server/commit/67b728624a76ff5670b3ed6aaacfa49375522c93))
+* this should also be a 202 response ([b632b66](https://github.com/SimACARS/acars-server/commit/b632b665e5ee527f86e6837399133e7500d75b6f))
+* this should return 202 not 200 ([191e169](https://github.com/SimACARS/acars-server/commit/191e169162a1d178ba1bf9c43e83cfe2cd1325e6))
+
+
+### Features
+
+* LS-DAT-0150 fixes [#102](https://github.com/SimACARS/acars-server/issues/102) ([97b59a1](https://github.com/SimACARS/acars-server/commit/97b59a14cc4a75f896e629c12317ecdd949938ac))
+* LS-FCT-0090 [#71](https://github.com/SimACARS/acars-server/issues/71) ([32b4d87](https://github.com/SimACARS/acars-server/commit/32b4d87402a5b0521fb221fe65977195203032e3))
+
+
+### Performance Improvements
+
+* remove unused import ([37905ee](https://github.com/SimACARS/acars-server/commit/37905ee67504eeb4219e7d97cef6b2f8b48167f0))
+* remove unused import ([baec031](https://github.com/SimACARS/acars-server/commit/baec03147dda4917f09dda4cd08c7610f6c6399e))
+
+# [2.2.0-alpha.5](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.4...v2.2.0-alpha.5) (2026-06-21)
+
+
+### Bug Fixes
+
+* LS-DAT-0110 - should be 4 minutes ([61d5beb](https://github.com/SimACARS/acars-server/commit/61d5beb598108778f00877656c73df189aeb1fc7))
+* this should return a 202 response on success ([38800c4](https://github.com/SimACARS/acars-server/commit/38800c4ab2a2eb1c493e0464b85f7d7435fb65d5))
+
+
+### Features
+
+* base system config ([dea2f45](https://github.com/SimACARS/acars-server/commit/dea2f45dd8c214813648cb21d86e1f7d14267e2b))
+* LS-FCT-0110 [#73](https://github.com/SimACARS/acars-server/issues/73) ([9af8788](https://github.com/SimACARS/acars-server/commit/9af878806c13cc1a137d4004925ab4c0cea6e483))
+
+
+### Performance Improvements
+
+* removed some test code ([789bed5](https://github.com/SimACARS/acars-server/commit/789bed56b94568fe30922215420394ac8521a10c))
+
+# [2.2.0-alpha.4](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.3...v2.2.0-alpha.4) (2026-06-20)
+
+
+### Bug Fixes
+
+* failing on redis.ResponseError ([ef76287](https://github.com/SimACARS/acars-server/commit/ef76287704aca17a5c808a40553a708908b7fb9d))
+* flush is in the wrong place - look to remove completely once out of dev ([b76eb89](https://github.com/SimACARS/acars-server/commit/b76eb893ddccdeffc3927d1b08b6c846a5017881))
+* long poll jobs not async ([6ae6150](https://github.com/SimACARS/acars-server/commit/6ae6150bea933faf9af4735b05c048e25401c6b0))
+* returning 404 instead of 200 ([4f0d397](https://github.com/SimACARS/acars-server/commit/4f0d397bc3c982b70a829093fd9569ba6489da19))
+* try except should be removed in favour of or ([f1960ae](https://github.com/SimACARS/acars-server/commit/f1960ae920657a6e9f1d6b82033867cb23d6e264))
+* undo nerf's vatsim urls ([e6e80ef](https://github.com/SimACARS/acars-server/commit/e6e80ef6d515aa832bfd9d78f21e116a48db04e5))
+
+
+### Performance Improvements
+
+* nerf'd artificial delay, there is enough delay in the system without adding more! ([57b6a52](https://github.com/SimACARS/acars-server/commit/57b6a52cf737973751ddcaa230510e40b00301ef))
+* nerf'd inforeq for now ([c049ed5](https://github.com/SimACARS/acars-server/commit/c049ed509fc43d11d991fe895df205d09406d5f9))
+
 # [2.2.0-alpha.3](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.2...v2.2.0-alpha.3) (2026-06-17)
 
 

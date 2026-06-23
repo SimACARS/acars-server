@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from redis_om import Migrator # type: ignore
+from sqlmodel import select, Session # type: ignore
 
 # Local Libraries
 from acars_server import __VERSION__, auth, common, config, databases, static_data
@@ -39,6 +40,7 @@ settings = config.Settings()
 
 def run_startup_tasks():
     """Startup Tasks"""
+    databases.redis_db.flushall() # Clear Redis DB on startup
     databases.create_db_and_tables()
     Migrator().run()
 
@@ -50,6 +52,16 @@ def run_startup_tasks():
         auth.generate_auth_key()
         sleep(1)
 
+def get_dynamic_settings():
+    """Gets dynamic settings"""
+    with Session(databases.engine) as session:
+        get_settings = select(databases.SystemConfig)
+        result = session.exec(get_settings).all()
+        common.logger.debug(result)
+        if len(result) > 0:
+            for res in result:
+                os.environ[f"DS_{res.setting.upper()}"] = str(res.enabled)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """async Context Manager"""
@@ -58,7 +70,7 @@ async def lifespan(app: FastAPI):
     # ------------------------------------------------------------------
     if not settings.testing:
         run_startup_tasks()
-
+    get_dynamic_settings()
     # ------------------------------------------------------------------
     # App Start
     # ------------------------------------------------------------------
@@ -91,6 +103,12 @@ app.mount(
     "/static",
     StaticFiles(directory=os.path.join(common.PWD.parent, "front_end")),
     name="static")
+# --------------- TEST CODE ------------------
+app.mount(
+    "/coverage",
+    StaticFiles(directory=os.path.join(common.PWD.parent, "htmlcov")),
+    name="coverage")
+# --------------- TEST CODE ------------------
 
 # Server Status Endpoints
 app.include_router(status.router)

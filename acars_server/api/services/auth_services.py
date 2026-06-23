@@ -9,6 +9,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import inspect
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 from uuid import uuid4
@@ -17,6 +18,7 @@ from uuid import uuid4
 import jwt
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
+from opentelemetry import trace
 from pwdlib import PasswordHash
 from sqlmodel import select
 
@@ -28,22 +30,58 @@ PWDLIB_SALT = str(os.getenv("PWDLIB_SALT"))
 
 def get_api_key_hash(api_key: str) -> str:
     """Returns a hash of the given API key"""
+    current_span = trace.get_current_span()
+    current_span.add_event("Returning hash of API key")
     return password_hash.hash(password=api_key, salt=PWDLIB_SALT.encode())
+
+def check_banned_callsigns(callsign: str):
+    """Check against the static list of banned callsigns"""
+    for csc in static_data.PERMANENTLY_BLOCKED_CALLSIGNS:
+        if re.match(re.compile(csc), callsign):
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    f"Callsign {callsign} is prohibited by the VATSIM Code of Conduct (A12 or A17)")
+                )
 
 async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[str,str]:
     """Authenticates an API Key"""
+    # Define reporting span
+    current_span = trace.get_current_span()
+    current_span.add_event("Start API authentication function")
     caller = inspect.stack()[1]
     module = caller.frame.f_globals.get("__name__", "<unknown>")
     func = caller.function
+
+    # Get the api key hash
     hashed_api = get_api_key_hash(api_key)
 
+    # Do the authentication
     db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == hashed_api)
     api_user = session.exec(db_auth).first()
     if not api_user:
-        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint.")
+        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint. "
+                            f"Attempted logon by {hashed_api} (hashed)")
         raise HTTPException(status_code=401, detail="Unauthorised. This is an AIRCRAFT endpoint.")
-    common.logger.info(f"User ID {api_user.id} has authenticated from {module}.{func}")
-    return auth.Auth().api_key_reader(api_key)
+
+    # Some logging and span
+    log_this = f"User ID {api_user.id} has authenticated from {module}.{func}"
+    common.logger.info(log_this)
+    current_span.add_event(log_this)
+
+    # Return the decoded API key
+    akr = auth.Auth().api_key_reader(api_key)
+
+    # Finally, check the UID against the blocked list
+    block_lookup = (select(databases.BlockList)
+                   .where(databases.BlockList.block_key == get_api_key_hash(akr["uid"])))
+    block_check = session.exec(block_lookup).first()
+    if block_check:
+        raise HTTPException(
+            status_code=403,
+            detail=f"CID {akr['uid']} is currently blocked. Reason: {block_check.reason}")
+
+    return akr
 
 async def airline_api_authentication(
         session:databases.SessionDep, api_key:str) -> databases.AirlineApiKey:
@@ -83,6 +121,8 @@ async def admin_api_authentication(
 
 async def callsign_verification(user_data) -> str|None:
     """Validate callsign on various networks"""
+    current_span = trace.get_current_span()
+    current_span.add_event("Start callsign verification function")
     callsign = None
     if user_data["network"] == "vatsim":
         vc = networks.Vatsim()
@@ -97,7 +137,9 @@ async def callsign_verification(user_data) -> str|None:
             detail=(f"Network '{user_data['network']}' is not valid. "
                     f"Expected one of {', '.join(static_data.NETWORKS)}"))
     if callsign is not None:
-        common.logger.info(f"User has corrolated callsign {callsign} on {user_data['network']}")
+        log_this =f"User has corrolated callsign {callsign} on {user_data['network']}"
+        common.logger.info(log_this)
+        current_span.add_event(log_this)
     return callsign
 
 
@@ -147,6 +189,8 @@ class JWTAuth:
             token:HTTPAuthorizationCredentials,
             audience:List[str]) -> Dict[str, str]:
         """Decode a JWT"""
+        current_span = trace.get_current_span()
+        current_span.add_event("Start JWT decode function")
         caller = inspect.stack()[1]
         module = caller.frame.f_globals.get("__name__", "<unknown>")
         func = caller.function
@@ -180,7 +224,9 @@ class JWTAuth:
             raise HTTPException(status_code=401, detail="JWT missing claim") from err
         except jwt.InvalidSignatureError as err:
             raise HTTPException(status_code=401, detail="JWT invalid signature") from err
-        common.logger.info(f"JWT validated for {decoded_token['uid']} from {module}.{func}")
+        log_this = f"JWT validated for {decoded_token['uid']} from {module}.{func}"
+        common.logger.info(log_this)
+        current_span.add_event(log_this)
         return decoded_token
 
 jwt_auth = JWTAuth()

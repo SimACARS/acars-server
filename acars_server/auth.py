@@ -17,6 +17,7 @@ from typing import Dict, Tuple
 import requests
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
+from opentelemetry import trace
 
 # Local Libraries
 from acars_server import common, static_data
@@ -63,12 +64,18 @@ class Auth:
 
     def encrypt(self, plain_text:str) -> bytes:
         """Encrypts a string"""
+        current_span = trace.get_current_span()
+        current_span.add_event("Start encryption function")
         cipher_text = self.master_key.encrypt(plain_text.encode())
+        current_span.add_event("End encryption function")
         return cipher_text
 
     def decrypt(self, cipher_text:bytes) -> str:
         """Decrypts a string"""
+        current_span = trace.get_current_span()
+        current_span.add_event("Start decryption function")
         plain_text = self.master_key.decrypt(cipher_text)
+        current_span.add_event("End decryption function")
         return plain_text.decode()
 
     def api_key_generator(self, uid:str, network:str) -> str:
@@ -77,9 +84,11 @@ class Auth:
         Requires the UID and network
         """
         if network in static_data.NETWORKS:
+            current_span = trace.get_current_span()
             pt_api_key = f"{self.random_generator()}:{network}:{uid}"
             ct_api_key = self.encrypt(pt_api_key)
             common.logger.success("API key created")
+            current_span.add_event("API Key Created")
             return base64.b64encode(ct_api_key).decode()
         raise ValueError(
             (f"'{network}' is an invalid network. Expected one of: "

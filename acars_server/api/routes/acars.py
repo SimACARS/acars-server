@@ -8,13 +8,13 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 from datetime import datetime as dt, timezone as tz
-from typing import Annotated, Any, Dict, Literal
+from typing import Annotated, Any, Dict, List
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
-from redis import ResponseError
+from pydantic import BaseModel
 
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
@@ -27,13 +27,26 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # ACARS Endpoints
 # ------------------------------------------------------------------
-@router.post("/poll", responses=static_data.COMMON_ERRORS)
+class ResponsePoll(BaseModel):
+    """A quick class for responses to a poll message"""
+    message_count: int
+    message: List[databases.StoreAndForward]
+
+@router.post(
+        "/poll",
+        responses=static_data.COMMON_ERRORS,
+        response_model=ResponsePoll,
+        summary="Poll for new messages",
+        description=("JWT Audience: [\"acars:aircraft\"]<br />"
+                     "Allows an aircraft endpoint to poll the server and request "
+                     "any pending messages to be sent. Messages will be sent as a "
+                     "list of StoreAndForward objects.")
+        )
 async def poll_for_new_messages(
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)
     ) -> Response:
     """
     Poll for new messages
-    \nJWT Audience: ["acars:aircraft"]
     """
 
     user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
@@ -45,28 +58,18 @@ async def poll_for_new_messages(
             "relayed": True,
             "relayed_at": dt.now(tz.utc).timestamp()
         }
-        try:
-            all_messages = databases.StoreAndForward.find(
-                        (databases.StoreAndForward.msg_to == callsign)
-                        # needs this declaration (== False ! is False) for redis to work
-                        & (databases.StoreAndForward.relayed == False)
-                    ).all()
-        except ResponseError:
-            return JSONResponse(content={"msg_count": 0})
+        all_messages = (databases.StoreAndForward.find(
+                (databases.StoreAndForward.msg_to == callsign)
+                # needs this declaration (== False ! is False) for redis to work
+                & (databases.StoreAndForward.relayed == False)
+            ).all()
+        ) or []
         if len(all_messages) > 0:
             rtn:Dict[str, Any] = {"message_count": len(all_messages), "messages": []}
             update_id_list = []
-            for m in all_messages:
-                update_id_list.append(m["pk"])
-                data_block = {
-                    "pk": m["pk"],
-                    "msg_from": m["msg_from"],
-                    "msg_to": m["msg_to"],
-                    "msg_type": m["msg_type"],
-                    "packet": m["packet"],
-                    "network": m["network"]
-                }
-                rtn["messages"].append(data_block)
+            for msg in all_messages:
+                update_id_list.append(msg["pk"])
+                rtn["messages"].append(msg.model_dump())
 
             if len(update_id_list) > 0:
                 records = databases.StoreAndForward.find(
@@ -79,7 +82,7 @@ async def poll_for_new_messages(
                         setattr(record, k, v)
                     record.save()
                     common.logger.success(f"Message retrieved for {callsign} - {record}")
-            return JSONResponse(rtn)
+            return JSONResponse(content=rtn)
         common.logger.success(f"No messages to retrive for {callsign}")
         return JSONResponse(content={"msg_count": 0})
     error = ("Unable to retrieve callsign for user - Network: "
@@ -87,20 +90,41 @@ async def poll_for_new_messages(
     common.logger.error(error)
     return JSONResponse(status_code=403, content = {"error": error})
 
-@router.get("/connect.html", tags=["Legacy Messaging"], deprecated=True)
+@router.get(
+        "/connect.html",
+        status_code=202,
+        tags=["Legacy Messaging"],
+        summary="Legacy message send with url parameters (Hoppie)",
+        description=("JWT Audience: [\"acars:aircraft\"]<br />"
+                     "<i>DEPRECEATED:</i> Use /acars/tx endpoint<br />"
+                    "Provides a psudo html endpoint for legacy clients. "
+                    "Connects directly to the <b>/acars/tx</b> endpoint"
+                    ),
+        deprecated=True)
 async def hoppie_formated_url(
-    api_key: Annotated[str, Query(alias="logon")],
-    msg_from: Annotated[str, Query(alias="from")],
-    msg_to: Annotated[str, Query(alias="to")],
-    msg_type: Annotated[str, Query(alias="type")],
-    packet: Annotated[str, Query(alias="packet")],
+    api_key: Annotated[
+        str,
+        Query(
+            alias="logon",
+            description=("This value can be set to anything as authentication is handled "
+                         "with the issued JWT. This is only here as a placeholder for "
+                         "backwards compatability."))
+            ],
+    msg_from: Annotated[
+        str,
+        Query(
+            alias="from",
+            description="Validation will fail if this doesn't match the user's callsign")],
+    msg_to: Annotated[
+        str, Query(alias="to", description="The callsign the message should be sent to.")],
+    msg_type: Annotated[static_data.MessageTypes, Query(alias="type")],
+    packet: Annotated[str, Query(alias="packet", description="Limited to 500 characters")],
     background_tasks: BackgroundTasks,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
-    Provides a psudo html endpoint for legacy clients.
-    Connects directly to the <b>/msg/legacy/tx</b> endpoint
-    \nJWT Audience: ["acars:aircraft"]
+    Hoppie formatted URL params
     """
+    _noop = api_key
     msg = {
         "msg_from": msg_from,
         "msg_to": msg_to,
@@ -118,24 +142,27 @@ async def hoppie_formated_url(
 
 @router.post(
         "/tx/{bearer}",
-        status_code=201,
+        status_code=202,
         responses=static_data.COMMON_ERRORS,
-        response_model=databases.StoreAndForward
+        response_model=databases.StoreAndForward,
+        summary="Send a message to the store and forward",
+        description=("JWT Audience: [\"acars:aircraft\"]<br />"
+                     "<b>CPDLC Message Type</b><br />"
+                     "<code>{MSG_ID:int}/{RESPONSE_ID:int|none}/{TIMESTAMP:%y%m%d%H%M%S}"
+                     "/{ACK:str}/{MESSAGE:str}</code><br />"
+                     "MESSAGE should contain DM/UM codes only. Any data fields should follow in "
+                     "order delimted by ','<br />Example: <code>4/3/260621215400/N/DM104,ABEVI,"
+                     "1430</code> or <code>7/6/260621215512/WU/DM11,POL,FL240</code>"
+                    ),
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
-    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
+    bearer: static_data.BearerTypes,
     background_tasks: BackgroundTasks,
     session: databases.SessionDep,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
     Allow an aircraft to transmit a message
-    \nJWT Audience: ["acars:aircraft"]
-    \n\tMessage Type:cpdlc
-    \n\tPacket:str (separated by '/'): 
-    \n\t\t{MSG_ID:int}/{RESPONSE_ID:int|none}/{TIMESTAMP:%y%m%d%H%M%S}/{ACK:str}/{MESSAGE:str}
-    \n\t\tMESSAGE DM/UM codes only. Any data fields should follow in order delimted by ','
-    \n\t\texample: DM104,ABEVI,1430 or DM11,POL,FL240
     """
 
     user_data = await jwt_auth.decode_jwt(jwt, ["acars:aircraft"])
@@ -145,7 +172,7 @@ async def transmit_a_message(
     # If the callsign has been validated
     if callsign:
         background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
-        return sf_msg
+        return JSONResponse(status_code=202, content=sf_msg.model_dump_json())
 
     error = (f"Callsign validation failed - Network: {user_data['network']}, "
              f"User ID: {user_data['uid']}, Callsign: {sf_msg['msg_from']}")

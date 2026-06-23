@@ -7,18 +7,19 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import os
+import string
 from datetime import datetime as dt, timezone as tz
 from pathlib import Path
-from random import randint
+from random import choices, randint
 from time import sleep
 
 # Third Party Libraries
 import pandas as pd
 from locust import HttpUser, task, between
+from loguru import logger
 
 
 # Local Libraries
-from acars_server.databases import StoreAndForward
 from dotenv import load_dotenv
 
 PWD = Path(os.path.dirname(__file__))
@@ -31,6 +32,7 @@ for name in [
     "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
     "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
     "OTEL_METRICS_EXPORTER",
+    "REDIS_HOST",
 ]:
     print(name, "=", os.getenv(name))
 
@@ -58,49 +60,68 @@ CALLSIGNS = list(set(callsigns))
 
 class Poller(HttpUser):
     """Poller"""
-    wait_time = between(1, 5)
+    wait_time = between(20, 50)
     callsigns = list(CALLSIGNS)
-    headers = {}
-    user_api_key = ""
-    user_cid = randint(10000, 99999999)
 
     def on_start(self):
         # Register a new user
+        random_str = ''.join(choices(string.ascii_uppercase, k=3))
+        self.callsign = f"{random_str}{randint(10,1000)}"
+        user_cid = randint(10000, 99999999)
         user_registration = self.client.get(
-            f"/test/auth/new_user/{self.user_cid}",
+            f"/test/auth/new_user/{user_cid}",
             name="/test/auth/new_user")
-        if user_registration.status_code == 200:
-            self.user_api_key = user_registration.json()["api_key"]
-            self.headers = {
-                    "x-key": self.user_api_key,
-                    "accept": "application/json"
-                }
-            sleep(randint(1,20))
+        if user_registration.status_code != 200:
+            raise PermissionError(user_registration.text)
 
-            # Log the user on
-            self.client.post(
-                "/dlic/aircraft/logon",
-                name="/acars/poll",
-                headers=self.headers)
+        user_api_key = user_registration.json()["api_key"]
+        headers = {
+                "x-key": user_api_key,
+                "accept": "application/json"
+            }
+
+        # Log the user on
+        logon_data = {
+            "logon_from": self.callsign,
+            "logon_to": "_ATC_EFGF",
+            "created": 0,
+            "network": "testing",
+            "logoff_code": "",
+            }
+        jwt = self.client.post(
+            "/dlic/aircraft/logon",
+            name="/dlic/aircraft/logon",
+            headers=headers,
+            json=logon_data)
+        if jwt.status_code != 200:
+            raise PermissionError(jwt.text)
+        payload = jwt.json()
+        if "access_token" not in payload:
+            raise KeyError(f"Unexpected response: {payload}")
+        self.jwt_headers = {
+            "Authorization": f"Bearer {jwt.json()['access_token']}"
+        }
 
     @task(3)
     def poll(self):
         """Poll"""
-        self.client.post("/acars/poll", name="/acars/poll", headers=self.headers)
+        rsp = self.client.post("/acars/poll", name="/acars/poll", headers=self.jwt_headers)
+        if rsp.status_code != 200:
+            logger.error(rsp.headers)
+            logger.error(rsp.text)
+            logger.error(rsp.request.method)
+            logger.error(rsp.request.url)
+            logger.error(rsp.request.headers)
+            logger.error(rsp.request.body)
 
     @task
     def tx_data(self):
         """Transmit Data"""
-        row = df.sample(n=1).iloc[0]
+        row = df.iloc[randint(0, len(df) - 1)]
         if str(row["Type"]) == "ads":
             msg_type = "ads-c"
         else:
             msg_type = str(row["Type"])
-
-        if len(str(row["From"])) < 4:
-            msg_from = f"_COY_{row['From']}"
-        else:
-            msg_from = row['From']
 
         if len(str(row["To"])) < 4:
             msg_to = f"_COY_{row['To']}"
@@ -108,12 +129,18 @@ class Poller(HttpUser):
             msg_to = row['To']
 
         msg = {
-            "msg_from": msg_from,
+            "msg_from": self.callsign,
             "msg_to": msg_to,
             "msg_type": msg_type,
             "packet": str(row["Content"]),
             "network": "testing",
             "created": dt.now(tz.utc).timestamp()
         }
-        if StoreAndForward.model_validate(msg):
-            self.client.post("/acars/tx", json=msg, name="/acars/tx", headers=self.headers)
+        rsp = self.client.post(
+            "/acars/tx/atn_vhf",
+            json=msg, 
+            name="/acars/tx/atn_vhf",
+            headers=self.jwt_headers
+            )
+        if rsp.status_code != 201:
+            logger.error(rsp.text)
