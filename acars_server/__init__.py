@@ -5,7 +5,7 @@ Chris Parkinson (@chssn)
 
 #!/usr/bin/env python3
 
-__VERSION__ = "2.2.0-alpha.7"
+__VERSION__ = "2.2.0-alpha.8"
 __all__ = [
     "api",
     "auth",
