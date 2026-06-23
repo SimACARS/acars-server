@@ -65,7 +65,7 @@ es.onmessage = (event: MessageEvent) => {
         tags=["Messaging"]
         )
 async def receive_message_stream(
-    callsign:Annotated[str, Path(pattern="^_ATC_[A-Z]+$")],
+    callsign:Annotated[str, Path(pattern="^[A-Z_]+$")],
     network:static_data.NetworkTypes,
     last_event_id: str | None = Query(default=None),
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
