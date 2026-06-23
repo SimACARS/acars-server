@@ -26,40 +26,40 @@ class Noaa:
     @staticmethod
     async def metar(icao:str) -> str:
         """Gets a METAR from NOAA"""
-        #try:
-        #    rsp = requests.get(
-        #        f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT",
-        #        timeout=30)
-        #    if rsp.status_code == 200:
-        #        return rsp.text
-        #except requests.ReadTimeout:
-        #    common.logger.error(f"Timeout while fetching METAR for {icao.upper()}")
+        try:
+            rsp = requests.get(
+                f"{Noaa.BASE_URL}/observations/metar/stations/{icao.upper()}.TXT",
+                timeout=30)
+            if rsp.status_code == 200:
+                return rsp.text
+        except requests.ReadTimeout:
+            common.logger.error(f"Timeout while fetching METAR for {icao.upper()}")
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
     async def taf(icao:str) -> str:
         """Gets a TAF from NOAA"""
-        #try:
-        #    rsp = requests.get(
-        #    f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT",
-        #    timeout=30)
-        #    if rsp.status_code == 200:
-        #        return rsp.text
-        #except requests.ReadTimeout:
-        #    common.logger.error(f"Timeout while fetching TAF for {icao.upper()}")
+        try:
+            rsp = requests.get(
+            f"{Noaa.BASE_URL}/forecasts/taf/stations/{icao.upper()}.TXT",
+            timeout=30)
+            if rsp.status_code == 200:
+                return rsp.text
+        except requests.ReadTimeout:
+            common.logger.error(f"Timeout while fetching TAF for {icao.upper()}")
         return f"NO TAF AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
     async def shorttaf(icao:str) -> str:
         """Gets a SHORT TAF from NOAA"""
-        #try:
-        #    rsp = requests.get(
-        #        f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT",
-        #        timeout=30)
-        #    if rsp.status_code == 200:
-        #        return rsp.text
-        #except requests.ReadTimeout:
-        #    common.logger.error(f"Timeout while fetching SHORT TAF for {icao.upper()}")
+        try:
+            rsp = requests.get(
+                f"{Noaa.BASE_URL}/forecasts/shorttaf/stations/{icao.upper()}.TXT",
+                timeout=30)
+            if rsp.status_code == 200:
+                return rsp.text
+        except requests.ReadTimeout:
+            common.logger.error(f"Timeout while fetching SHORT TAF for {icao.upper()}")
         return f"NO SHORT TAF AVAILABLE FOR {icao.upper()}"
 
 
@@ -116,26 +116,26 @@ class Vatsim:
 
     async def get_atis(self, icao:str) -> str:
         """Get ATIS"""
-        #self._data_collector()
-        #df = self.dataframes["atis"]
-        #dfb = df.loc[df["callsign"].str.match(f"{icao}_ATIS")]
-        #if not dfb.empty:
-        #    return str(df["text_atis"].iloc[0])
+        self._data_collector()
+        df = self.dataframes["atis"]
+        dfb = df.loc[df["callsign"].str.match(f"{icao}_ATIS")]
+        if not dfb.empty:
+            return str(df["text_atis"].iloc[0])
 
         # If the client has requested an Arrival or Departure ATIS but
         # none is found, check to see if a combined ATIS is available
-        #remove_a_d =  icao.split("_")
-        #if len(remove_a_d) == 2:
-        #    dfc = df.loc[df["callsign"].str.match(f"{remove_a_d[0]}_ATIS")]
-        #    if not dfc.empty:
-        #        return str(df["text_atis"].iloc[0])
+        remove_a_d =  icao.split("_")
+        if len(remove_a_d) == 2:
+            dfc = df.loc[df["callsign"].str.match(f"{remove_a_d[0]}_ATIS")]
+            if not dfc.empty:
+                return str(df["text_atis"].iloc[0])
         return f"NO ATIS AVAILABLE FOR {icao.upper()}"
 
     @staticmethod
     async def get_metar(icao:str) -> str:
         """Get METAR from VATSIM"""
-        #rsp = requests.get(
-        #    f"https://metar.vatsim.net/{icao.upper()}", timeout=30)
-        #if rsp.status_code == 200 and rsp.text != "":
-        #    return rsp.text
+        rsp = requests.get(
+            f"https://metar.vatsim.net/{icao.upper()}", timeout=30)
+        if rsp.status_code == 200 and rsp.text != "":
+            return rsp.text
         return f"NO METAR AVAILABLE FOR {icao.upper()}"
