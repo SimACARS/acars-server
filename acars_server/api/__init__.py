@@ -5,7 +5,7 @@ Chris Parkinson (@chssn)
 
 #!/usr/bin/env python3
 
-__ALL__ = [
+__all__ = [
     "message_types",
     "routes",
     "services"

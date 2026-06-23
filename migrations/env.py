@@ -1,12 +1,22 @@
-from logging.config import fileConfig
-from loguru import logger
+"""
+ACARS Server
+INFOREQ Message Responses
+Chris Parkinson (@chssn)
+"""
 
+#!/usr/bin/env python3
+
+# Standard Libraries
+from logging.config import fileConfig
+
+# Third Party Libraries
+from alembic import context
+from loguru import logger
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlmodel import SQLModel
 
-from alembic import context
-
+# Local Imports
 from acars_server.databases import *
 
 # this is the Alembic Config object, which provides
