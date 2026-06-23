@@ -56,7 +56,7 @@ class TestTransmitMessage:
         response = client.post("/airline/tx/atn_vhf", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
-        assert response.status_code == 201
+        assert response.status_code == 202
 
     def test_tx_recipient_offline(self, client: TestClient):
         """
@@ -274,6 +274,8 @@ class TestAirlineRx:
 
             async with async_client.stream("GET", url) as response:
                 print("INFO: stream opened", response.status_code)
+                body = await response.aread()
+                print("Raw body:", body.decode(errors="replace"))
                 assert response.status_code == 200
                 assert response.headers["content-type"].startswith("text/event-stream")
 
@@ -297,7 +299,7 @@ class TestAirlineRx:
     def test_invalid_auth(self, client: TestClient):
         """Test an invalid api key"""
         client.headers.update({"x-key": "NOT_A_KEY"})
-        response = client.get("/airline/rx/vatsim/wiffle")
+        response = client.get("/airline/rx/vatsim/WIFF")
         assert response.status_code == 401
 
     @pytest.mark.asyncio
@@ -306,7 +308,7 @@ class TestAirlineRx:
         airline = Authentication(client, "airline")
         airline.logon()
 
-        url = f"/airline/rx/{airline.airline.network}/NOTACALLSIGN"
+        url = f"/airline/rx/{airline.airline.network}/WIFF"
 
         client.headers.update(airline.info["headers"])
         print("INFO: opening stream", url)

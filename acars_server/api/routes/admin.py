@@ -9,11 +9,12 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import os
 import secrets
-from typing import Literal
+from typing import Annotated, Literal
 
 # Third Party Libraries
-from fastapi import APIRouter, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Path, Security
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from sqlmodel import select, update
 
 # Local Libraries
@@ -26,7 +27,9 @@ router = APIRouter()
         "/{action}/atsu_callsign_owner",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
-        response_model=databases.ATSUCallsignOwner
+        response_model=databases.ATSUCallsignOwner,
+        summary="Add an ATSU callsign owner",
+        description=("Adds a top level owner such as a VATSIM Division like VATSIM UK")
         )
 async def add_new_atsu_callsign_owner(
     action: Literal["add", "delete"],
@@ -76,7 +79,9 @@ async def add_new_atsu_callsign_owner(
         "/{action}/atsu_callsign",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
-        response_model=databases.ATSUCallsign
+        response_model=databases.ATSUCallsign,
+        summary="Add an ATSU callsign",
+        description=("Adds an ATSU callsign such as EGKK")
         )
 async def add_new_atsu_callsign(
     action: Literal["add", "delete"],
@@ -84,7 +89,7 @@ async def add_new_atsu_callsign(
     session:databases.SessionDep,
     api_key:str = Security(common.header_api_key)):
     """
-    Add a new ATSU callsign owner
+    Add a new ATSU callsign
     """
 
     try:
@@ -125,12 +130,17 @@ async def add_new_atsu_callsign(
         "/{action}/atsu_authorised_callsign/{atsu_callsign}",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
-        response_model=databases.ATSUCallsignOwner
+        response_model=databases.ATSUCallsignOwner,
+        summary="Add an Authorised ATSU callsign",
+        description=("Adds an ATSU callsign such as EGKK_N_GND which is authorised to "
+                     "use an ATSU callsign such as EGKK")
         )
 async def add_new_authorised_atsu_callsign(
     action: Literal["add", "delete"],
     msg: databases.ATSUAuthorisedCallsign,
-    atsu_callsign: str,
+    atsu_callsign: Annotated[
+        str,
+        Path(description="The ATSU callsign, generally an ICAO string such as EGKK or LONN")],
     session: databases.SessionDep,
     api_key: str = Security(common.header_api_key)):
     """
@@ -174,10 +184,20 @@ async def add_new_authorised_atsu_callsign(
     else:
         raise HTTPException(status_code=403, detail="Invalid admin authentication state")
 
+
+class ResponseAdminSetting(BaseModel):
+    """A quick class for responses to admin settings"""
+    success: Annotated[str, Field(default="Admin has set {setting} to {on|off}")]
+
+
 @router.post(
         "/set/{setting}/{on_off}",
         status_code=201,
         responses=static_data.COMMON_ERRORS,
+        response_model=ResponseAdminSetting,
+        summary="Apply a system setting",
+        description=("Allows an authorised administrator to manipulate "
+                     "settings on the live system")
         )
 async def change_system_settings(
     setting: Literal["ls_cm_contact"],

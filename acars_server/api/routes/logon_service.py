@@ -10,9 +10,10 @@ Chris Parkinson (@chssn)
 import os
 import re
 from datetime import datetime as dt, timezone as tz
+from typing import Annotated
 
 # Third Party Libraries
-from fastapi import APIRouter, Security
+from fastapi import APIRouter, Path, Security
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from redis_om.model.model import NotFoundError
@@ -27,9 +28,14 @@ from acars_server.api.services.auth_services import (
 
 router = APIRouter()
 
-@router.get("/contact/{callsign}")
+@router.get(
+        "/contact/{callsign}",
+        summary="Logon System Context Manager Contact",
+        description=("Allows an ATSU to send a <code>UM117</code> "
+                     "(<code>CONTACT [unit name] [frequency]</code>) to the provided callsign")
+        )
 async def ls_cm_contact(
-    callsign:str,
+    callsign:Annotated[str, Path(min_length=4, max_length=9, pattern="[A-Z0-9]")],
     session: databases.SessionDep,
     jwt:HTTPAuthorizationCredentials = Security(common.header_bearer)):
     """
@@ -103,25 +109,26 @@ async def ls_cm_contact(
             return JSONResponse(status_code=201, content=sf_msg.model_dump_json())
     return JSONResponse(status_code=404, content={"error": "callsign validation error"})
 
-@router.post("/logon", deprecated=True)
+@router.post("/logon", deprecated=True, status_code=501, summary="LS CM Logon")
 async def ls_cm_logon():
     """CM Logon - handled by DLIC"""
     return JSONResponse(
         status_code=501, content={"error", "not implemented, use DLIC routes instead"})
 
-@router.post("/forward", deprecated=True)
+@router.post("/forward", deprecated=True, status_code=501, summary="LS CM Forward")
 async def ls_cm_forward():
     """Allows an ATSU to forward a logon request from an airspace user"""
     return JSONResponse(
         status_code=501, content={"error", "not implemented, use DLIC routes instead"})
 
-@router.post("/user-abort", deprecated=True)
+@router.post("/user-abort", deprecated=True, status_code=501, summary="LS CM User Abort")
 async def ls_cm_user_abort():
     """Allows a user to logoff"""
     return JSONResponse(
         status_code=501, content={"error", "not implemented, use DLIC routes instead"})
 
-@router.post("/provider-abort", deprecated=True)
+@router.post(
+        "/provider-abort", deprecated=True, status_code=501, summary="LS CM Provider Abort")
 async def ls_cm_provider_abort():
     """Allows a provider to logoff"""
     return JSONResponse(

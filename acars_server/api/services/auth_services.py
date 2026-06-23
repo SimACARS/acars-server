@@ -9,6 +9,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import inspect
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 from uuid import uuid4
@@ -33,24 +34,54 @@ def get_api_key_hash(api_key: str) -> str:
     current_span.add_event("Returning hash of API key")
     return password_hash.hash(password=api_key, salt=PWDLIB_SALT.encode())
 
+def check_banned_callsigns(callsign: str):
+    """Check against the static list of banned callsigns"""
+    for csc in static_data.PERMANENTLY_BLOCKED_CALLSIGNS:
+        if re.match(re.compile(csc), callsign):
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    f"Callsign {callsign} is prohibited by the VATSIM Code of Conduct (A12 or A17)")
+                )
+
 async def api_authentication(session:databases.SessionDep, api_key:str) -> Dict[str,str]:
     """Authenticates an API Key"""
+    # Define reporting span
     current_span = trace.get_current_span()
     current_span.add_event("Start API authentication function")
     caller = inspect.stack()[1]
     module = caller.frame.f_globals.get("__name__", "<unknown>")
     func = caller.function
+
+    # Get the api key hash
     hashed_api = get_api_key_hash(api_key)
 
+    # Do the authentication
     db_auth = select(databases.ApiKey).where(databases.ApiKey.api_key == hashed_api)
     api_user = session.exec(db_auth).first()
     if not api_user:
-        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint.")
+        common.logger.error("401: API key not recognised. This is an AIRCRAFT endpoint. "
+                            f"Attempted logon by {hashed_api} (hashed)")
         raise HTTPException(status_code=401, detail="Unauthorised. This is an AIRCRAFT endpoint.")
+
+    # Some logging and span
     log_this = f"User ID {api_user.id} has authenticated from {module}.{func}"
     common.logger.info(log_this)
     current_span.add_event(log_this)
-    return auth.Auth().api_key_reader(api_key)
+
+    # Return the decoded API key
+    akr = auth.Auth().api_key_reader(api_key)
+
+    # Finally, check the UID against the blocked list
+    block_lookup = (select(databases.BlockList)
+                   .where(databases.BlockList.block_key == get_api_key_hash(akr["uid"])))
+    block_check = session.exec(block_lookup).first()
+    if block_check:
+        raise HTTPException(
+            status_code=403,
+            detail=f"CID {akr['uid']} is currently blocked. Reason: {block_check.reason}")
+
+    return akr
 
 async def airline_api_authentication(
         session:databases.SessionDep, api_key:str) -> databases.AirlineApiKey:

@@ -174,4 +174,4 @@ class TestAircraftAcarsTx:
         print(response.url)
         client.headers.pop("Authorization")
 
-        assert response.status_code == 200
+        assert response.status_code == 202

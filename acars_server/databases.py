@@ -130,8 +130,20 @@ class ApiKeyUpdate(ApiKeyBase):
 class SystemConfig(SQLModel, table=True):
     """A table to hold all system config"""
     id: int | None = Field(default=None, primary_key=True)
-    setting: str
+    setting: static_data.SystemConfigTypes
     enabled: Optional[bool] = True
+
+
+# ------------------------------------------------------------------
+# CPDLC Message Types
+# ------------------------------------------------------------------
+class BlockList(SQLModel, table=True):
+    """A table to hold blocked users or airlines"""
+    id: int | None = Field(default=None, primary_key=True)
+    entity_type: str
+    block_key: str
+    expires: Optional[float] = 0.0
+    reason: str
 
 
 # ------------------------------------------------------------------
@@ -201,7 +213,7 @@ class AirlineApiKeyUpdate(AirlineApiKeyBase):
 class AirlineVerification(JsonModel, index=True): # type: ignore
     """Airline Verification for domain ownership"""
     verification_token: str = RedisField(index=True)
-    network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
+    network: static_data.NetworkTypes = RedisField(index=True)
     airline_name: str = RedisField(index=True)
     airline_callsign: Annotated[
         str, Query(min_length=3, max_length=4, pattern="^[A-Z]+$")] = RedisField(index=True)
@@ -219,11 +231,11 @@ class ATSUCallsignOwner(SQLModel, table=True):
     Owner of one or more ATSU callsigns.
     """
     id: int | None = Field(default=None, primary_key=True)
-    network: Annotated[str, AfterValidator(check_valid_network)]
+    network: static_data.NetworkTypes
     owner: str = Field(index=True)
     api_key: str | None = Field(default=None, index=True)
-    created: float
-    last_used: float
+    created: Optional[float] = 0.0
+    last_used: Optional[float] = 0.0
     atsu_callsigns: list["ATSUCallsign"] = Relationship(
         back_populates="owner"
     )
@@ -237,12 +249,13 @@ class ATSUCallsign(SQLModel, table=True):
     ATSU callsign such as _ATC_EGKK or _ATC_LONS.
     """
     id: int | None = Field(default=None, primary_key=True)
-    network: Annotated[str, AfterValidator(check_valid_network)]
+    network: static_data.NetworkTypes
     atsu_callsign: str = Field(
         index=True,
         min_length=9,
         max_length=9,
         regex=r"^_ATC_[A-Z]+$",
+        description=r"<code>^\_ATC\_[A-Z]+$</code>"
     )
     owner_id: int = Field(
         foreign_key="atsucallsignowner.id",
@@ -254,8 +267,8 @@ class ATSUCallsign(SQLModel, table=True):
     authorised_callsigns: list["ATSUAuthorisedCallsign"] = Relationship(
         back_populates="atsu_callsign"
     )
-    created: float
-    last_used: float
+    created: Optional[float] = 0.0
+    last_used: Optional[float] = 0.0
 
 
 class ATSUAuthorisedCallsign(SQLModel, table=True):
@@ -263,8 +276,10 @@ class ATSUAuthorisedCallsign(SQLModel, table=True):
     Network callsigns authorised to use an ATSU callsign.
     """
     id: int | None = Field(default=None, primary_key=True)
-    network: Annotated[str, AfterValidator(check_valid_network)]
-    callsign: str = Field(index=True)
+    network: static_data.NetworkTypes
+    callsign: str = Field(
+        index=True,
+        description="The callsign that needs to be authorised such as EGKK_N_GND")
     owner_id: int = Field(
         foreign_key="atsucallsignowner.id",
         index=True,
@@ -279,8 +294,8 @@ class ATSUAuthorisedCallsign(SQLModel, table=True):
     atsu_callsign: ATSUCallsign = Relationship(
         back_populates="authorised_callsigns"
     )
-    created: float
-    last_used: float
+    created: Optional[float] = 0.0
+    last_used: Optional[float] = 0.0
 
 # ------------------------------------------------------------------
 # Store and Forward Model
@@ -313,7 +328,10 @@ class DataLinkInitiationCapability(HashModel, index=True): # type: ignore
     fans_1_a: Optional[bool] = False
     primary_frequency: Annotated[
         Optional[str],
-        Query(pattern="1[0-3]\\d\\.\\d{3}")] = RedisField(index=True, default=None)
+        Query(
+            pattern="1[0-3]\\d\\.\\d{3}",
+            description="This field is only required for an ATSU logon",
+            )] = RedisField(index=True, default=None)
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -354,14 +372,18 @@ class CpdlcConnectionStateStore(HashModel, index=True): # type: ignore
 
 class RequestNewAirline(HashModel):
     """A DLIC logoff request"""
-    network: Annotated[str, AfterValidator(check_valid_network)]
+    network: static_data.NetworkTypes
     airline_callsign: Annotated[
         str, Query(
             min_length=3,
             max_length=4,
             pattern="[A-Z0-9]+")]
     airline_name: str
-    domain: Annotated[str, AfterValidator(check_valid_domain)]
+    domain: Annotated[
+        str,
+        AfterValidator(check_valid_domain),
+        Query(description=("A domain name without the schema. Example: "
+                           "<code>virtualairline.com</code>"))]
 
 
 class StoreAndForward(JsonModel, index=True): # type: ignore
@@ -376,7 +398,7 @@ class StoreAndForward(JsonModel, index=True): # type: ignore
             min_length=4,
             max_length=10,
             pattern="(_COY_|_ATC_)?[A-Z0-9]+")] = RedisField(index=True)
-    msg_type: Annotated[str, AfterValidator(check_valid_legacy_msg_type)] = RedisField(index=True)
+    msg_type: static_data.MessageTypes = RedisField(index=True)
     # EUROCONTROL-SPEC-107 - 5.1.1.4 - Allowed Characters
     packet: Annotated[
         str, Query(
@@ -384,7 +406,7 @@ class StoreAndForward(JsonModel, index=True): # type: ignore
             max_length=500,
             pattern=r"[A-Z0-9\s\(\)\-\?\:\.\,\'\=\+\/\n\r]+")] = RedisField(
                 index=True, full_text_search=True)
-    network: Annotated[str, AfterValidator(check_valid_network)] = RedisField(index=True)
+    network: static_data.NetworkTypes = RedisField(index=True)
     created: float
     relayed: Optional[SerializeAsAny[bool]] = RedisField(index=True, default=False)
     relayed_at: Optional[float] = 0.0

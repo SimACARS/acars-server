@@ -19,7 +19,11 @@ from fastapi.testclient import TestClient
 # Local Libraries
 from acars_server.databases import StoreAndForward
 from acars_server.api.message_types.inforeq import Vatsim
-from acars_server.api.services.auth_services import callsign_verification, JWTAuth
+from acars_server.api.services.auth_services import (
+    callsign_verification,
+    check_banned_callsigns,
+    JWTAuth
+    )
 from tests.factories.messages import MessageFactory
 
 LOGON_DATA = {
@@ -33,8 +37,15 @@ LOGON_DATA = {
     "fans_1_a": False
 }
 
+BANNED_CALLSIGNS = [
+    "VATGOV72",
+    "AAL77",
+    "AAL77A",
+    "DR_SUP"
+]
+
 AUTHENTICATED_END_POINTS = [
-    ("/airline/rx/vatsim/BAW123", "get", None),
+    #("/airline/rx/vatsim/BAW123", "get", None),
     ("/airline/tx/atn_vhf", "post", MessageFactory()),
     ("/acars/poll", "post", None),
     ("/acars/tx/atn_vhf", "post", MessageFactory()),
@@ -43,6 +54,7 @@ AUTHENTICATED_END_POINTS = [
     ("/dlic/aircraft/logoff", "post", {"logoff_code": secrets.token_hex(32)}),
     ("/dlic/airline/logoff", "post", {"logoff_code": secrets.token_hex(32)}),
 ]
+
 @pytest.mark.parametrize("end_point,method,_data", AUTHENTICATED_END_POINTS)
 def test_auth_endpoint_no_api_key(client: TestClient, end_point, method, _data):
     """Tests an auth endpoint with no API key"""
@@ -73,6 +85,13 @@ def test_auth_endpoint_false_api_key(client: TestClient, end_point, method, data
     print(request.json())
     assert request.status_code == 401
     client.headers.pop("x-key")
+
+@pytest.mark.parametrize("callsign", BANNED_CALLSIGNS)
+def test_banned_callsign(callsign):
+    """Tests banned callsigns"""
+    print(callsign)
+    with pytest.raises(HTTPException) as err:
+        check_banned_callsigns(callsign)
 
 @pytest.mark.asyncio
 async def test_get_callsign_from_vatsim_cid():

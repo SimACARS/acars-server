@@ -9,16 +9,18 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import os
 from datetime import datetime as dt, timedelta, timezone as tz
+from typing import Annotated
 
 # Third Party Libraries
 import jwt
 from fastapi import APIRouter, HTTPException, Security
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
+from pydantic import BaseModel, Field
 from redis_om.model.model import NotFoundError # type: ignore
 
 # Local Libraries
-from acars_server import auth, common, databases
+from acars_server import auth, common, databases, static_data
 from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
 from acars_server.api.services.auth_services import get_api_key_hash, jwt_auth
 
@@ -26,9 +28,19 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # Callback Endpoints
 # ------------------------------------------------------------------
+
+
+class ResponseUserVATSIMOAuth(BaseModel):
+    """A quick class for VATSIM OAuth"""
+    status: Annotated[str, Field(default="user created")]
+    api_key: Annotated[str, Field(default="<Argon2 String>")]
+
 @router.get(
         "/oauth/vatsim/aircraft/{state}/{code}",
-        response_model=databases.ApiKeyPublic,
+        response_model=ResponseUserVATSIMOAuth,
+        summary="User OAuth Callback Point for VATSIM",
+        description=("A callback point for VATSIM OAuth. This point <b>should "
+                     "not</b> directly called."),
         tags=["User Management"])
 async def auth_new_user_callback_vatsim(
     state:str,
@@ -77,6 +89,10 @@ async def auth_new_user_callback_vatsim(
 
 @router.get(
         "/oauth/vatsim/atsu/{state}/{code}",
+        response_model=static_data.ResponseJWT,
+        summary="ATSU OAuth Callback Point for VATSIM",
+        description=("A callback point for VATSIM OAuth. This point <b>should "
+                     "not</b> directly called."),
         tags=["Air Traffic Surveillance Unit"])
 async def atsu_callback_vatsim(
     state:str,
@@ -106,7 +122,16 @@ async def atsu_callback_vatsim(
 
     return await complete_vatsim_atsu_logon(v_user[1], session)
 
-@router.post("/atsu/refresh")
+@router.post(
+        "/atsu/refresh",
+        responses=static_data.COMMON_ERRORS,
+        response_model=static_data.ResponseJWT,
+        summary="ATSU JWT Refresh",
+        description=("Call this endpoint to refresh an ATSU JWT<br /><br />"
+                     "This endpoint allows leeway on the JWT expiry and will call"
+                     "callsign_verification to check if the user is still online"
+                     "before issuing an updated JWT")
+        )
 async def refresh_atsu_jwt(
     token:HTTPAuthorizationCredentials = Security(common.header_bearer)):
     """
