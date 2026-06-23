@@ -1,5 +1,28 @@
 # Changelog
 
+# [2.2.0-alpha.6](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.5...v2.2.0-alpha.6) (2026-06-23)
+
+
+### Bug Fixes
+
+* and again, this should be a 202 response ([5f49fa1](https://github.com/SimACARS/acars-server/commit/5f49fa13245eb702a30e4acfb97f0c6602307d84))
+* Path annotation too restrictive ([831f4ec](https://github.com/SimACARS/acars-server/commit/831f4ecdfd81331a12d9b71e782370aa4cc75406))
+* regex too restrictive ([67b7286](https://github.com/SimACARS/acars-server/commit/67b728624a76ff5670b3ed6aaacfa49375522c93))
+* this should also be a 202 response ([b632b66](https://github.com/SimACARS/acars-server/commit/b632b665e5ee527f86e6837399133e7500d75b6f))
+* this should return 202 not 200 ([191e169](https://github.com/SimACARS/acars-server/commit/191e169162a1d178ba1bf9c43e83cfe2cd1325e6))
+
+
+### Features
+
+* LS-DAT-0150 fixes [#102](https://github.com/SimACARS/acars-server/issues/102) ([97b59a1](https://github.com/SimACARS/acars-server/commit/97b59a14cc4a75f896e629c12317ecdd949938ac))
+* LS-FCT-0090 [#71](https://github.com/SimACARS/acars-server/issues/71) ([32b4d87](https://github.com/SimACARS/acars-server/commit/32b4d87402a5b0521fb221fe65977195203032e3))
+
+
+### Performance Improvements
+
+* remove unused import ([37905ee](https://github.com/SimACARS/acars-server/commit/37905ee67504eeb4219e7d97cef6b2f8b48167f0))
+* remove unused import ([baec031](https://github.com/SimACARS/acars-server/commit/baec03147dda4917f09dda4cd08c7610f6c6399e))
+
 # [2.2.0-alpha.5](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.4...v2.2.0-alpha.5) (2026-06-21)
 
 
