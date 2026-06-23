@@ -10,7 +10,7 @@ Chris Parkinson (@chssn)
 import os
 import secrets
 from datetime import datetime as dt, timezone as tz
-from typing import Annotated, Literal
+from typing import Annotated
 
 # Third Party Libraries
 from dns.resolver import Resolver

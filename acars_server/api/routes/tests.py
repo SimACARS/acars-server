@@ -8,7 +8,7 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 from datetime import datetime as dt, timezone as tz
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 # Third Party Libraries
 from fastapi import APIRouter, BackgroundTasks, Query, Response
