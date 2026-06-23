@@ -6,8 +6,70 @@ Chris Parkinson (@chssn)
 
 #!/usr/bin/env python3
 
-from typing import Any, Dict
+# Standard Libraries
+from enum import StrEnum
+from typing import Annotated, Any, Dict
 
+# Third Party Libraries
+from pydantic import BaseModel, Field
+
+# Local Libraries
+
+
+class MessageTypes(StrEnum):
+    """Message Types"""
+    PROGRESS = "progress"
+    CPDLC = "cpdlc"
+    TELEX = "telex"
+    ADEXP = "adexp"
+    PING = "ping"
+    POSREQ = "posreq"
+    POSITION = "position"
+    DATAREQ = "datareq"
+    POLL = "poll"
+    PEEK = "peek"
+    INFOREQ = "inforeq"
+    ADS_C = "ads-c"
+
+
+class NetworkTypes(StrEnum):
+    """Network Types"""
+    VATSIM = "vatsim"
+    IVAO = "ivao"
+    PILOTEDGE = "pilotedge"
+    POSCON = "poscon"
+    APOC = "apoc"
+    SAYINTENTIONS = "sayintentions"
+    OFFLINE = "offline"
+    TESTING = "testing"
+
+
+class SystemConfigTypes(StrEnum):
+    """System Config Types"""
+    LS_CM_CONTACT = "ls_cm_contact"
+
+
+class BearerTypes(StrEnum):
+    """Bearer Types"""
+    FANS_HF = "fans_hf"
+    FANS_VHF = "fans_vhf"
+    FANS_SATCOM = "fans_satcom"
+    ATN_VHF = "atn_vhf"
+    ATN_SATCOM = "atn_satcom"
+
+
+class ResponseJWT(BaseModel):
+    """A quick class to return a JWT"""
+    exp: Annotated[int, Field(default="<int:Expiry>")]
+    nbf: Annotated[int, Field(default="<int:Not Before>")]
+    iat: Annotated[int, Field(default="<int:Issued At>")]
+    iss: str = "urn:simacars"
+    aud: Annotated[str, Field(default="<str:Audience>")]
+    network: Annotated[str, Field(default="<str:Network>")]
+    loc: Annotated[str, Field(default="<str:Log Off Code>")]
+    uid: Annotated[int, Field(default="<int:User ID>")]
+    sub: Annotated[str, Field(default="<str:Subscriber ID>")]
+    jti: Annotated[str, Field(default="<str:Unique ID>")]
 
 # Ref: https://www.oag.com/hubfs/Inbound-Services/OAG-ACARS-OOOI-Message-Types-and-Examples.pdf
 OOOI_SMI_TYPES = {
@@ -47,80 +109,80 @@ CPDLC_UPLINK_MESSAGE_RESPONSES = {
     "W_U": {
         "response_required": True,
         "valid_responses": [
-            "WILCO",
-            "UNABLE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM0", "WILCO"),
+            ("DM1", "UNABLE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
         "will_close_uplink": [
-            "WILCO",
-            "UNABLE",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "ERROR"
+            ("DM0", "WILCO"),
+            ("DM1", "UNABLE"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ],
         "FANS_1_A": [
-            "WILCO",
-            "UNABLE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "ERROR"
+            ("DM0", "WILCO"),
+            ("DM1", "UNABLE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ]
     },
     "A_N": {
         "response_required": True,
         "valid_responses": [
-            "AFFIRM",
-            "NEGATIVE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM4", "AFFIRM"),
+            ("DM5", "NEGATIVE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
         "will_close_uplink": [
-            "AFIRM",
-            "NEGATIVE",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "ERROR"
+            ("DM4", "AFFIRM"),
+            ("DM5", "NEGATIVE"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ],
         "FANS_1_A": [
-            "AFIRM",
-            "NEGATIVE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "ERROR"
+            ("DM4", "AFFIRM"),
+            ("DM5", "NEGATIVE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ]
     },
     "R": {
         "response_required": True,
         "valid_responses": [
-            "ROGER",
-            "UNABLE",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM3", "ROGER"),
+            ("DM1", "UNABLE"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
         "will_close_uplink": [
-            "ROGER",
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "ERROR"
+            ("DM3", "ROGER"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ],
         # FANS 1/A aircraft do not have the capability to send UNABLE in
         # response to an uplink message containing message elements with
         # an “R” response attribute
         "FANS_1_A": [
-            "ROGER",
-            "STANDBY",
-            "NOT CURRENT DATA AUTHORITY",
-            "ERROR"
+            ("DM3", "ROGER"),
+            ("DM2", "STANDBY"),
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("UM159", "ERROR")
         ]
     },
     "Y": {
@@ -132,12 +194,12 @@ CPDLC_UPLINK_MESSAGE_RESPONSES = {
     "N": {
         "response_required": False,
         "valid_responses": [
-            "NOT CURRENT DATA AUTHORITY",
-            "NOT AUTHORIZED NEXT DATA AUTHORITY",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("DM63", "NOT CURRENT DATA AUTHORITY"),
+            ("DM107", "NOT AUTHORIZED NEXT DATA AUTHORITY"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
-        "will_close_uplink": ["ERROR"],
+        "will_close_uplink": [("UM159", "ERROR")],
         "FANS_1_A": ["~NOT USED"]
     },
     "NE": {
@@ -160,12 +222,12 @@ CPDLC_DOWNLINK_MESSAGE_RESPONSES = {
     "N": {
         "response_required": False,
         "valid_responses": [
-            "SERVICE UNAVAILABLE",
-            "FLIGHT PLAN NOT HELD",
-            "LOGICAL ACKNOWLEDGEMENT",
-            "ERROR"
+            ("UM162", "SERVICE UNAVAILABLE"),
+            ("UM234", "FLIGHT PLAN NOT HELD"),
+            ("UM227", "LOGICAL ACKNOWLEDGEMENT"),
+            ("UM159", "ERROR")
         ],
-        "will_close_uplink": ["ERROR"],
+        "will_close_uplink": [("UM159", "ERROR")],
         # FANS 1/A.— Aircraft do not have the capability to receive technical
         # responses to downlink message elements with an “N” response attribute
         # (other than LACK or ERROR for ATN B1 aircraft)
@@ -240,4 +302,19 @@ METADATA_TAGS:list[dict[str, Any]] = [
         "description": ("Endpoints related to the Data Link Initiation and "
                         "Capability (DLIC) process as defined in ICAO Doc 4444")
     }
+]
+
+# Per https://vats.im/coc-companion [2026-06-19]
+PERMANENTLY_BLOCKED_CALLSIGNS = [
+    r"^VATSIM\d+$",
+    r"^VATGOV\d+$",
+    r"^VAT[A-Z]{3}\d+$",
+    r"^.*_SUP$",
+    r"^.*_ADM$",
+    r"^AAL11.*$",
+    r"^AAL77.*$",
+    r"^MAS17.*$",
+    r"^MAS370.*$",
+    r"^UAL93.*$",
+    r"^UAL175.*$",
 ]

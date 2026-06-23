@@ -14,13 +14,12 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 # Local Libraries
 from acars_server import auth, common, databases, static_data
-from acars_server.api.services.user_services import responses_user_new_network
 
 router = APIRouter()
 # ------------------------------------------------------------------
 # User Endpoints
 # ------------------------------------------------------------------
-@router.get("/user/new/{network}", tags=["User Management"], responses=responses_user_new_network)
+@router.get("/user/new/{network}", tags=["User Management"], status_code=307)
 async def auth_new_user(network: str):
     """Authenticate a new user and generate an API key"""
     if network in static_data.NETWORKS:

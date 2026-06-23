@@ -26,7 +26,14 @@ from tests.fixtures.auth import Authentication
 
 class TestTransmitMessage:
     """Airline Transmit Message"""
-    def test_tx(self, client: TestClient):
+
+    GOOD_MESSAGES = [
+        {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
+    def test_tx(self, msg_in, client: TestClient):
         """
         Test that an airline can send a message to online aircraft
         """
@@ -40,14 +47,16 @@ class TestTransmitMessage:
         # Message validation during post to endpoint
         message = MessageFactory(
             msg_to = aircraft.info["callsign"],
-            msg_from = airline.info["callsign"]
+            msg_from = airline.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"]
             )
 
         client.headers.update(airline.info["headers"])
         response = client.post("/airline/tx/atn_vhf", json=message.model_dump()) # type: ignore
         client.headers.pop("x-key")
         print(response.json())
-        assert response.status_code == 201
+        assert response.status_code == 202
 
     def test_tx_recipient_offline(self, client: TestClient):
         """
@@ -182,8 +191,14 @@ class TestNewAirline:
 class TestAirlineRx:
     """Test Airline Rx Path"""
 
+    GOOD_MESSAGES = [
+        #{"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
     @pytest.mark.asyncio
-    async def test_valid_auth(self, client: TestClient):
+    async def test_valid_auth(self, msg_in, client: TestClient):
         """Test valid authentication"""
         airline = Authentication(client, "airline")
         airline.logon()
@@ -195,7 +210,9 @@ class TestAirlineRx:
 
         msg = MessageFactoryNoCommit(
             msg_from=aircraft.info["callsign"],
-            msg_to=airline.info["callsign"])
+            msg_to=airline.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"])
 
         client.headers.update(aircraft.info["headers"])
         with patch(
@@ -205,7 +222,7 @@ class TestAirlineRx:
             response_tx = client.post("/acars/tx/atn_vhf", json=msg.model_dump()) # type: ignore
         client.headers.pop("Authorization")
 
-        assert response_tx.status_code == 201
+        assert response_tx.status_code == 202
         print("INFO: sent tx", response_tx.status_code)
 
         client.headers.update(airline.info["headers"])
@@ -257,6 +274,8 @@ class TestAirlineRx:
 
             async with async_client.stream("GET", url) as response:
                 print("INFO: stream opened", response.status_code)
+                body = await response.aread()
+                print("Raw body:", body.decode(errors="replace"))
                 assert response.status_code == 200
                 assert response.headers["content-type"].startswith("text/event-stream")
 
@@ -280,7 +299,7 @@ class TestAirlineRx:
     def test_invalid_auth(self, client: TestClient):
         """Test an invalid api key"""
         client.headers.update({"x-key": "NOT_A_KEY"})
-        response = client.get("/airline/rx/vatsim/wiffle")
+        response = client.get("/airline/rx/vatsim/WIFF")
         assert response.status_code == 401
 
     @pytest.mark.asyncio
@@ -289,7 +308,7 @@ class TestAirlineRx:
         airline = Authentication(client, "airline")
         airline.logon()
 
-        url = f"/airline/rx/{airline.airline.network}/NOTACALLSIGN"
+        url = f"/airline/rx/{airline.airline.network}/WIFF"
 
         client.headers.update(airline.info["headers"])
         print("INFO: opening stream", url)

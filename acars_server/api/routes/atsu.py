@@ -8,10 +8,10 @@ Chris Parkinson (@chssn)
 
 # Standard Libraries
 import os
-from typing import Literal
+from typing import Annotated
 
 # Third Party Libraries
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
@@ -29,14 +29,44 @@ router = APIRouter()
 # ------------------------------------------------------------------
 # ATSU Endpoints
 # ------------------------------------------------------------------
+EXAMPLE_JS_SOURCE = """const es = new EventSource("/atsu/rx/EGKK");
+
+es.onmessage = (event) => {
+    console.log("MSG:", JSON.parse(event.data));
+};
+"""
+EXAMPLE_TYPESCRIPT_SOURCE = """type StreamMessage = {
+  // adjust this to your real payload shape
+  [key: string]: unknown;
+};
+
+const es = new EventSource("/atsu/rx/EGKK");
+
+es.onmessage = (event: MessageEvent) => {
+  const data: StreamMessage = JSON.parse(event.data);
+  console.log("MSG:", data);
+};"""
+
 @router.get(
         "/rx/{network}/{callsign}",
         response_class=EventSourceResponse,
+        openapi_extra={
+        "x-codeSamples": [
+            {
+                "lang": "JavaScript",
+                "source": EXAMPLE_JS_SOURCE
+            },
+            {
+                "lang": "TypeScript",
+                "source": EXAMPLE_TYPESCRIPT_SOURCE
+            }
+        ]},
+        description="For ATSUs to subscribe to receive messages via Server-Sent Event",
         tags=["Messaging"]
         )
 async def receive_message_stream(
-    callsign:str,
-    network:str,
+    callsign:Annotated[str, Path(pattern="^[A-Z_]+$")],
+    network:static_data.NetworkTypes,
     last_event_id: str | None = Query(default=None),
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """
@@ -101,12 +131,15 @@ async def receive_message_stream(
         status_code=201,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward,
+        summary="Send a message to the store and forward",
+        description="Allows an ATSU to send a message",
         tags=["Messaging"]
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
-    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
+    bearer: static_data.BearerTypes,
     background_tasks: BackgroundTasks,
+    session: databases.SessionDep,
     jwt:HTTPAuthorizationCredentials = Depends(common.header_bearer)):
     """Airline Send a Message"""
 
@@ -130,5 +163,5 @@ async def transmit_a_message(
             status_code=404,
             content={"error": f"{msg.msg_to} is not active on the network"})
 
-    background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
+    background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
     return sf_msg

@@ -17,6 +17,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 # Local Libraries
 from acars_server import auth, common, databases, tasks
+from acars_server.api.services.auth_services import get_api_key_hash
 
 router = APIRouter()
 # ------------------------------------------------------------------
@@ -32,11 +33,12 @@ async def test_auth_new_user(
     """Creates a test user for testing purposes. Not to be used in production"""
     # Generate the API key using the cid
     api_key = auth.Auth().api_key_generator(cid, "testing")
+    hashed_key = get_api_key_hash(api_key)
 
     # Add the API key to the DB
     dtnow = dt.now(tz.utc).timestamp()
     db_data = {
-        "api_key": api_key,
+        "api_key": hashed_key,
         "network": "testing",
         "created": dtnow,
         "last_used": dtnow
@@ -45,7 +47,7 @@ async def test_auth_new_user(
     session.add(db_add)
     session.commit()
     session.refresh(db_add)
-    return db_add
+    return JSONResponse(content={"db": db_add.model_dump_json(), "api_key": api_key})
 
 @router.get("/poll/{callsign}")
 async def test_poll(callsign:str) -> Response: # pragma: no cover
@@ -94,6 +96,7 @@ async def test_inforeq(
     ir_type:str,
     network:str,
     station:str,
+    session: databases.SessionDep,
     background_tasks: BackgroundTasks,
     ): # pragma: no cover
     """INFOREQ Test"""
@@ -107,13 +110,14 @@ async def test_inforeq(
     }
     sf_msg = databases.StoreAndForward.model_validate(t_msg)
     common.logger.success(sf_msg)
-    background_tasks.add_task(tasks.message_parse, sf_msg)
+    background_tasks.add_task(tasks.message_parse, sf_msg, _, session)
     return JSONResponse(content={"status": "ok"})
 
 @router.post("/tx", status_code=204)
 async def test_tx(
     msg:databases.StoreAndForward,
     background_tasks: BackgroundTasks,
+    session: databases.SessionDep
     ): # pragma: no cover
     """INFOREQ Test"""
     sf_msg = databases.StoreAndForward.model_validate(msg)
@@ -127,7 +131,7 @@ async def test_tx(
     }
     sf2_msg = databases.StoreAndForward.model_validate(t_msg)
     common.logger.success(sf2_msg)
-    background_tasks.add_task(tasks.message_parse, sf2_msg)
+    background_tasks.add_task(tasks.message_parse, sf2_msg, _, session)
     return JSONResponse(content={"status": "ok"})
 
 @router.get(

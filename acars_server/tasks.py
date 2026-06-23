@@ -12,12 +12,12 @@ import random
 import re
 from datetime import datetime as dt, timezone as tz
 from time import sleep
-from typing import Any, Dict, Literal, Tuple
+from typing import Any, Dict, Tuple
 
 # Third Party Libraries
 
 # Local Libraries
-from acars_server import common, databases, functions
+from acars_server import common, databases, functions, static_data
 from acars_server.api.message_types import adexp, cpdlc, inforeq
 
 
@@ -46,31 +46,32 @@ class TransmissionDelay:
 
 async def message_parse(
         msg:databases.StoreAndForward,
-        bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"]):
+        bearer: static_data.BearerTypes,
+        session: databases.SessionDep):
     """Parse a message"""
 
     # Force an artificial delay to simulate a network type
-    await TransmissionDelay.random_delay(
-        TransmissionDelay.BEARER_TYPES[bearer], msg.created)
+    #await TransmissionDelay.random_delay(
+    #    TransmissionDelay.BEARER_TYPES[bearer], msg.created)
 
     common.logger.debug("Message Parser")
     send_msg:Dict[str, Any] = {"packet" : None}
 
     # INFOREQ ATIS
     if msg["msg_type"] == "inforeq":
-        send_msg = msg_type_inforeq(msg)
+        send_msg = await msg_type_inforeq(msg)
     # ADS-C
     elif msg["msg_type"] == "ads-c": # pragma: no cover
         if not msg_type_ads_c(msg):
             return
     # CPDLC
     elif msg["msg_type"] == "cpdlc": # pragma: no cover
-        send_msg = msg_type_cpdlc(msg)
+        send_msg = msg_type_cpdlc(msg, session)
 
     # ADEXP
     elif msg["msg_type"] == "adexp": # pragma: no cover
         adexp_msg = adexp.Adexp(msg)
-        if not msg_type_cpdlc(msg):
+        if not adexp_msg:
             return
 
     # Validate the message content
@@ -110,14 +111,15 @@ def msg_type_ads_c(msg:databases.StoreAndForward) -> bool:
         return True
     return False
 
-def msg_type_cpdlc(msg:databases.StoreAndForward) -> Dict[str, Any]:
+def msg_type_cpdlc(
+        msg:databases.StoreAndForward,
+        session:databases.SessionDep) -> Dict[str, Any]:
     """Validates CPDLC messages"""
-    msg_validation = cpdlc.Cpdlc(msg)
-    msg_validation.parse_message()
-    #msg_validation.message_validation()
+    msg_validation = cpdlc.Cpdlc(msg, session)
+    msg_validation.run()
     return msg
 
-def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
+async def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
     """Handle INFOREQ messages"""
     send_msg = {
         "created": dt.now(tz.utc).timestamp(),
@@ -134,7 +136,7 @@ def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
 
         if msg["network"] == "vatsim":
             # Attempt to pull the ATIS
-            response = vs.get_atis(msg["msg_to"])
+            response = await vs.get_atis(msg["msg_to"])
 
             # Deal with a vATIS oddity in returning something that looks like a list but isn't
             if response.startswith("["):
@@ -148,20 +150,20 @@ def msg_type_inforeq(msg:databases.StoreAndForward) -> Dict[str, Any]:
           re.match(r"[A-Z]{4}", msg["msg_to"])):
 
         if msg["network"] == "vatsim":
-            send_msg["packet"] = inforeq.Vatsim.get_metar(msg["msg_to"])
+            send_msg["packet"] = await inforeq.Vatsim.get_metar(msg["msg_to"])
         else:
-            send_msg["packet"] = inforeq.Noaa.metar(msg["msg_to"])
+            send_msg["packet"] = await inforeq.Noaa.metar(msg["msg_to"])
 
     elif (msg["msg_type"] == "inforeq" and
           str(msg["packet"]).startswith("TAF") and
           re.match(r"[A-Z]{4}", msg["msg_to"])):
 
-        send_msg["packet"] = inforeq.Noaa.taf(msg["msg_to"])
+        send_msg["packet"] = await inforeq.Noaa.taf(msg["msg_to"])
 
     elif (msg["msg_type"] == "inforeq" and
           str(msg["packet"]).startswith("SHORTTAF") and
           re.match(r"[A-Z]{4}", msg["msg_to"])):
 
-        send_msg["packet"] = inforeq.Noaa.shorttaf(msg["msg_to"])
+        send_msg["packet"] = await inforeq.Noaa.shorttaf(msg["msg_to"])
 
     return send_msg

@@ -24,7 +24,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
 
 # Local Libraries
-from acars_server import databases
+from acars_server import databases, static_data
 from acars_server.api.services.atsu_services import complete_vatsim_atsu_logon
 from acars_server.api.services.auth_services import jwt_auth
 from tests.factories.atsu import ATSUAuthorisedCallsignFactory
@@ -56,6 +56,23 @@ def vatsim_oauth_response():
     """VATSIM OAuth Response"""
     cid = CidFactory()
     return (200, {"data": {"cid": cid["cid"],"vatsim": {"rating": {"id": 4}}}})
+
+@pytest.fixture
+def jwt_atsu_logon():
+    """JWT ATSU Logon"""
+    jwt = static_data.ResponseJWT(
+            exp = 0,
+            nbf = 0,
+            iat = 0,
+            iss = "test:jwt",
+            aud = "test:audience",
+            network = "testing",
+            loc = "00000",
+            uid = 12345678,
+            sub = "12345678:vatsim",
+            jti = "000000000000000"
+        ).model_dump_json()
+    return jwt
 
 
 class VatsimAccessToken:
@@ -119,14 +136,14 @@ class TestATSUCallback:
         mock_vatsim_auth_class,
         mock_atsu_logon_func,
         vatsim_oauth_response,
+        jwt_atsu_logon,
         client: TestClient
         ):
         """Test the callback with a login attempt"""
-        mock_atsu_logon = MagicMock()
         mock_vatsim_auth = MagicMock()
 
         mock_vatsim_auth_class.return_value = mock_vatsim_auth
-        mock_atsu_logon_func.return_value = mock_atsu_logon
+        mock_atsu_logon_func.return_value = JSONResponse(content=jwt_atsu_logon)
 
         # Mock get_access_token
         gat = VatsimAccessToken()
@@ -134,12 +151,6 @@ class TestATSUCallback:
 
         # Mock get_user_details
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
-
-        # Mock get_access_token
-        mock_atsu_logon.return_value = JSONResponse(
-            status_code=200,
-            content={"success": True},
-        )
 
         response = client.get(
             f"/callback/oauth/vatsim/atsu/{gat.state.oauth_state}/{secrets.token_hex(32)}")
@@ -207,13 +218,13 @@ class TestATSUCallback:
         mock_vatsim_auth_class,
         mock_atsu_logon_func,
         vatsim_oauth_response,
+        jwt_atsu_logon,
         client: TestClient
         ):
         """Tests a callback with duplicate state code"""
-        mock_atsu_logon = MagicMock()
         mock_vatsim_auth = MagicMock()
         mock_vatsim_auth_class.return_value = mock_vatsim_auth
-        mock_atsu_logon_func.return_value = mock_atsu_logon
+        mock_atsu_logon_func.return_value = JSONResponse(content=jwt_atsu_logon)
 
         # Mock get_access_token
         gat = VatsimAccessToken()
@@ -221,12 +232,6 @@ class TestATSUCallback:
 
         # Mock get_user_details
         mock_vatsim_auth.get_user_details.return_value = vatsim_oauth_response
-
-        # Mock get_access_token
-        mock_atsu_logon.return_value = JSONResponse(
-            status_code=200,
-            content={"success": True},
-        )
 
         response_a = client.get(
             f"/callback/oauth/vatsim/atsu/{gat.state.oauth_state}/{secrets.token_hex(32)}")
@@ -329,6 +334,12 @@ class TestATSUCompleteLogon:
 class TestATSURx:
     """Test ATSU Rx Path"""
 
+    GOOD_MESSAGES = [
+        #{"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
     @pytest.mark.asyncio
     @patch("acars_server.api.services.atsu_services.callsign_verification",
            new_callable=AsyncMock)
@@ -341,6 +352,7 @@ class TestATSURx:
         mock_callsign_verification2_func,
         mock_callsign_verification_func,
         client: TestClient,
+        msg_in,
         db,
         vatsim_oauth_response):
         """Complete VATSIM ATSU Logon"""
@@ -367,7 +379,9 @@ class TestATSURx:
 
         msg = MessageFactoryNoCommit(
             msg_from=aircraft.info["callsign"],
-            msg_to=atsu.info["callsign"])
+            msg_to=atsu.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"])
 
         client.headers.update(aircraft.info["headers"])
         with patch(
@@ -377,7 +391,7 @@ class TestATSURx:
             response_tx = client.post("/acars/tx/atn_vhf", json=msg.model_dump())
         client.headers.pop("Authorization")
 
-        assert response_tx.status_code == 201
+        assert response_tx.status_code == 202
         print("INFO: sent tx", response_tx.status_code)
 
         # Mock Redis to avoid event loop issues in testing
@@ -386,11 +400,12 @@ class TestATSURx:
         old_xrange = databases.redis_async_db.xrange
         old_xread = databases.redis_async_db.xread
         try:
+            atsu_callsign = f"_ATC_{atsu.info['callsign']}"
             msg_data = {
                 b"msg_from": aircraft.info["callsign"].encode() if isinstance(
                     aircraft.info["callsign"], str) else aircraft.info["callsign"],
-                b"msg_to": atsu.info["callsign"].encode() if isinstance(
-                    atsu.info["callsign"], str) else atsu.info["callsign"],
+                b"msg_to": atsu_callsign.encode() if isinstance(
+                    atsu_callsign, str) else atsu_callsign,
                 b"msg_type": b"telex",
                 b"packet": b"TEST",
                 b"network": b"vatsim",
@@ -405,7 +420,7 @@ class TestATSURx:
                 if call_count[0] == 1:
                     # Return message on first call
                     return [
-                        [f"msg:atc:vatsim:{format(atsu.info['callsign']).encode()}",
+                        [f"msg:atc:vatsim:{atsu_callsign.encode()}",
                          [("1-0", msg_data)]]]
                 else:
                     # No more messages
@@ -425,6 +440,8 @@ class TestATSURx:
 
             async with async_client.stream("GET", atsu_url) as response:
                 print("INFO: stream opened", response.status_code)
+                body = await response.aread()
+                print("Raw body:", body.decode(errors="replace"))
                 assert response.status_code == 200
                 assert response.headers["content-type"].startswith("text/event-stream")
 
@@ -452,7 +469,7 @@ class TestATSURx:
                 "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkw"
                 "IiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0."
                 "KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30")})
-        response = client.get("/atsu/rx/vatsim/wiffle")
+        response = client.get("/atsu/rx/vatsim/WIFFLE")
         assert response.status_code == 401
 
     @pytest.mark.asyncio
@@ -485,7 +502,7 @@ class TestATSURx:
             "scheme": "Bearer",
             "credentials": json.loads(response.body)["access_token"]
         }
-        atsu_url = f"/atsu/rx/vatsim/NOTACALLSIGN"
+        atsu_url = "/atsu/rx/vatsim/WIFFLE"
 
         # Use httpx client directly to bypass TestClient streaming limitations
         transport = httpx2.ASGITransport(app=client.app)
@@ -504,6 +521,13 @@ class TestATSURx:
 
 class TestATSUTx:
     """Test ATSU Tx"""
+
+    GOOD_MESSAGES = [
+        {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
     @pytest.mark.asyncio
     @patch("acars_server.api.services.atsu_services.callsign_verification",
             new_callable=AsyncMock)
@@ -517,6 +541,7 @@ class TestATSUTx:
         mock_callsign_verification_func,
         client: TestClient,
         db,
+        msg_in,
         vatsim_oauth_response):
         """Complete VATSIM ATSU Logon"""
         mock_vatsim_auth = MagicMock()
@@ -541,7 +566,9 @@ class TestATSUTx:
 
         msg = MessageFactory(
             msg_from=atsu.info["callsign"],
-            msg_to=aircraft.info["callsign"])
+            msg_to=aircraft.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"])
 
         client.headers.update({"Authorization": f"Bearer {atsu_auth_headers['credentials']}"})
         msg_response = client.post("/atsu/tx/atn_vhf", json=msg.model_dump())

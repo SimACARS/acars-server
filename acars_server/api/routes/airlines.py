@@ -10,11 +10,11 @@ Chris Parkinson (@chssn)
 import os
 import secrets
 from datetime import datetime as dt, timezone as tz
-from typing import Literal
+from typing import Annotated
 
 # Third Party Libraries
 from dns.resolver import Resolver
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from redis_om.model.model import NotFoundError
@@ -25,39 +25,57 @@ from sse_starlette.sse import EventSourceResponse
 # Local Libraries
 from acars_server import common, databases, static_data, tasks
 from acars_server.api.services.auth_services import airline_api_authentication, get_api_key_hash
-from acars_server.api.services.user_services import responses_user_new_network
 
 templates = Jinja2Templates(directory=os.path.join(common.PWD, "api", "templates"))
 router = APIRouter()
 # ------------------------------------------------------------------
 # Airline Endpoints
 # ------------------------------------------------------------------
+EXAMPLE_JS_SOURCE = """const es = new EventSource("/airline/rx/BAW");
+
+es.onmessage = (event) => {
+    console.log("MSG:", JSON.parse(event.data));
+};
+"""
+EXAMPLE_TYPESCRIPT_SOURCE = """type StreamMessage = {
+  // adjust this to your real payload shape
+  [key: string]: unknown;
+};
+
+const es = new EventSource("/airline/rx/BAW");
+
+es.onmessage = (event: MessageEvent) => {
+  const data: StreamMessage = JSON.parse(event.data);
+  console.log("MSG:", data);
+};"""
+
 @router.get(
         "/rx/{network}/{callsign}",
         response_class=EventSourceResponse,
+        summary="Subscribe to receive messages",
+        openapi_extra={
+        "x-codeSamples": [
+            {
+                "lang": "JavaScript",
+                "source": EXAMPLE_JS_SOURCE
+            },
+            {
+                "lang": "TypeScript",
+                "source": EXAMPLE_TYPESCRIPT_SOURCE
+            }
+        ]},
+        description="For airlines to subscribe to receive messages via Server-Sent Event",
         tags=["Messaging"]
         )
 async def receive_message_stream(
-    callsign:str,
-    network:str,
+    callsign:Annotated[str, Path(min_length=3, max_length=4, pattern="^[A-Z]+$")],
+    network:static_data.NetworkTypes,
     session:databases.SessionDep,
     last_event_id: str | None = Query(default=None),
     api_key:str = Depends(common.header_api_key)
     ):
     """
     Airline receive messages via Server-Sent Events
-
-    Example for TypeScript: https://docs.servicestack.net/typescript-server-events-client
-
-    Example client side JavaScript:
-
-        const es = new EventSource("/stream/BAW");
-
-        es.onmessage = (event) => {
-            console.log("MSG:", JSON.parse(event.data));
-        };
-
-    https://developer.mozilla.org/en-US/docs/Web/API/EventSource
     """
     try:
         airline_data = await airline_api_authentication(session, api_key)
@@ -104,14 +122,16 @@ async def receive_message_stream(
 
 @router.post(
         "/tx/{bearer}",
-        status_code=201,
+        status_code=202,
         responses=static_data.COMMON_ERRORS,
         response_model=databases.StoreAndForward,
+        summary="Send a message to the store and forward",
+        description="Allows an airline to send a message",
         tags=["Messaging"]
         )
 async def transmit_a_message(
     msg:databases.StoreAndForward,
-    bearer: Literal["fans_hf", "fans_vhf", "fans_satcom", "atn_vhf", "atn_satcom"],
+    bearer: static_data.BearerTypes,
     session:databases.SessionDep,
     background_tasks: BackgroundTasks,
     api_key:str = Depends(common.header_api_key)):
@@ -134,13 +154,15 @@ async def transmit_a_message(
             status_code=404,
             content={"error": f"{msg.msg_to} is not active on the network"})
 
-    background_tasks.add_task(tasks.message_parse, sf_msg, bearer)
+    background_tasks.add_task(tasks.message_parse, sf_msg, bearer, session)
     return sf_msg
 
 @router.post(
         "/new",
         response_model=databases.AirlineApiKeyPublic,
-        responses=responses_user_new_network)
+        summary="Request a new airline",
+        description="Allows a user to request the generation of a new airline"
+        )
 async def auth_new_airline(
     request: Request,
     msg:databases.RequestNewAirline,

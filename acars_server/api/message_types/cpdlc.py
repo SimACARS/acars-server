@@ -7,12 +7,13 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import base64
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Union
 
 # Third Party Libraries
-from loguru import logger
+from redis_om.model.model import NotFoundError # type: ignore
 from sqlmodel import select
 
 # Local Libraries
@@ -38,24 +39,35 @@ from acars_server import common, databases, static_data
 class Cpdlc:
     """A CPDLC Class"""
 
-    def __init__(self, message:databases.StoreAndForward) -> None:
+    def __init__(
+            self,
+            message:databases.StoreAndForward,
+            session:databases.SessionDep) -> None:
         self.message = message
         self.exploded:Dict[str, Any] = {}
+        self.session = session
 
-    def _msg_type_cpdlc(self) -> re.Match[str]|None:
+    def run(self) -> Dict[str, Union[str, Any]]:
+        """Runs all checks"""
+        self.parse_message()
+        self.message_validation()
+        self.message_transaction_state()
+        return self.response_type_required_check()
+
+    def _msg_type_cpdlc(self) -> re.Match[str]:
         """Validates CPDLC messages"""
         data_check = re.match(
-            r"^(\d+)\/(\d+)\/([23]\d[01]\d[0-3]\d[0-2]\d[0-6]\d[0-6]\d)\/([A-Z]*)\/(.*)$",
+            r"^(\d+)\/(\d*)\/([23]\d[01]\d[0-3]\d[0-2]\d[0-6]\d[0-6]\d)\/([A-Z]*)\/(.*)$",
             self.message.packet)
         if data_check:
-            logger.debug(data_check)
+            common.logger.debug(data_check)
             return data_check
 
         common.logger.error(
             f"CPDLC: Invalid Format - {self.message}")
-        return None
+        raise ValueError(f"Invalid string: {self.message.packet}")
 
-    def parse_message(self) -> None:
+    def parse_message(self) -> bool:
         """Breaks the message up into logical parts"""
         chk = self._msg_type_cpdlc()
         if chk:
@@ -77,44 +89,89 @@ class Cpdlc:
                 "msg_to": str(self.message.msg_to),
                 "msg_from": str(self.message.msg_from)
             }
+            return True
+        raise ValueError(f"Unknown message type: {self.message}")
 
-    def message_validation(
-            self,
-            session:databases.SessionDep) -> None:
+    def message_validation(self) -> None:
         """Validates a message"""
         rtn:Dict[str, Any] = {}
         # Check that the message contains a UM or DM code
         content_val = re.match(r"^([UD]M[0-9]{1,3}[a-z]{0,2})(.*)", self.exploded["content"])
-        logger.debug(content_val)
+        common.logger.debug(content_val)
         if content_val:
             # Lookup the UM or DM code to validate it
             lookup = select(
                 databases.CPDLCTypes).where(
                     databases.CPDLCTypes.reference_number == content_val.group(1))
-            logger.debug(f"\n{lookup}")
-            result = session.exec(lookup).first()
-            logger.debug(result)
+            common.logger.debug(lookup)
+            result = self.session.exec(lookup).first()
+            common.logger.debug(result)
             if result:
                 rtn["ref"] = result.reference_number
                 rtn["variables"] = {}
                 # Look for any variables in the message element. Indicated by [ ]
                 matches = re.findall(r"\[([^\]]+)\]", result.message_element)
-                logger.debug(matches)
+                common.logger.debug(matches)
                 if matches:
                     ordered_match_set = list(dict.fromkeys(matches))
-                    logger.debug(ordered_match_set)
+                    common.logger.debug(ordered_match_set)
                     split_content = content_val.group(2).split(",")
-                    logger.debug(split_content)
+                    common.logger.debug(split_content)
 
                     for match, sc in zip(ordered_match_set, split_content[1:]):
-                        logger.debug(f"{match} {sc}")
+                        common.logger.debug(f"{match} {sc}")
                         rtn["variables"][match] = sc
 
         # Overwrite data with validated message
         self.exploded["content"] = rtn
 
-    def response_id_checker(self):
-        """Checks that the responding_to_id is valid"""
+    def message_transaction_state(self):
+        """Maintains a state between two stations"""
+        if self.message.msg_from.startswith("_ATC_"):
+            atsu = self.message.msg_from
+            aircraft = self.message.msg_to
+        elif self.message.msg_to.startswith("_ATC_"):
+            atsu = self.message.msg_to
+            aircraft = self.message.msg_from
+        else:
+            atsu = self.message.msg_to
+            aircraft = self.message.msg_from
+
+        # Generate a transaction string
+        transaction_string = f"{self.message.network}:{aircraft}:{atsu}"
+        transaction = base64.urlsafe_b64encode(transaction_string.encode())
+        transaction = transaction.decode()
+
+        rtn_msg = {
+            "transaction_str": transaction
+        }
+
+        try:
+            # Test to see if transaction is already live
+            check_if_current = databases.CpdlcConnectionStateStore.find(
+                        (databases.CpdlcConnectionStateStore.transaction_str == transaction)
+                    ).first()
+            expected_id = check_if_current.expected_next_tx_id
+        except NotFoundError:
+            # If this is a new transaction and ATC are trying to initiate, then deny
+            if self.message.msg_from.startswith("_ATC_"):
+                raise ValueError("No live transaction. ATC cannot initiate unsolicitated CPDLC")
+            # If no live transaction, then this is the first message
+            expected_id = 1
+
+        # If ID is out of sequence then deny
+        if int(expected_id) != int(self.exploded["tx_id"]):
+            raise ValueError(
+                f"Unexpected ID {self.exploded['tx_id']} provided. Expected {expected_id}")
+
+        rtn_msg["expected_next_tx_id"] = str(int(expected_id) + 1)
+
+        val_msg = databases.CpdlcConnectionStateStore.model_validate(rtn_msg)
+        val_msg.save()
+        databases.redis_db.expire(
+            val_msg.key(),
+            3600,
+        )
 
     def response_type_required_check(self) -> Dict[str, Union[str, Any]]:
         """Checks that the response_required is valid"""

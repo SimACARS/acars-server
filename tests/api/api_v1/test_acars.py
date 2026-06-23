@@ -7,9 +7,11 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+from typing import Dict
 from unittest.mock import AsyncMock, patch
 
 # Third Party Libraries
+import pytest
 from fastapi.testclient import TestClient
 
 # Local Libraries
@@ -98,10 +100,20 @@ class TestAircraftAcarsPoll:
 class TestAircraftAcarsTx:
     """Aircraft Tx"""
 
-    def test_send_message(self, client: TestClient):
+    GOOD_MESSAGES = [
+        {"msg_type": "telex", "network": "vatsim", "packet": "TEST1"},
+        {"msg_type": "cpdlc", "network": "vatsim", "packet": "1/1/260616191113/N/DM1"}
+    ]
+
+    @pytest.mark.parametrize("msg_in", GOOD_MESSAGES)
+    def test_send_message(self, msg_in:Dict[str,str], client: TestClient):
         """Tests sending a message"""
         aircraft = Authentication(client, "aircraft")
-        message: StoreAndForward = MessageFactory(msg_from=aircraft.info["callsign"]) # type: ignore
+        message: StoreAndForward = MessageFactory(
+            msg_from=aircraft.info["callsign"],
+            msg_type=msg_in["msg_type"],
+            packet=msg_in["packet"]
+            ) # type: ignore
         aircraft_logon_response = aircraft.logon()
 
         # Check the results
@@ -115,7 +127,7 @@ class TestAircraftAcarsTx:
             response_b = client.post("/acars/tx/atn_vhf", json=message.model_dump())
         client.headers.pop("Authorization")
 
-        assert response_b.status_code == 201
+        assert response_b.status_code == 202
 
     def test_send_message_no_callsign(self, client: TestClient):
         """Tests sending a message"""
@@ -162,4 +174,4 @@ class TestAircraftAcarsTx:
         print(response.url)
         client.headers.pop("Authorization")
 
-        assert response.status_code == 200
+        assert response.status_code == 202

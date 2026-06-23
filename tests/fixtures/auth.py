@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 from httpx2 import Response
 
 # Local Libraries
-from acars_server import databases
+from acars_server import common, databases
 from tests.factories.atsu import ATSUAuthorisedCallsignFactory
 from tests.factories.user import CallsignFactory
 from tests.fixtures.airline_authorisation import create_airline_api_key
@@ -58,23 +58,30 @@ class Authentication:
                 "api_key": "NoOp",
                 "logon_to": "_SYSTEM_DLIC",
                 "callsign": self.atsu_data.callsign,
+                "primary_frequency": "127.400",
                 "headers": {
                     "scheme": "Bearer",
                     "credentials": "unset"
                 }
             }
+            common.logger.debug(self.info)
 
     def logon(self) -> Response:
         """
         Logs on as a test airline to _SYSTEM_DLIC
         """
+        if not self.info.get("primary_frequency"):
+            fout = None
+        else:
+            fout = self.info["primary_frequency"]
         if self.client is not None:
             response, _ = self.dlic_logon_request(
                 logon_from=self.info["callsign"],
                 logon_to=self.info["logon_to"],
                 api_key=self.info["api_key"],
                 endpoint=f"/dlic/{self.info['type']}/logon",
-                client=self.client
+                client=self.client,
+                freq=fout
             )
             if self.info["type"] == "aircraft":
                 self.info["headers"] = {
@@ -88,7 +95,8 @@ class Authentication:
         logon_to:str,
         api_key:str,
         endpoint:str,
-        client: TestClient):
+        client: TestClient,
+        freq:str|None=None):
         """Generate a DLIC logon request"""
         logon_data: dict = {
                 "logon_from": logon_from,
@@ -100,6 +108,8 @@ class Authentication:
                 "atn_b1": False,
                 "fans_1_a": False
             }
+        if freq is not None:
+            logon_data["primary_frequency"] = freq
         if client.headers.get("x-key"):
             client.headers.pop("x-key")
         client.headers.update({"x-key": api_key})

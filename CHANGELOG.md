@@ -1,5 +1,125 @@
 # Changelog
 
+# [2.2.0-alpha.8](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.7...v2.2.0-alpha.8) (2026-06-23)
+
+
+### Performance Improvements
+
+* removed unused imports ([0d56ff5](https://github.com/SimACARS/acars-server/commit/0d56ff5b2ab83e052ea55a9e5e30d8c8cba33029))
+
+# [2.2.0-alpha.7](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.6...v2.2.0-alpha.7) (2026-06-23)
+
+
+### Bug Fixes
+
+* inforeq still nerf'd ([e694862](https://github.com/SimACARS/acars-server/commit/e694862d72b9275442a5fc18facf17c8f039a8f3))
+* inforeq still nerf'd ([262040e](https://github.com/SimACARS/acars-server/commit/262040e6a4f8ed278aa59faf5fca1f0dd7b02555))
+
+# [2.2.0-alpha.6](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.5...v2.2.0-alpha.6) (2026-06-23)
+
+
+### Bug Fixes
+
+* and again, this should be a 202 response ([5f49fa1](https://github.com/SimACARS/acars-server/commit/5f49fa13245eb702a30e4acfb97f0c6602307d84))
+* Path annotation too restrictive ([831f4ec](https://github.com/SimACARS/acars-server/commit/831f4ecdfd81331a12d9b71e782370aa4cc75406))
+* regex too restrictive ([67b7286](https://github.com/SimACARS/acars-server/commit/67b728624a76ff5670b3ed6aaacfa49375522c93))
+* this should also be a 202 response ([b632b66](https://github.com/SimACARS/acars-server/commit/b632b665e5ee527f86e6837399133e7500d75b6f))
+* this should return 202 not 200 ([191e169](https://github.com/SimACARS/acars-server/commit/191e169162a1d178ba1bf9c43e83cfe2cd1325e6))
+
+
+### Features
+
+* LS-DAT-0150 fixes [#102](https://github.com/SimACARS/acars-server/issues/102) ([97b59a1](https://github.com/SimACARS/acars-server/commit/97b59a14cc4a75f896e629c12317ecdd949938ac))
+* LS-FCT-0090 [#71](https://github.com/SimACARS/acars-server/issues/71) ([32b4d87](https://github.com/SimACARS/acars-server/commit/32b4d87402a5b0521fb221fe65977195203032e3))
+
+
+### Performance Improvements
+
+* remove unused import ([37905ee](https://github.com/SimACARS/acars-server/commit/37905ee67504eeb4219e7d97cef6b2f8b48167f0))
+* remove unused import ([baec031](https://github.com/SimACARS/acars-server/commit/baec03147dda4917f09dda4cd08c7610f6c6399e))
+
+# [2.2.0-alpha.5](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.4...v2.2.0-alpha.5) (2026-06-21)
+
+
+### Bug Fixes
+
+* LS-DAT-0110 - should be 4 minutes ([61d5beb](https://github.com/SimACARS/acars-server/commit/61d5beb598108778f00877656c73df189aeb1fc7))
+* this should return a 202 response on success ([38800c4](https://github.com/SimACARS/acars-server/commit/38800c4ab2a2eb1c493e0464b85f7d7435fb65d5))
+
+
+### Features
+
+* base system config ([dea2f45](https://github.com/SimACARS/acars-server/commit/dea2f45dd8c214813648cb21d86e1f7d14267e2b))
+* LS-FCT-0110 [#73](https://github.com/SimACARS/acars-server/issues/73) ([9af8788](https://github.com/SimACARS/acars-server/commit/9af878806c13cc1a137d4004925ab4c0cea6e483))
+
+
+### Performance Improvements
+
+* removed some test code ([789bed5](https://github.com/SimACARS/acars-server/commit/789bed56b94568fe30922215420394ac8521a10c))
+
+# [2.2.0-alpha.4](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.3...v2.2.0-alpha.4) (2026-06-20)
+
+
+### Bug Fixes
+
+* failing on redis.ResponseError ([ef76287](https://github.com/SimACARS/acars-server/commit/ef76287704aca17a5c808a40553a708908b7fb9d))
+* flush is in the wrong place - look to remove completely once out of dev ([b76eb89](https://github.com/SimACARS/acars-server/commit/b76eb893ddccdeffc3927d1b08b6c846a5017881))
+* long poll jobs not async ([6ae6150](https://github.com/SimACARS/acars-server/commit/6ae6150bea933faf9af4735b05c048e25401c6b0))
+* returning 404 instead of 200 ([4f0d397](https://github.com/SimACARS/acars-server/commit/4f0d397bc3c982b70a829093fd9569ba6489da19))
+* try except should be removed in favour of or ([f1960ae](https://github.com/SimACARS/acars-server/commit/f1960ae920657a6e9f1d6b82033867cb23d6e264))
+* undo nerf's vatsim urls ([e6e80ef](https://github.com/SimACARS/acars-server/commit/e6e80ef6d515aa832bfd9d78f21e116a48db04e5))
+
+
+### Performance Improvements
+
+* nerf'd artificial delay, there is enough delay in the system without adding more! ([57b6a52](https://github.com/SimACARS/acars-server/commit/57b6a52cf737973751ddcaa230510e40b00301ef))
+* nerf'd inforeq for now ([c049ed5](https://github.com/SimACARS/acars-server/commit/c049ed509fc43d11d991fe895df205d09406d5f9))
+
+# [2.2.0-alpha.3](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.2...v2.2.0-alpha.3) (2026-06-17)
+
+
+### Features
+
+* basic non-functioning SWIM framework ([7f3afdd](https://github.com/SimACARS/acars-server/commit/7f3afdd73ceebd30f858dd7f1257342124229e13))
+* LS-GEN-0180 [#62](https://github.com/SimACARS/acars-server/issues/62) ([702c877](https://github.com/SimACARS/acars-server/commit/702c877bc36690363b35e3be8be8237afce6383c))
+
+# [2.2.0-alpha.2](https://github.com/SimACARS/acars-server/compare/v2.2.0-alpha.1...v2.2.0-alpha.2) (2026-06-17)
+
+
+### Bug Fixes
+
+* bytes should be str ([ad51cd2](https://github.com/SimACARS/acars-server/commit/ad51cd2984ad0dd61ff64714009bccb0545ef4eb))
+* failing if aircraft is sending message ([9513dc2](https://github.com/SimACARS/acars-server/commit/9513dc2f2d8faf39b6bdda422a5f55de6aea1d0d))
+* incorrect function call ([d4707e5](https://github.com/SimACARS/acars-server/commit/d4707e598ca7b0e9bfa990619a1bf6728bbc94f9))
+* incorrect session object being passed ([c5aace3](https://github.com/SimACARS/acars-server/commit/c5aace303f3af69e0c259f70d58e92cbf713146e))
+* missed downlink messages ([6a065d9](https://github.com/SimACARS/acars-server/commit/6a065d99f09209bb2af848a666a61710c9d76be3))
+* missing short code responses ([7c0e3b8](https://github.com/SimACARS/acars-server/commit/7c0e3b8a79c8e77c8577752537ed44ac58c4c204))
+* not handling value error at all ([9ca4da0](https://github.com/SimACARS/acars-server/commit/9ca4da0b155d2569c28de8ed0c8ab3a040780f1c))
+* overly complicated connection state store ([c5bf238](https://github.com/SimACARS/acars-server/commit/c5bf238d7f67f156f4612b5b725a069a5d7290f4))
+* should compare same types ([4851429](https://github.com/SimACARS/acars-server/commit/48514295f29aece51ac8dfb988c75a171d4bc86f))
+* still poor error handling ([6de6258](https://github.com/SimACARS/acars-server/commit/6de625888894eb8eaaa5c486232736380822ffad))
+* transaction_state disabled ([6f82bd8](https://github.com/SimACARS/acars-server/commit/6f82bd8c920d64902f80e47d05a2f357b6adb733))
+
+
+### Features
+
+* added run function to CPDLC ([fc0db58](https://github.com/SimACARS/acars-server/commit/fc0db583f91b45ff9c9a38b4a823b2ebe9fdce1b))
+* cpdlc message checking ([5968d4e](https://github.com/SimACARS/acars-server/commit/5968d4edf9f502349c73097de9f94ecb64ea37f6))
+
+# [2.2.0-alpha.1](https://github.com/SimACARS/acars-server/compare/v2.1.1...v2.2.0-alpha.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* looking up the authorised callsign rather than the parent ATSU callsign ([c6f4ac0](https://github.com/SimACARS/acars-server/commit/c6f4ac01f504e4822f219a67896b7c8130bd2642))
+* missing LS import ([ff12155](https://github.com/SimACARS/acars-server/commit/ff121553d6fce69f4760c97631c980029e99d9ee))
+* no route ([0db066f](https://github.com/SimACARS/acars-server/commit/0db066f22306f70bafe3d10f54a32934d85d31c4))
+
+
+### Features
+
+* [#57](https://github.com/SimACARS/acars-server/issues/57) implemented blind contact ([e00b373](https://github.com/SimACARS/acars-server/commit/e00b373e4dba1e58cdc4f58776ba67b849b73399))
+
 ## [2.1.1](https://github.com/SimACARS/acars-server/compare/v2.1.0...v2.1.1) (2026-06-14)
 
 
