@@ -10,7 +10,7 @@ pydantic_settings==2.14.2
 pyjwt==2.13.0
 pymysql==1.2.0
 python-dotenv==1.2.2
-redis[otel]==7.4.1
+redis[otel]==8.0.1
 redis_om==1.1.0
 Requests==2.34.2
 sqlmodel==0.0.38
