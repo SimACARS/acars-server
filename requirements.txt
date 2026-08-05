@@ -1,5 +1,5 @@
 alembic==1.18.4
-cryptography==49.0.0
+cryptography==50.0.0
 dnspython==2.8.0
 fastapi[standard]==0.138.0
 loguru==0.7.3
